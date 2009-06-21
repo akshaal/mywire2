@@ -1,5 +1,11 @@
-package info.akshaal.mywire2.daemon
+package info.akshaal.mywire2.daemon 
 
-object Daemon {
-    println ("hello world")
+class Daemon {
+    def init () = ()
+    
+    def start () = ()
+    
+    def stop () = ()
+    
+    def destroy () = ()
 }
