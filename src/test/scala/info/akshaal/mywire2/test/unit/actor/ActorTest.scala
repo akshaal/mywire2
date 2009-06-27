@@ -21,7 +21,6 @@ class ActorTest  {
         SampleActor ! 1
         SampleActor.start
         ToStringActor.start
-        // TODO: Implement something clever
         SampleActor ! 3
         SampleActor ! 7
         sleep ()

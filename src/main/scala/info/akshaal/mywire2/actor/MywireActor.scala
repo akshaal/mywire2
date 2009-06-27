@@ -1,6 +1,9 @@
 package info.akshaal.mywire2.actor
 
-import java.util.concurrent.Executors
+import info.akshaal.mywire2.logger.Logger
+
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.{Executors, ThreadFactory}
 import org.jetlang.core.BatchExecutor
 import org.jetlang.fibers.{PoolFiberFactory, Fiber}
 
@@ -65,7 +68,7 @@ trait MywireActor {
  * when there is no other important task to do.
  */
 trait LowSpeedPool {
-    private[actor] def createFiber(actor : MywireActor): Fiber =
+    private[actor] sealed def createFiber(actor : MywireActor): Fiber =
         LowSpeedPool.create (actor)
 }
 
@@ -74,7 +77,7 @@ trait LowSpeedPool {
  * when there is no other important task to do.
  */
 trait HiSpeedPool {
-    private[actor] def createFiber(actor : MywireActor): Fiber =
+    private[actor] sealed def createFiber(actor : MywireActor): Fiber =
         HiSpeedPool.create (actor)
 }
 
@@ -82,23 +85,47 @@ trait HiSpeedPool {
  * Pool itself for low speed actors. Actors in this pool will be processed
  * when there is no other important task to do.
  */
-private[actor] object LowSpeedPool extends Pool
+object LowSpeedPool extends Pool ("LowSpeedPool")
 
 /**
  * Pool for hi speed actors. Actors in this pool will be processed
  * as soon as possible.
  */
-private[actor] object HiSpeedPool extends Pool
+object HiSpeedPool extends Pool ("HiSpeedPool")
 
 /**
  * Pool class to be used by actors.
  */
-private[actor] class Pool {
+private[actor] class Pool (name : String) {
+    private val logger = Logger.get
+
     private val numberOfThreadInPool =
-        2 * Runtime.getRuntime.availableProcessors
+    RuntimeConstants.threadsMultiplier * Runtime.getRuntime.availableProcessors
+
+    private val threadFactory = new ThreadFactory {
+        val counter = new AtomicInteger (0)
+
+        def newThread (r : Runnable) : Thread = {
+            val threadNumber = counter.incrementAndGet
+
+            val proxy = new Runnable () {
+                def run () = {
+                    logger.debug ("Changing priority for thread "
+                                  + threadNumber + " of pool "
+                                  + name)
+                    r.run
+                }
+            }
+
+            val thread = new Thread (proxy)
+            thread.setName (name + "-" + threadNumber)
+            
+            thread
+        }
+    }
 
     private val executors =
-        Executors.newFixedThreadPool (numberOfThreadInPool);
+        Executors.newFixedThreadPool (numberOfThreadInPool, threadFactory);
 
     private val fiberFactory = new PoolFiberFactory (executors)
 
@@ -110,7 +137,7 @@ private[actor] class Pool {
  * Executor of queued actors.
  */
 private[actor] class ActorExecutor (actor : MywireActor) extends BatchExecutor {
-    def execute (commands: Array[Runnable]) = {
+    sealed def execute (commands: Array[Runnable]) = {
         // Remember the current actor in thread local variable.
         // So later it may be referenced from ! method of other actors
         ThreadLocalState.current.set(actor)
