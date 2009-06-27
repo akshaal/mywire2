@@ -22,7 +22,7 @@ class LoggerTest {
     }
     
     private def sideEffect (str : String) = {
-        logger.info ("Computing argument for lazy log message: " + str)
+        logger.debug ("Computing argument for lazy log message: " + str)
         str
     }
 }
