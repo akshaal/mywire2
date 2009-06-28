@@ -1,6 +1,7 @@
 package info.akshaal.mywire2.actor
 
 import info.akshaal.mywire2.logger.Logger
+import info.akshaal.mywire2.utils.LatencyStat
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
@@ -34,13 +35,21 @@ trait MywireActor {
     private[actor] def createFiber (actor : MywireActor): Fiber
 
     /**
+     * Latency to be used for latency measurements.
+     */
+    private[actor] val latency : LatencyStat
+
+    /**
      * Send a message to the actor.
      */
-    def !(msg: Any): Unit = {
+    final def !(msg: Any): Unit = {
         val sentFrom = ThreadLocalState.current.get
+        val expectation = latency.expectationInNano(0)
 
         val runner = new Runnable() {
             def run() = {
+                latency.measure(expectation)
+                
                 if (act.isDefinedAt (msg)) {
                     sender = sentFrom
                     act () (msg)
@@ -55,12 +64,12 @@ trait MywireActor {
     /**
      * Start this actor.
      */
-    def start() = fiber.start
+    final def start() = fiber.start
 
     /**
      * Stop the actor.
      */
-    def exit() = fiber.dispose
+    final def exit() = fiber.dispose
 }
 
 /**
@@ -68,8 +77,10 @@ trait MywireActor {
  * when there is no other important task to do.
  */
 trait LowSpeedPool {
-    private[actor] def createFiber(actor : MywireActor): Fiber =
+    private[actor] final def createFiber(actor : MywireActor): Fiber =
         LowSpeedPool.create (actor)
+
+    private[actor] val latency = LowSpeedPool.latency
 }
 
 /**
@@ -77,8 +88,10 @@ trait LowSpeedPool {
  * when there is no other important task to do.
  */
 trait HiSpeedPool {
-    private[actor] def createFiber(actor : MywireActor): Fiber =
+    private[actor] final def createFiber(actor : MywireActor): Fiber =
         HiSpeedPool.create (actor)
+
+    private[actor] val latency = HiSpeedPool.latency
 }
 
 /**
@@ -98,6 +111,8 @@ object HiSpeedPool extends Pool ("HiSpeedPool")
  */
 private[actor] class Pool (name : String) {
     private val logger = Logger.get
+
+    private[actor] val latency = new LatencyStat
 
     private val numberOfThreadInPool =
     RuntimeConstants.threadsMultiplier * Runtime.getRuntime.availableProcessors
@@ -129,15 +144,17 @@ private[actor] class Pool (name : String) {
 
     private val fiberFactory = new PoolFiberFactory (executors)
 
-    private[actor] def create (actor : MywireActor): Fiber =
+    private[actor] final def create (actor : MywireActor): Fiber =
         fiberFactory.create (new ActorExecutor (actor))
+
+    final def getLatencyNano () = latency.getNano
 }
 
 /**
  * Executor of queued actors.
  */
 private[actor] class ActorExecutor (actor : MywireActor) extends BatchExecutor {
-    def execute (commands: Array[Runnable]) = {
+    final def execute (commands: Array[Runnable]) = {
         // Remember the current actor in thread local variable.
         // So later it may be referenced from ! method of other actors
         ThreadLocalState.current.set(actor)

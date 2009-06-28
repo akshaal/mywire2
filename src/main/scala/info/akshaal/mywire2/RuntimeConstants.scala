@@ -13,4 +13,9 @@ object RuntimeConstants {
      * nunber of processes multiplied to this constant.
      */
     val threadsMultiplier = 1
+
+    /**
+     * Take average from that number of latency measurements.
+     */
+    val latencyStateFrameSize = 100
 }

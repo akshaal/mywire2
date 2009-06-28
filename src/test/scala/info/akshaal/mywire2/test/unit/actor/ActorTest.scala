@@ -8,7 +8,7 @@
 package info.akshaal.mywire2.test.unit.actor
 
 import org.testng.annotations.Test
-import org.testng.Assert.assertEquals
+import org.testng.Assert._
 
 import info.akshaal.mywire2.logger.Logger
 import info.akshaal.mywire2.actor.{MywireActor, HiSpeedPool, LowSpeedPool}
@@ -29,6 +29,14 @@ class ActorTest  {
 
         assertEquals (List(7, 3, 1), SampleActor.accuInt)
         assertEquals (List("x7", "x3", "x1"), SampleActor.accuString)
+        assertTrue (HiSpeedPool.getLatencyNano () > 0, "latnecy cannot be 0")
+        assertTrue (LowSpeedPool.getLatencyNano () > 0, "latnecy cannot be 0")
+
+        logger.debug ("current latency of hiSpeedPool = "
+                      + HiSpeedPool.getLatencyNano ())
+
+        logger.debug ("current latency of LowSpeedPool = "
+                      + LowSpeedPool.getLatencyNano ())
     }
     
     private def sleep () = Thread.sleep (1000)
