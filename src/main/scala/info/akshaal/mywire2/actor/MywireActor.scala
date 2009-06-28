@@ -36,7 +36,7 @@ trait MywireActor {
     /**
      * Send a message to the actor.
      */
-    sealed def !(msg: Any): Unit = {
+    def !(msg: Any): Unit = {
         val sentFrom = ThreadLocalState.current.get
 
         val runner = new Runnable() {
@@ -55,12 +55,12 @@ trait MywireActor {
     /**
      * Start this actor.
      */
-    sealed def start() = fiber.start
+    def start() = fiber.start
 
     /**
      * Stop the actor.
      */
-    sealed def exit() = fiber.dispose
+    def exit() = fiber.dispose
 }
 
 /**
@@ -68,7 +68,7 @@ trait MywireActor {
  * when there is no other important task to do.
  */
 trait LowSpeedPool {
-    private[actor] sealed def createFiber(actor : MywireActor): Fiber =
+    private[actor] def createFiber(actor : MywireActor): Fiber =
         LowSpeedPool.create (actor)
 }
 
@@ -77,7 +77,7 @@ trait LowSpeedPool {
  * when there is no other important task to do.
  */
 trait HiSpeedPool {
-    private[actor] sealed def createFiber(actor : MywireActor): Fiber =
+    private[actor] def createFiber(actor : MywireActor): Fiber =
         HiSpeedPool.create (actor)
 }
 
@@ -137,7 +137,7 @@ private[actor] class Pool (name : String) {
  * Executor of queued actors.
  */
 private[actor] class ActorExecutor (actor : MywireActor) extends BatchExecutor {
-    sealed def execute (commands: Array[Runnable]) = {
+    def execute (commands: Array[Runnable]) = {
         // Remember the current actor in thread local variable.
         // So later it may be referenced from ! method of other actors
         ThreadLocalState.current.set(actor)

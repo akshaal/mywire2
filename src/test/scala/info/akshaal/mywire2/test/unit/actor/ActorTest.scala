@@ -13,7 +13,7 @@ import org.testng.Assert.assertEquals
 import info.akshaal.mywire2.logger.Logger
 import info.akshaal.mywire2.actor.{MywireActor, HiSpeedPool, LowSpeedPool}
 
-@Test {val groups=Array("simple")}
+@Test (groups=Array("simple"))
 class ActorTest  {
     private val logger = Logger.get
 

@@ -4,7 +4,7 @@ import info.akshaal.mywire2.daemon.Daemon
 import info.akshaal.mywire2.logger.Logger
 import org.testng.annotations.Test;
 
-@Test {val groups=Array("simple")}
+@Test (groups=Array("simple"))
 class LoggerTest {
     private val logger = Logger.get
   
