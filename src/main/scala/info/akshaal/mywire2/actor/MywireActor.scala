@@ -1,7 +1,8 @@
 package info.akshaal.mywire2.actor
 
 import info.akshaal.mywire2.logger.{Logger, LogActor}
-import info.akshaal.mywire2.utils.LatencyStat
+import info.akshaal.mywire2.utils.{LatencyStat,
+                                   ThreadPriorityChanger}
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
@@ -113,18 +114,21 @@ trait HiSpeedPool {
  * Pool itself for low speed actors. Actors in this pool will be processed
  * when there is no other important task to do.
  */
-object LowSpeedPool extends Pool ("LowSpeedPool")
+object LowSpeedPool extends Pool ("LowSpeedPool",
+                                  ThreadPriorityChanger.LowPriority ())
 
 /**
  * Pool for hi speed actors. Actors in this pool will be processed
  * as soon as possible.
  */
-object HiSpeedPool extends Pool ("HiSpeedPool")
+object HiSpeedPool extends Pool ("HiSpeedPool",
+                                 ThreadPriorityChanger.HiPriority ())
 
 /**
  * Pool class to be used by actors.
  */
-private[actor] class Pool (name : String) {
+private[actor] class Pool (name : String,
+                           priority : ThreadPriorityChanger.Priority) {
     private val logger = Logger.get
 
     private[actor] val latency = new LatencyStat
@@ -140,9 +144,7 @@ private[actor] class Pool (name : String) {
 
             val proxy = new Runnable () {
                 def run () = {
-                    logger.debug ("Changing priority for thread "
-                                  + threadNumber + " of pool "
-                                  + name)
+                    ThreadPriorityChanger.change (priority)
                     r.run
                 }
             }

@@ -18,4 +18,14 @@ object RuntimeConstants {
      * Take average from that number of latency measurements.
      */
     val latencyStateFrameSize = 100
+
+    /**
+     * OS priority thread for low priority threads
+     */
+    val lowPriorityThreadOSPriority = 19
+
+    /**
+     * OS priority thread for hi priority threads
+     */
+    val hiPriorityThreadOSPriority = -20
 }
