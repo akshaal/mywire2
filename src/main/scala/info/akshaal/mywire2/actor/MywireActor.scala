@@ -1,6 +1,6 @@
 package info.akshaal.mywire2.actor
 
-import info.akshaal.mywire2.logger.Logger
+import info.akshaal.mywire2.logger.{Logger, LogActor}
 import info.akshaal.mywire2.utils.LatencyStat
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -8,12 +8,14 @@ import java.util.concurrent.{Executors, ThreadFactory}
 import org.jetlang.core.BatchExecutor
 import org.jetlang.fibers.{PoolFiberFactory, Fiber}
 
-// TODO: Make it exceptions resitant!
+// TODO: Actually set priority
 
 /**
  * Very simple and hopefully fast implementation of actors
  */
 trait MywireActor {
+    private val logger = Logger.get
+
     /**
      * A fiber used by this actor.
      */
@@ -52,7 +54,20 @@ trait MywireActor {
                 
                 if (act.isDefinedAt (msg)) {
                     sender = sentFrom
-                    act () (msg)
+                    try {
+                        act () (msg)
+                    } catch {
+                        case ex: Exception => {
+                            if (MywireActor.this == LogActor) {
+                                ex.printStackTrace
+                            } else {
+                                logger.error ("Exception in actor"
+                                              + " while processing message: "
+                                              + msg,
+                                              ex)
+                            }
+                        }
+                    }
                     sender = null
                 }
             }

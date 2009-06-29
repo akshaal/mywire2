@@ -27,8 +27,8 @@ class ActorTest  {
         SampleActor.exit
         ToStringActor.exit
 
-        assertEquals (List(7, 3, 1), SampleActor.accuInt)
-        assertEquals (List("x7", "x3", "x1"), SampleActor.accuString)
+        assertEquals (SampleActor.accuInt, List(7, 3, 1))
+        assertEquals (SampleActor.accuString, List("x7", "x3", "x1"))
         assertTrue (HiSpeedPool.getLatencyNano () > 0, "latnecy cannot be 0")
         assertTrue (LowSpeedPool.getLatencyNano () > 0, "latnecy cannot be 0")
 
@@ -38,7 +38,20 @@ class ActorTest  {
         logger.debug ("current latency of LowSpeedPool = "
                       + LowSpeedPool.getLatencyNano ())
     }
-    
+
+    @Test def testExceptionResistance () = {
+        UnstableActor.start
+
+        for (i <- 1 to 10) {
+            UnstableActor ! i
+        }
+
+        sleep
+        UnstableActor.exit
+
+        assertEquals (UnstableActor.sum, 1+3+5+7+9)
+    }
+
     private def sleep () = Thread.sleep (1000)
 }
 
@@ -68,6 +81,20 @@ object ToStringActor extends MywireActor with LowSpeedPool {
         case x => {
             logger.debug ("Received message: " + x)
             sender ! ("x" + x);
+        }
+    }
+}
+
+object UnstableActor extends MywireActor with HiSpeedPool {
+    var sum = 0
+
+    def act () = {
+        case x : Int => {
+            if (x % 2 == 0) {
+                throw new IllegalArgumentException ()
+            } else {
+                sum += x
+            }
         }
     }
 }

@@ -3,8 +3,6 @@ package info.akshaal.mywire2.logger
 import org.slf4j.LoggerFactory
 import org.slf4j.{Logger => SlfLogger}
 
-// TODO: Logger must use actors to actually log
-
 class Logger (slfLogger : SlfLogger) {
     // Simple log
   
