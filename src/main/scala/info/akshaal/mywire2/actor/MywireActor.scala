@@ -9,8 +9,6 @@ import java.util.concurrent.{Executors, ThreadFactory}
 import org.jetlang.core.BatchExecutor
 import org.jetlang.fibers.{PoolFiberFactory, Fiber}
 
-// TODO: Actually set priority
-
 /**
  * Very simple and hopefully fast implementation of actors
  */
@@ -51,30 +49,46 @@ trait MywireActor {
 
         val runner = new Runnable() {
             def run() = {
-                latency.measure(expectation)
-                
-                if (act.isDefinedAt (msg)) {
-                    sender = sentFrom
-                    try {
-                        act () (msg)
-                    } catch {
-                        case ex: Exception => {
-                            if (MywireActor.this == LogActor) {
-                                ex.printStackTrace
-                            } else {
-                                logger.error ("Exception in actor"
-                                              + " while processing message: "
-                                              + msg,
-                                              ex)
-                            }
-                        }
-                    }
-                    sender = null
-                }
+                doAct (sentFrom, expectation, msg)
             }
         }
 
         fiber.execute (runner)
+    }
+
+    /**
+     * Actually run act method with some decorations...
+     */
+    def doAct (sentFrom : MywireActor,
+               expectation : Long,
+               msg : Any) = {
+        latency.measure(expectation)
+
+        if (act.isDefinedAt (msg)) {
+            // Defined
+
+            sender = sentFrom
+
+            try {
+                act () (msg)
+            } catch {
+                case ex: Exception => {
+                    if (MywireActor.this == LogActor) {
+                        ex.printStackTrace
+                    } else {
+                        logger.error ("Exception in actor"
+                                      + " while processing message: "
+                                      + msg,
+                                      ex)
+                    }
+                }
+            }
+
+            sender = null
+        } else {
+            // Not defined
+            logger.warn ("Actor ignored the message: " + msg)
+        }
     }
 
     /**

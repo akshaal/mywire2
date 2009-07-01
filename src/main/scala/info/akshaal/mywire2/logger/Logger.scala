@@ -3,7 +3,7 @@ package info.akshaal.mywire2.logger
 import org.slf4j.LoggerFactory
 import org.slf4j.{Logger => SlfLogger}
 
-class Logger (slfLogger : SlfLogger) {
+final class Logger (slfLogger : SlfLogger) {
     // Simple log
   
     def debug (str : String) = slfLogger.debug (str)
@@ -47,7 +47,7 @@ class Logger (slfLogger : SlfLogger) {
         if (slfLogger.isErrorEnabled) this.error (obj.toString, e)
 }
 
-object Logger {
+final object Logger {
     def get: Logger = {  
         val className =
           new Throwable().getStackTrace()(1).getClassName
