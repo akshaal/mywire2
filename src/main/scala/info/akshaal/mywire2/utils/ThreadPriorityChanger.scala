@@ -8,13 +8,11 @@
 package info.akshaal.mywire2.utils
 
 import info.akshaal.mywire2.RuntimeConstants
-import info.akshaal.mywire2.logger.Logger
+import info.akshaal.mywire2.logger.Logging
 
 import ru.toril.daemonhelper.{DaemonHelper, OSException}
 
-object ThreadPriorityChanger {
-    val logger = Logger.get
-
+object ThreadPriorityChanger extends Logging {
     abstract sealed class Priority
     case class LowPriority extends Priority
     case class HiPriority extends Priority
@@ -35,24 +33,24 @@ object ThreadPriorityChanger {
 
         try {
             val curPrio = DaemonHelper.getPriority (tid)
-            logger.info ("Current priority for thread " + identifier
-                          + " is " + curPrio);
+            info ("Current priority for thread " + identifier
+                  + " is " + curPrio);
         } catch {
             case e : OSException =>
-                logger.warn ("Failed to get priority for the current thread "
-                             + identifier + ": " + e.getMessage, e)
+                warn ("Failed to get priority for the current thread "
+                      + identifier + ": " + e.getMessage, e)
         }
 
         try {
             DaemonHelper.setPriority (tid, osPriority)
-            logger.info ("Priority for thread " + identifier
-                         + " has been successfuly changed to "
-                         + osPriority)
+            info ("Priority for thread " + identifier
+                  + " has been successfuly changed to "
+                  + osPriority)
         } catch {
             case e : OSException =>
-                logger.warn ("Failed to set priority to " + osPriority
-                             + " for thread " + identifier
-                             + ": " + e.getMessage, e)
+                warn ("Failed to set priority to " + osPriority
+                      + " for thread " + identifier
+                      + ": " + e.getMessage, e)
         }
     }
 }

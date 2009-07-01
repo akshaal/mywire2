@@ -11,8 +11,6 @@ import info.akshaal.mywire2.logger.Logger
 import info.akshaal.mywire2.actor.{MywireActor, HiSpeedPool}
 
 final object Scheduler extends MywireActor with HiSpeedPool {
-    val logger = Logger.get
-
     def act () = {
         case schedule : Schedule =>
             println (schedule)

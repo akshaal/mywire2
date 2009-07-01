@@ -1,6 +1,7 @@
 package info.akshaal.mywire2.actor
 
-import info.akshaal.mywire2.logger.{Logger, LogActor}
+import info.akshaal.mywire2.Predefs._
+import info.akshaal.mywire2.logger.Logging
 import info.akshaal.mywire2.utils.{LatencyStat,
                                    ThreadPriorityChanger}
 
@@ -12,9 +13,7 @@ import org.jetlang.fibers.{PoolFiberFactory, Fiber}
 /**
  * Very simple and hopefully fast implementation of actors
  */
-trait MywireActor {
-    private val logger = Logger.get (this)
-
+trait MywireActor extends Logging {
     /**
      * A fiber used by this actor.
      */
@@ -45,50 +44,45 @@ trait MywireActor {
      */
     final def !(msg: Any): Unit = {
         val sentFrom = ThreadLocalState.current.get
-        val expectation = latency.expectationInNano(0)
+        val runExpectation = LatencyStat.expectationInNano (0)
 
-        val runner = new Runnable() {
-            def run() = {
-                doAct (sentFrom, expectation, msg)
+        val runner = mkRunnable {
+            val runLatency = latency.measureNano (runExpectation)
+
+            // TODO: Show warn about run latency if exceeds
+
+            val completeExpectation = LatencyStat.expectationInNano (0)
+
+            if (act.isDefinedAt (msg)) {
+                // Defined
+
+                sender = sentFrom
+
+                try {
+                    act () (msg)
+                } catch {
+                    case ex: Exception => {
+                        error ("Exception in actor"
+                               + " while processing message: "
+                               + msg,
+                               ex)
+                    }
+                }
+
+                sender = null
+            } else {
+                // Not defined
+                warn ("Actor ignored the message: " + msg)
             }
+
+            // TODO: Show warn if exceeds
+            debugLazy ("Actor completed processing message " + msg
+                       + " in "
+                       + LatencyStat.calculateLatencyNano (completeExpectation)
+                       + " ns")
         }
 
         fiber.execute (runner)
-    }
-
-    /**
-     * Actually run act method with some decorations...
-     */
-    def doAct (sentFrom : MywireActor,
-               expectation : Long,
-               msg : Any) = {
-        latency.measure(expectation)
-
-        if (act.isDefinedAt (msg)) {
-            // Defined
-
-            sender = sentFrom
-
-            try {
-                act () (msg)
-            } catch {
-                case ex: Exception => {
-                    if (MywireActor.this == LogActor) {
-                        ex.printStackTrace
-                    } else {
-                        logger.error ("Exception in actor"
-                                      + " while processing message: "
-                                      + msg,
-                                      ex)
-                    }
-                }
-            }
-
-            sender = null
-        } else {
-            // Not defined
-            logger.warn ("Actor ignored the message: " + msg)
-        }
     }
 
     /**
@@ -143,8 +137,6 @@ object HiSpeedPool extends Pool ("HiSpeedPool",
  */
 private[actor] class Pool (name : String,
                            priority : ThreadPriorityChanger.Priority) {
-    private val logger = Logger.get
-
     private[actor] val latency = new LatencyStat
 
     private val numberOfThreadInPool =
@@ -156,11 +148,9 @@ private[actor] class Pool (name : String,
         def newThread (r : Runnable) : Thread = {
             val threadNumber = counter.incrementAndGet
 
-            val proxy = new Runnable () {
-                def run () = {
-                    ThreadPriorityChanger.change (priority)
-                    r.run
-                }
+            val proxy = mkRunnable {
+                ThreadPriorityChanger.change (priority)
+                r.run
             }
 
             val thread = new Thread (proxy)
