@@ -13,7 +13,7 @@ import org.jetlang.fibers.{PoolFiberFactory, Fiber}
  * Very simple and hopefully fast implementation of actors
  */
 trait MywireActor {
-    private val logger = Logger.get
+    private val logger = Logger.get (this)
 
     /**
      * A fiber used by this actor.

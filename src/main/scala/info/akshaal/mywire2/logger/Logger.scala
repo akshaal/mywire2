@@ -48,16 +48,17 @@ final class Logger (slfLogger : SlfLogger) {
 }
 
 final object Logger {
-    def get: Logger = {  
-        val className =
-          new Throwable().getStackTrace()(1).getClassName
-          
-          get (if (className.endsWith("$"))
-                     className.substring(0, className.length - 1)
-                 else
-                     className)    
-    }
-
     def get (name : String): Logger =
          new Logger (LoggerFactory.getLogger (name))
+
+    def get (any : AnyRef): Logger = get (loggerNameForClass (any.getClass.getName))
+
+    def get: Logger =
+         get (loggerNameForClass(new Throwable().getStackTrace()(1).getClassName))
+
+    private def loggerNameForClass (className : String) =
+	if (className.endsWith("$"))
+	    className.substring(0, className.length - 1)
+        else
+            className
 }
