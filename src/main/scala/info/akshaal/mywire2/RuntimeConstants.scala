@@ -28,4 +28,14 @@ object RuntimeConstants {
      * OS priority thread for hi priority threads
      */
     val hiPriorityThreadOSPriority = -20
+
+    /**
+     * Show warning if latency is higher than this value.
+     */
+    val warnLatencyNano = 40L * 1000L * 1000L
+
+    /**
+     * Show warning if actor completed its job in time exceeding this limit.
+     */
+    val warnActorTimeNano = 400L * 1000L
 }

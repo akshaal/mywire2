@@ -8,7 +8,7 @@
 package info.akshaal.mywire2.logger
 
 trait Logging {
-    private[logger] val logger = Logger.get (this)
+    protected[logger] val logger = Logger.get (this)
 
     def debug (str : String) = logger.debug (str)
     def info (str : String)  = logger.info (str)

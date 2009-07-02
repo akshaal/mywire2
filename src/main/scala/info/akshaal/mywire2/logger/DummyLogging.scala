@@ -8,7 +8,7 @@
 package info.akshaal.mywire2.logger
 
 trait DummyLogging extends Logging {
-    private[logger] override val logger = null
+    protected[logger] override val logger = null
 
     override def debug (str : String) = ()
     override def info (str : String)  = println (str)
