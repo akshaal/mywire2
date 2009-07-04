@@ -38,4 +38,10 @@ object RuntimeConstants {
      * Show warning if actor completed its job in time exceeding this limit.
      */
     val warnActorTimeNano = 400L * 1000L
+
+    /**
+     * If an event should be processed in this or smaller number of nanoseconds,
+     * then the event will be processed immidiately.
+     */
+    val schedulerDriftNano = 300L
 }

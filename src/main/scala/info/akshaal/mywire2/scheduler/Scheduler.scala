@@ -7,21 +7,26 @@
 
 package info.akshaal.mywire2.scheduler
 
-import info.akshaal.mywire2.logger.Logger
-import info.akshaal.mywire2.actor.{MywireActor, HiSpeedPool}
+import info.akshaal.mywire2.logger.Logging
+import info.akshaal.mywire2.actor.MywireActor
 
-final object Scheduler extends MywireActor with HiSpeedPool {
-    def act () = {
-        case schedule : Schedule =>
-            println (schedule)
-    }
+/**
+ * Scheduler class.
+ */
+object Scheduler extends Object with Logging {
+    SchedulerThread.start
 
-    // Will be started as soon as something is about to be scheduled
-    start ()
-}
+    def inNano (actor : MywireActor, payload : Any, nano : Long) =
+        SchedulerThread.schedule (new OneTimeSchedule (actor,
+                                  payload,
+                                  nano + System.nanoTime))
 
-final class Schedule (val actor : MywireActor, val time : Long)
-                                extends Ordered[Schedule]
-{
-    def compare (that : Schedule) = time compare that.time
+    def inMicro (actor : MywireActor, payload : Any, micro : Long) =
+        inNano (actor, payload, micro * 1000L)
+
+    def inMili (actor : MywireActor, payload : Any, micro : Long) =
+        inNano (actor, payload, micro * 1000000L)
+
+    def inSecs (actor : MywireActor, payload : Any, micro : Long) =
+        inNano (actor, payload, micro * 1000000000000L)
 }

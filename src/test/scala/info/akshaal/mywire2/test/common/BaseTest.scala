@@ -22,7 +22,7 @@ trait BaseTest extends Logging {
         info ("About to run test: " + methodSignature)
     }
 
-    @BeforeMethod
+    @AfterMethod
     def afterEachMethod (method : Method) {
         val methodSignature = method.toGenericString
 
