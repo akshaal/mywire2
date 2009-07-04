@@ -6,9 +6,8 @@ import info.akshaal.mywire2.test.common.BaseTest
 
 import org.testng.annotations.Test
 
-@Test (groups=Array("simple"))
 class LoggerTest extends BaseTest {  
-    @Test
+    @Test (groups=Array("simple"))
     def testLoggerLevels () = {
         logger.debug ("Debug level")
         logger.info ("Info level")

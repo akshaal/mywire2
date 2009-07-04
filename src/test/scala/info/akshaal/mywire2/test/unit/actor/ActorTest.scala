@@ -14,9 +14,9 @@ import info.akshaal.mywire2.test.common.BaseTest
 import info.akshaal.mywire2.logger.Logging
 import info.akshaal.mywire2.actor.{MywireActor, HiSpeedPool, LowSpeedPool}
 
-@Test (groups=Array("simple"))
 class ActorTest extends BaseTest {
-    @Test def testPingPong () = {
+    @Test (groups=Array("simple"))
+    def testPingPong () = {
         SampleActor ! 1
         SampleActor.start
         ToStringActor.start
@@ -38,7 +38,8 @@ class ActorTest extends BaseTest {
                + LowSpeedPool.getLatencyNano ())
     }
 
-    @Test def testExceptionResistance () = {
+    @Test (groups=Array("simple"))
+    def testExceptionResistance () = {
         UnstableActor.start
 
         for (i <- 1 to 10) {
