@@ -10,11 +10,12 @@ package info.akshaal.mywire2.test.unit.actor
 import org.testng.annotations.Test
 import org.testng.Assert._
 
+import info.akshaal.mywire2.test.common.BaseTest
 import info.akshaal.mywire2.logger.Logging
 import info.akshaal.mywire2.actor.{MywireActor, HiSpeedPool, LowSpeedPool}
 
 @Test (groups=Array("simple"))
-class ActorTest extends Logging {
+class ActorTest extends BaseTest {
     @Test def testPingPong () = {
         SampleActor ! 1
         SampleActor.start

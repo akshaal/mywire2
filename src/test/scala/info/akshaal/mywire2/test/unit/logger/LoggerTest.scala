@@ -2,12 +2,12 @@ package info.akshaal.mywire2.test.unit.logger
 
 import info.akshaal.mywire2.daemon.Daemon
 import info.akshaal.mywire2.logger.Logger
-import org.testng.annotations.Test;
+import info.akshaal.mywire2.test.common.BaseTest
+
+import org.testng.annotations.Test
 
 @Test (groups=Array("simple"))
-class LoggerTest {
-    private val logger = Logger.get
-  
+class LoggerTest extends BaseTest {  
     @Test
     def testLoggerLevels () = {
         logger.debug ("Debug level")

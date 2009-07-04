@@ -43,6 +43,7 @@ trait MywireActor extends Logging {
         val runExpectation = LatencyStat.expectationInNano (0)
 
         val runner = mkRunnable {
+            // Show run latency
             val runLatency = latency.measureNano (runExpectation)
             debugLazy ("Actor's latency for processing message " + msg
                        + " is " + runLatency + " ns")
@@ -51,10 +52,9 @@ trait MywireActor extends Logging {
                        + " is " + runLatency + " ns")
             }
 
-            // TODO: Show warn about run latency if exceeds
-
             val completeExpectation = LatencyStat.expectationInNano (0)
 
+            // Execute
             if (act.isDefinedAt (msg)) {
                 // Defined
 
@@ -72,7 +72,7 @@ trait MywireActor extends Logging {
                 warn ("Actor ignored the message: " + msg)
             }
 
-            // TODO: Show warn if exceeds
+            // Show complete latency
             val completeLatency =
                 LatencyStat.calculateLatencyNano (completeExpectation)
 
@@ -90,11 +90,16 @@ trait MywireActor extends Logging {
     /**
      * Start this actor.
      */
-    final def start() = fiber.start
+    final def start() = {
+        debug ("About to start")
+        fiber.start
+    }
 
     /**
      * Stop the actor.
      */
-    final def exit() = fiber.dispose
+    final def exit() = {
+        debug ("About to stop")
+        fiber.dispose
+    }
 }
-

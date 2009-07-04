@@ -5,6 +5,7 @@
 package info.akshaal.mywire2.test.unit.utils
 
 import info.akshaal.mywire2.utils.LongValueFrame
+import info.akshaal.mywire2.test.common.BaseTest
 
 import org.testng.annotations.Test
 import org.testng.Assert._
@@ -13,7 +14,7 @@ import org.testng.Assert._
  * Test Long Value Frame.
  */
 @Test (groups = Array("utils"))
-class LongValuesFrameTest {
+class LongValuesFrameTest extends BaseTest {
     val MAGIC_3 = 3L
     val MAGIC_4 = 4L
     val MAGIC_5 = 5L

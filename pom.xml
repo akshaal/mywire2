@@ -134,7 +134,7 @@
         
                     <forkMode>once</forkMode>
                     <parallel>methods</parallel>
-                    <threadCount>10</threadCount>
+                    <threadCount>3</threadCount>
                 </configuration>
             </plugin>
 	    
