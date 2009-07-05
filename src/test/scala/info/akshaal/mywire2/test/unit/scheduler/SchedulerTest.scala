@@ -35,6 +35,8 @@ class SchedulerTest extends BaseTest {
                     "After 800ms, RecurrentTestActor should be executed 18 at the most")
 
         RecurrentTestActor.exit ()
+
+        debug ("Scheduler latency " + Scheduler.getLatencyNano)
     }
 
     @Test (groups=Array("scheduler"))
