@@ -10,6 +10,8 @@ import org.jetlang.fibers.Fiber
  * Very simple and hopefully fast implementation of actors
  */
 trait MywireActor extends Logging {
+    protected val schedule = new ActorSchedule (this)
+
     /**
      * A fiber used by this actor.
      */
@@ -45,12 +47,10 @@ trait MywireActor extends Logging {
         val runner = mkRunnable {
             // Show run latency
             val runLatency = latency.measureNano (runExpectation)
-            debugLazy ("Actor's latency for processing message " + msg
-                       + " is " + runLatency + " ns")
-            if (runLatency > RuntimeConstants.warnLatencyNano) {
-                warn ("Actor's latency for processing message " + msg
-                       + " is " + runLatency + " ns")
-            }
+            LatencyStat.inform (logger,
+                                "Actor started for message: " + msg,
+                                RuntimeConstants.warnLatencyNano,
+                                runLatency)
 
             val completeExpectation = LatencyStat.expectationInNano (0)
 
@@ -75,13 +75,11 @@ trait MywireActor extends Logging {
             // Show complete latency
             val completeLatency =
                 LatencyStat.calculateLatencyNano (completeExpectation)
-
-            debugLazy ("Actor completed processing message " + msg
-                       + " in " + completeLatency + " ns")
-            if (completeLatency > RuntimeConstants.warnActorTimeNano) {
-                warn ("Actor completed processing message " + msg
-                       + " in " + completeLatency + " ns")
-            }
+            
+            LatencyStat.inform (logger,
+                                "Actor completed for message: " + msg,
+                                RuntimeConstants.warnActorTimeNano,
+                                completeLatency)
         }
 
         fiber.execute (runner)

@@ -20,18 +20,24 @@ import info.akshaal.mywire2.utils.{LatencyStat,
 
 private[scheduler] object SchedulerThread extends Thread with Logging {
     @volatile
-    private var shutdown = false
+    private var shutdownFlag = false
     private val lock = new ReentrantLock
     private val condition = lock.newCondition
     private val queue = new PriorityQueue[Schedule]
+    private val latencyStat = new LatencyStat
+
+    def getLatencyNano () = latencyStat.getNano
+
+    def shutdown () = shutdownFlag = true
 
     override def run () {
         info ("Starting scheduler")
+        this.setName("Scheduler")
 
         ThreadPriorityChanger.change (ThreadPriorityChanger.HiPriority ())
 
         // Main loop
-        while (!shutdown) {
+        while (!shutdownFlag) {
             logIgnoredException (logger,
                                  "Ignored exception during wait and process")
             {
@@ -45,8 +51,6 @@ private[scheduler] object SchedulerThread extends Thread with Logging {
 
     private def waitAndProcess () = {
         val item = synchronized { queue.peek }
-
-        // TODO: Catch InterruptedException
 
         if (item == null) {
             // No items to process, sleep until signal
@@ -65,6 +69,13 @@ private[scheduler] object SchedulerThread extends Thread with Logging {
     def processFromHead () = {
         // Get item from head
         val item = synchronized { queue.poll }
+
+        // Measure latency
+        val latency = latencyStat.measureNano(item.nanoTime)
+        LatencyStat.inform (logger,
+                            "Event triggered: " + item,
+                            RuntimeConstants.warnLatencyNano,
+                            latency)
 
         // Send message to actor
         item.actor ! (TimeOut (item.payload))

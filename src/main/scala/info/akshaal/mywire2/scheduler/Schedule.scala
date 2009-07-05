@@ -32,3 +32,22 @@ final private[scheduler] class OneTimeSchedule (actor : MywireActor,
 {
     override def nextSchedule () = None
 }
+
+/**
+ * Object represent schedule item which for recurrent events.
+ */
+final private[scheduler] class RecurrentSchedule (actor : MywireActor,
+                                                  payload : Any,
+                                                  nanoTime : Long,
+                                                  period : Long)
+                            extends Schedule (actor,
+                                              payload,
+                                              nanoTime)
+{
+    override def nextSchedule () = {
+        Some (new RecurrentSchedule (actor,
+                                     payload,
+                                     nanoTime + period,
+                                     period))
+    }
+}

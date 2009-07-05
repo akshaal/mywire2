@@ -27,7 +27,7 @@ object RuntimeConstants {
     /**
      * OS priority thread for hi priority threads
      */
-    val hiPriorityThreadOSPriority = -20
+    var hiPriorityThreadOSPriority = -20
 
     /**
      * Show warning if latency is higher than this value.

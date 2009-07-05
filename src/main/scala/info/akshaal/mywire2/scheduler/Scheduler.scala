@@ -29,6 +29,21 @@ object Scheduler extends Object with Logging {
 
     def inSecs (actor : MywireActor, payload : Any, micro : Long) =
         inNano (actor, payload, micro * 1000000000000L)
+
+    def everyNano (actor : MywireActor, payload : Any, periodNano : Long) = {
+        val semiStableNumber = actor.getClass.getName.toString.hashCode
+        val nanoTimeRounded = (System.nanoTime / periodNano + 1) * periodNano
+        val nanoTimeDelayed = nanoTimeRounded + semiStableNumber % periodNano
+
+        SchedulerThread.schedule (new RecurrentSchedule (actor,
+                                                         payload,
+                                                         nanoTimeDelayed,
+                                                         periodNano))
+    }
+
+    def getLatencyNano () = SchedulerThread.getLatencyNano
+
+    def shutdown () = SchedulerThread.shutdown
 }
 
 /**

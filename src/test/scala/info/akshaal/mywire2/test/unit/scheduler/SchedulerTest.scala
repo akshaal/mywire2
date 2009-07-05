@@ -16,6 +16,28 @@ import info.akshaal.mywire2.actor.{MywireActor, HiSpeedPool}
 
 class SchedulerTest extends BaseTest {
     @Test (groups=Array("scheduler"))
+    def testRecurrentScheduling () = {
+        RecurrentTestActor.start ()
+
+        RecurrentTestActor.invocations = 0
+        Thread.sleep (400)
+
+        assertTrue (RecurrentTestActor.invocations >= 6,
+                    "After 400ms, RecurrentTestActor should be executed at least 6 times")
+        assertTrue (RecurrentTestActor.invocations <= 10,
+                    "After 400ms, RecurrentTestActor should be executed 10 at the most")
+
+        Thread.sleep (400)
+
+        assertTrue (RecurrentTestActor.invocations >= 14,
+                    "After 800ms, RecurrentTestActor should be executed at least 14 times")
+        assertTrue (RecurrentTestActor.invocations <= 18,
+                    "After 800ms, RecurrentTestActor should be executed 18 at the most")
+
+        RecurrentTestActor.exit ()
+    }
+
+    @Test (groups=Array("scheduler"))
     def testOneTimeScheduling () = {
         OneTimeTestActor.start
         OneTimeTestActor2.start
@@ -49,6 +71,8 @@ class SchedulerTest extends BaseTest {
 
         OneTimeTestActor.exit
         OneTimeTestActor2.exit
+
+        debug ("Scheduler latency " + Scheduler.getLatencyNano)
     }    
 }
 
@@ -70,6 +94,19 @@ object OneTimeTestActor2 extends MywireActor with HiSpeedPool {
         case TimeOut (x : Int) => {
             debug ("Received [Int] message: " + x)
             executed = true
+        }
+    }
+}
+
+object RecurrentTestActor extends MywireActor with HiSpeedPool {
+    schedule payload "Hi" every 50 miliseconds
+    
+    var invocations = 0
+
+    def act () = {
+        case TimeOut (x : String) => {
+            debug ("Received message: " + x)
+            invocations += 1
         }
     }
 }
