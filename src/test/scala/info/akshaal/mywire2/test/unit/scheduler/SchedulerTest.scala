@@ -10,7 +10,7 @@ package info.akshaal.mywire2.test.unit.actor
 import org.testng.annotations.Test
 import org.testng.Assert._
 
-import info.akshaal.mywire2.scheduler.Scheduler
+import info.akshaal.mywire2.scheduler.{Scheduler, TimeOut}
 import info.akshaal.mywire2.test.common.BaseTest
 import info.akshaal.mywire2.actor.{MywireActor, HiSpeedPool}
 
@@ -56,7 +56,7 @@ object OneTimeTestActor extends MywireActor with HiSpeedPool {
     var executed = false
 
     def act () = {
-        case x : Int => {
+        case TimeOut (x : Int) => {
             debug ("Received [Int] message: " + x)
             executed = true
         }
@@ -67,7 +67,7 @@ object OneTimeTestActor2 extends MywireActor with HiSpeedPool {
     var executed = false
 
     def act () = {
-        case x : Int => {
+        case TimeOut (x : Int) => {
             debug ("Received [Int] message: " + x)
             executed = true
         }

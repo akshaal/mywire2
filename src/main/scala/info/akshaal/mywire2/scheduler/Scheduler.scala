@@ -30,3 +30,9 @@ object Scheduler extends Object with Logging {
     def inSecs (actor : MywireActor, payload : Any, micro : Long) =
         inNano (actor, payload, micro * 1000000000000L)
 }
+
+/**
+ * Object of this class will be used as a holder of payload when message
+ * is delivered.
+ */
+sealed case class TimeOut (val payload : Any)

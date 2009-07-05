@@ -10,6 +10,7 @@ package info.akshaal.mywire2.scheduler
 import java.util.concurrent.locks.ReentrantLock
 import java.util.PriorityQueue
 
+import info.akshaal.mywire2.Predefs._
 import info.akshaal.mywire2.RuntimeConstants
 import info.akshaal.mywire2.logger.Logging
 import info.akshaal.mywire2.utils.{LatencyStat,
@@ -31,7 +32,11 @@ private[scheduler] object SchedulerThread extends Thread with Logging {
 
         // Main loop
         while (!shutdown) {
-            waitAndProcess
+            logIgnoredException (logger,
+                                 "Ignored exception during wait and process")
+            {
+                waitAndProcess
+            }
         }
 
         // Bye-bye
@@ -62,7 +67,7 @@ private[scheduler] object SchedulerThread extends Thread with Logging {
         val item = synchronized { queue.poll }
 
         // Send message to actor
-        item.actor ! item.payload
+        item.actor ! (TimeOut (item.payload))
 
         // Reschedule if needed
         item.nextSchedule match {
