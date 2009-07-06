@@ -54,11 +54,11 @@ trait MywireActor extends Logging {
 
             val completeExpectation = LatencyStat.expectationInNano (0)
 
-            // Execute
+            // Execute            
             msg match {
-		case Ping => sender ! Pong
-		case other => invokeAct (msg, sentFrom)
-	    }
+                case Ping => sentFrom ! Pong
+                case other => invokeAct (msg, sentFrom)
+            }
 
             // Show complete latency
             val completeLatency =
@@ -73,7 +73,7 @@ trait MywireActor extends Logging {
         fiber.execute (runner)
     }
 
-    final private def invokeAct (msg : Any, sentFrom : MywireActor) = {
+    private def invokeAct (msg : Any, sentFrom : MywireActor) = {
         if (act.isDefinedAt (msg)) {
             // Defined
 
@@ -81,7 +81,8 @@ trait MywireActor extends Logging {
 
             logIgnoredException (logger,
                                  "Exception in actor while processing message: "
-                                 + msg) {
+                                 + msg)
+            {
                 act () (msg)
             }
 
@@ -95,10 +96,14 @@ trait MywireActor extends Logging {
     /**
      * Start this actor.
      */
-    final def start() = {
+    final def startSkippingMonitoring = {
         debug ("About to start")
         fiber.start
-        Monitoring.add this
+    }
+
+    final def start () = {
+        startSkippingMonitoring
+        Monitoring.add (this)
     }
 
     /**
@@ -107,6 +112,6 @@ trait MywireActor extends Logging {
     final def exit() = {
         debug ("About to stop")
         fiber.dispose
-        Monitoring.remove this
+        Monitoring.remove (this)
     }
 }

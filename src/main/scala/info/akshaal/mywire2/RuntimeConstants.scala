@@ -44,4 +44,11 @@ object RuntimeConstants {
      * then the event will be processed immidiately.
      */
     val schedulerDriftNano = 300L
+
+    /**
+     * How many seconds passes between monitoring check for actors.
+     * If some actor doesn't respond with this time, then application
+     * is considered as broken and will be restarted.
+     */
+    val actorsMonitoringIntervalSeconds = 1
 }
