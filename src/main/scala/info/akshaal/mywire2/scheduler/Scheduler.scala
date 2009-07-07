@@ -35,8 +35,8 @@ object Scheduler extends Object with Logging {
         val semiStableNumber = actor.getClass.getName.toString.hashCode
 
         def calc (shift : Long) =
-            (curNanoTime / periodNano + shift) * periodNano
-                + semiStableNumber % periodNano
+            ((curNanoTime / periodNano + shift) * periodNano
+             + semiStableNumber % periodNano)
 
         val variantOfNanoTime = calc(0)
         val nanoTime =

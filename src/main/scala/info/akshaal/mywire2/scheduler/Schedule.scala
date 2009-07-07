@@ -31,6 +31,11 @@ final private[scheduler] class OneTimeSchedule (actor : MywireActor,
                             extends Schedule (actor, payload, nanoTime)
 {
     override def nextSchedule () = None
+
+    override def toString =
+        ("OneTimeSchedule(actor=" + actor
+         + ", payload=" + payload
+         + ", nanoTime=" + nanoTime + ")")
 }
 
 /**
@@ -50,4 +55,10 @@ final private[scheduler] class RecurrentSchedule (actor : MywireActor,
                                      nanoTime + period,
                                      period))
     }
+
+    override def toString =
+        ("RecurrentSchedule(actor=" + actor
+         + ", payload=" + payload
+         + ", nanoTime=" + nanoTime
+         + ", period=" + period + ")")
 }
