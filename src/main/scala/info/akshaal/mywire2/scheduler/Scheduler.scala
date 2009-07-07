@@ -31,13 +31,20 @@ object Scheduler extends Object with Logging {
         inNano (actor, payload, micro * 1000000000000L)
 
     def everyNano (actor : MywireActor, payload : Any, periodNano : Long) = {
+        val curNanoTime = System.nanoTime
         val semiStableNumber = actor.getClass.getName.toString.hashCode
-        val nanoTimeRounded = (System.nanoTime / periodNano + 1) * periodNano
-        val nanoTimeDelayed = nanoTimeRounded + semiStableNumber % periodNano
+
+        def calc (shift : Long) =
+            (curNanoTime / periodNano + shift) * periodNano
+                + semiStableNumber % periodNano
+
+        val variantOfNanoTime = calc(0)
+        val nanoTime =
+            if (variantOfNanoTime < curNanoTime) calc(1) else variantOfNanoTime
 
         SchedulerThread.schedule (new RecurrentSchedule (actor,
                                                          payload,
-                                                         nanoTimeDelayed,
+                                                         nanoTime,
                                                          periodNano))
     }
 
