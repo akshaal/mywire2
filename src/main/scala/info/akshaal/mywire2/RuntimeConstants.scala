@@ -7,6 +7,8 @@
 
 package info.akshaal.mywire2
 
+import info.akshaal.mywire2.Predefs._
+
 object RuntimeConstants {
     /**
      * For each thread pool number of threads created is equal to
@@ -50,5 +52,5 @@ object RuntimeConstants {
      * If some actor doesn't respond with this time, then application
      * is considered as broken and will be restarted.
      */
-    val actorsMonitoringIntervalSeconds = 1
+    val actorsMonitoringInterval = 1.seconds
 }

@@ -8,6 +8,7 @@
 package info.akshaal.mywire2
 
 import info.akshaal.mywire2.logger.Logger
+import info.akshaal.mywire2.utils.TimeUnit
 
 object Predefs {
     /**
@@ -41,5 +42,33 @@ object Predefs {
                     logger.error (message, ex)
                 }
         }
+    }
+
+    /**
+     * Converts Long to TimeUnitFromNumberCreator
+     */
+    implicit def long2TimeUnitFromNumberCreator (x : Long) =
+        new TimeUnitFromNumberCreator (x)
+
+    /**
+     * Converts Int to TimeUnitFromLongCreator
+     */
+    implicit def int2TimeUnitFromNumberCreator (x : Int) =
+        new TimeUnitFromNumberCreator (x)
+
+    /**
+     * Wrapper for Long that makes it possible to convert
+     * it to TimeUnit object.
+     */
+    final class TimeUnitFromNumberCreator (x : Long) {
+        def nanoseconds  = mk (x)
+        def microseconds = mk (x * 1000L)
+        def milliseconds = mk (x * 1000L * 1000L)
+        def seconds      = mk (x * 1000L * 1000L * 1000L)
+        def minutes      = mk (x * 1000L * 1000L * 1000L * 60L)
+        def hours        = mk (x * 1000L * 1000L * 1000L * 60L * 60L)
+        def days         = mk (x * 1000L * 1000L * 1000L * 60L * 60L * 24L)
+
+        def mk (nano : Long) = new TimeUnit (nano)
     }
 }

@@ -10,6 +10,7 @@ package info.akshaal.mywire2.test.unit.actor
 import org.testng.annotations.Test
 import org.testng.Assert._
 
+import info.akshaal.mywire2.Predefs._
 import info.akshaal.mywire2.scheduler.{Scheduler, TimeOut}
 import info.akshaal.mywire2.test.common.BaseTest
 import info.akshaal.mywire2.actor.{MywireActor, HiSpeedPool}
@@ -44,8 +45,8 @@ class SchedulerTest extends BaseTest {
         OneTimeTestActor.start
         OneTimeTestActor2.start
 
-        Scheduler.inMili (OneTimeTestActor, 123, 100)
-        Scheduler.inMili (OneTimeTestActor2, 234, 50)
+        Scheduler.in (OneTimeTestActor, 123, 100.milliseconds)
+        Scheduler.in (OneTimeTestActor2, 234, 50.milliseconds)
 
         Thread.sleep (30)
 
@@ -101,7 +102,7 @@ object OneTimeTestActor2 extends MywireActor with HiSpeedPool {
 }
 
 object RecurrentTestActor extends MywireActor with HiSpeedPool {
-    schedule payload "Hi" every 50 miliseconds
+    schedule payload "Hi" every 50 milliseconds
     
     var invocations = 0
 

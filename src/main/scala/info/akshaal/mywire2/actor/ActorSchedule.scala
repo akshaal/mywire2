@@ -8,23 +8,28 @@
 package info.akshaal.mywire2.actor
 
 import info.akshaal.mywire2.scheduler.Scheduler
+import info.akshaal.mywire2.utils.TimeUnit
+import info.akshaal.mywire2.Predefs._
 
-final class TimeSpec[T] (number : Long, action : Long => T) {
-    def nanoseconds  = action (number)
-    def microseconds = action (number * 1000L)
-    def miliseconds  = action (number * 1000L * 1000L)
-    def seconds      = action (number * 1000L * 1000L * 1000L)
-    def minutes      = action (number * 1000L * 1000L * 1000L * 60L)
-    def hours        = action (number * 1000L * 1000L * 1000L * 60L * 60L)
-    def days         = action (number * 1000L * 1000L * 1000L * 60L * 60L * 24L)
+final class TimeSpec[T] (number : Long, action : TimeUnit => T) {
+    def nanoseconds  = action (number.nanoseconds)
+    def microseconds = action (number.microseconds)
+    def milliseconds = action (number.milliseconds)
+    def seconds      = action (number.seconds)
+    def minutes      = action (number.minutes)
+    def hours        = action (number.hours)
+    def days         = action (number.days)
 }
 
 final class Trigger (actor : MywireActor, payload : Any) {
     def in (number : Long)    = new TimeSpec[Unit] (number, scheduleIn)
     def every (number : Long) = new TimeSpec[Unit] (number, scheduleEvery)
 
-    private def scheduleIn (nanos : Long)    = Scheduler.inNano (actor, payload, nanos)
-    private def scheduleEvery (nanos : Long) = Scheduler.everyNano (actor, payload, nanos)
+    def in (time : TimeUnit)    = scheduleIn (time)
+    def every (time : TimeUnit) = scheduleEvery (time)
+
+    private def scheduleIn (time : TimeUnit)    = Scheduler.in (actor, payload, time)
+    private def scheduleEvery (time : TimeUnit) = Scheduler.every (actor, payload, time)
 }
 
 final class ActorSchedule (actor : MywireActor) {

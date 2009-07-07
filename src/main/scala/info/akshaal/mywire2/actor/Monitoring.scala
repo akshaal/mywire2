@@ -38,7 +38,7 @@ private[actor] object MonitoringActor2 extends MonitoringActor {
 }
 
 private[actor] class MonitoringActor extends MywireActor with HiSpeedPool {
-    schedule payload Monitor every RuntimeConstants.actorsMonitoringIntervalSeconds seconds
+    schedule payload Monitor every RuntimeConstants.actorsMonitoringInterval
 
     startSkippingMonitoring
 
