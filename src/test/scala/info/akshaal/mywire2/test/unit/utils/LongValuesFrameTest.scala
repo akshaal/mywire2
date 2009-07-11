@@ -24,7 +24,7 @@ class LongValuesFrameTest extends BaseTest {
      * @throws Exception if something goes wrong
      */
     @Test (expectedExceptions = Array(classOf[IllegalArgumentException]),
-           groups = Array("utils"))
+           groups = Array("indie"))
     def zeroWidth () = {
         val frame = new LongValueFrame (0)
         frame.put (1)
@@ -35,7 +35,7 @@ class LongValuesFrameTest extends BaseTest {
      * @throws Exception if something goes wrong
      */
     @Test (expectedExceptions = Array(classOf[IllegalArgumentException]),
-           groups = Array("utils"))
+           groups = Array("indie"))
     def negativeWidth () = {
         val frame = new LongValueFrame (-2)
         frame.put (1)
@@ -45,7 +45,7 @@ class LongValuesFrameTest extends BaseTest {
      * Test 1 count.
      * @throws Exception if something goes wrong
      */
-    @Test (groups = Array("utils"))
+    @Test (groups = Array("indie"))
     def oneWidth () = {
         val frame = new LongValueFrame (1)
         assertEquals (frame.average (), 0L)
@@ -67,7 +67,7 @@ class LongValuesFrameTest extends BaseTest {
      * Test 2 count.
      * @throws Exception if something goes wrong
      */
-    @Test (groups = Array("utils"))
+    @Test (groups = Array("indie"))
     def twoWidth () = {
         val frame = new LongValueFrame (2)
         assertEquals (frame.average (), 0L)
@@ -89,7 +89,7 @@ class LongValuesFrameTest extends BaseTest {
      * Test 3 count.
      * @throws Exception if something goes wrong
      */
-    @Test (groups = Array("utils"))
+    @Test (groups = Array("indie"))
     def threeWidth () = {
         val frame = new LongValueFrame (3)
         assertEquals (frame.average (), 0L)

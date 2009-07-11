@@ -1,3 +1,5 @@
+/** Akshaal (C) 2009. GNU GPL. http://akshaal.info */
+
 package info.akshaal.mywire2.test.unit.logger
 
 import info.akshaal.mywire2.daemon.Daemon
@@ -7,7 +9,7 @@ import info.akshaal.mywire2.test.common.BaseTest
 import org.testng.annotations.Test
 
 class LoggerTest extends BaseTest {  
-    @Test (groups=Array("simple"))
+    @Test (groups=Array("indie"))
     def testLoggerLevels () = {
         logger.debug ("Debug level")
         logger.info ("Info level")

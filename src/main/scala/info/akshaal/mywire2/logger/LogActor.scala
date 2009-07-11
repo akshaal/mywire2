@@ -8,7 +8,7 @@ import info.akshaal.mywire2.actor.{MywireActor, LowSpeedPool}
 /**
  * Logs message.
  */
-final object LogActor extends MywireActor with LowSpeedPool with DummyLogging {
+object LogActor extends MywireActor with LowSpeedPool with DummyLogging {
     def act () = {
         case (layout : Layout, event : LoggingEvent) => {
             val msg = layout.format(event)

@@ -1,10 +1,13 @@
+/** Akshaal (C) 2009. GNU GPL. http://akshaal.info */
+
 package info.akshaal.mywire2.actor
 
+import daemon.Daemon
 import scala.collection.mutable.HashSet
 import scala.collection.mutable.Set
 
-import info.akshaal.mywire2.scheduler.TimeOut
-import info.akshaal.mywire2.RuntimeConstants
+import scheduler.TimeOut
+import mywire2.RuntimeConstants
 
 private[actor] object Monitoring {
     def add (actor : MywireActor) = {
@@ -25,9 +28,9 @@ private[actor] object Monitoring {
 private[actor] abstract sealed class MonitoringCommand
 private[actor] final case class Add (actor : MywireActor) extends MonitoringCommand
 private[actor] final case class Remove (actor : MywireActor) extends MonitoringCommand
-private[actor] final case object Ping extends MonitoringCommand
-private[actor] final case object Pong extends MonitoringCommand
-private[actor] final case object Monitor extends MonitoringCommand
+private[actor] case object Ping extends MonitoringCommand
+private[actor] case object Pong extends MonitoringCommand
+private[actor] case object Monitor extends MonitoringCommand
 
 private[actor] object MonitoringActor1 extends MonitoringActor {
     MonitoringActor2 ! (Add (this))
@@ -57,12 +60,13 @@ private[actor] class MonitoringActor extends MywireActor with HiSpeedPool {
     private def monitor () = {
         // Check currently monitoring actors
         val notResponding =
-                monitoringActors.filter (!currentActors.contains (_))
+                monitoringActors.filter (currentActors.contains (_))
 
         if (notResponding.isEmpty) {
             debug ("Actors are OK")
         } else {
-            // TODO: Actors are not OK
+            error ("There are actors not responding: " + notResponding)
+            Daemon.die ()
         }
 
         // Start monitoring current set of actors

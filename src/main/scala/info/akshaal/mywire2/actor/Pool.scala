@@ -1,3 +1,5 @@
+/** Akshaal (C) 2009. GNU GPL. http://akshaal.info */
+
 package info.akshaal.mywire2.actor
 
 import info.akshaal.mywire2.Predefs._

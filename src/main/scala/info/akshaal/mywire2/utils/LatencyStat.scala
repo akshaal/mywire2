@@ -45,8 +45,12 @@ object LatencyStat {
     def inform (logger : Logger,
                 message : => String,
                 allowedLatency : Long,
-                latency : Long) =
+                latency : Long) : Unit =
     {
+        if (logger == null) {
+            return
+        }
+
         if (latency > allowedLatency) {
             logger.warn (message + ". Latency: " + latency + " ns")
         } else {

@@ -1,9 +1,4 @@
-/*
- * RuntimeConstants.scala
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+/** Akshaal (C) 2009. GNU GPL. http://akshaal.info */
 
 package info.akshaal.mywire2
 
@@ -52,5 +47,10 @@ object RuntimeConstants {
      * If some actor doesn't respond with this time, then application
      * is considered as broken and will be restarted.
      */
-    val actorsMonitoringInterval = 1.seconds
+    val actorsMonitoringInterval = 200.milliseconds
+
+    /**
+     * Give some time to the dying application to complete it work as graceful as possible
+     */
+    val sleepBeforeDie = 1.seconds
 }

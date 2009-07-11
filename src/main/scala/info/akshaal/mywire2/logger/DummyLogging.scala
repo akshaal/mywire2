@@ -11,7 +11,7 @@ trait DummyLogging extends Logging {
     protected[logger] override val logger = null
 
     override def debug (str : String) = ()
-    override def info (str : String)  = println (str)
+    override def info (str : String)  = println ("INFO: " + str)
     override def warn (str : String)  = System.err.println ("WARN: " + str)
     override def error (str : String) = System.err.println ("ERROR: " + str)
 

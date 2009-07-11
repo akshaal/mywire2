@@ -15,14 +15,14 @@ import info.akshaal.mywire2.actor.MywireActor
 /**
  * Scheduler class.
  */
-object Scheduler extends Object with Logging {
+object Scheduler extends Logging {
     SchedulerThread.start
 
     def in (actor : MywireActor, payload : Any, timeUnit : TimeUnit) =
         SchedulerThread.schedule (new OneTimeSchedule (actor,
                                   payload,
                                   timeUnit.asNanoseconds + System.nanoTime))
-
+  
     def every (actor : MywireActor, payload : Any, period : TimeUnit) = {
         val periodNano = period.asNanoseconds
         val curNanoTime = System.nanoTime

@@ -7,15 +7,15 @@
 
 package info.akshaal.mywire2.test.unit.actor
 
+import collection.immutable.List
 import org.testng.annotations.Test
 import org.testng.Assert._
 
 import info.akshaal.mywire2.test.common.BaseTest
-import info.akshaal.mywire2.logger.Logging
 import info.akshaal.mywire2.actor.{MywireActor, HiSpeedPool, LowSpeedPool}
 
 class ActorTest extends BaseTest {
-    @Test (groups=Array("simple"))
+    @Test (groups=Array("indie"))
     def testPingPong () = {
         SampleActor ! 1
         SampleActor.start
@@ -38,7 +38,7 @@ class ActorTest extends BaseTest {
                + LowSpeedPool.getLatencyNano ())
     }
 
-    @Test (groups=Array("simple"))
+    @Test (groups=Array("indie"))
     def testExceptionResistance () = {
         UnstableActor.start
 

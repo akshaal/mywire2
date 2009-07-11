@@ -1,9 +1,4 @@
-/*
- * ActorTest.scala
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+/** Akshaal (C) 2009. GNU GPL. http://akshaal.info */
 
 package info.akshaal.mywire2.test.unit.actor
 
@@ -16,7 +11,7 @@ import info.akshaal.mywire2.test.common.BaseTest
 import info.akshaal.mywire2.actor.{MywireActor, HiSpeedPool}
 
 class SchedulerTest extends BaseTest {
-    @Test (groups=Array("scheduler"))
+    @Test (groups=Array("indie"))
     def testRecurrentScheduling () = {
         RecurrentTestActor.start ()
 
@@ -40,12 +35,12 @@ class SchedulerTest extends BaseTest {
         debug ("Scheduler latency " + Scheduler.getLatencyNano)
     }
 
-    @Test (groups=Array("scheduler"))
+    @Test (groups=Array("indie"))
     def testOneTimeScheduling () = {
         OneTimeTestActor.start
         OneTimeTestActor2.start
 
-        Scheduler.in (OneTimeTestActor, 123, 100.milliseconds)
+        Scheduler.in (OneTimeTestActor, 123, 130.milliseconds)
         Scheduler.in (OneTimeTestActor2, 234, 50.milliseconds)
 
         Thread.sleep (30)
@@ -56,7 +51,7 @@ class SchedulerTest extends BaseTest {
         assertFalse (OneTimeTestActor2.executed,
                      "Actor must not be executet at this point")
 
-        Thread.sleep (40)
+        Thread.sleep (60)
 
         assertFalse (OneTimeTestActor.executed,
                      "Actor must not be executet at this point")
