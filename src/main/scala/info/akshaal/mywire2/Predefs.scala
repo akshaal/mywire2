@@ -7,6 +7,8 @@
 
 package info.akshaal.mywire2
 
+import java.io.{FileInputStream, IOException, Closeable}
+
 import info.akshaal.mywire2.logger.Logger
 import info.akshaal.mywire2.utils.TimeUnit
 
@@ -19,6 +21,67 @@ object Predefs {
         new Runnable () {
             def run () {
                 code
+            }
+        }
+    }
+
+    def convertNull[T] (ref : T) (code : => T) : T = {
+        if (ref == null) code else ref
+    }
+
+    /**
+     * Execute code with closeable IO.
+     */
+    def withCloseableIO[I <: Closeable, T] (createCode : => I) (code : I => T) : T = {
+        var inputStream : I = null.asInstanceOf[I]
+
+        try {
+            inputStream = createCode
+            code (inputStream)
+        } catch {
+            case ex : IOException =>
+                throw new IOException ("Error during access to input stream: "
+                                       + ex.getMessage,
+                                       ex)
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close ()
+                } catch {
+                    case ex : IOException =>
+                        throw new IOException ("Error closing input stream: "
+                                               + ": " + ex.getMessage,
+                                               ex)
+                }
+            }
+        }
+    }
+
+    /**
+     * Execute code with file input stream.
+     */
+    def withFileInputStream[T] (filename : String) (code : FileInputStream => T) : T = {
+        var inputStream : FileInputStream = null
+
+        try {
+            inputStream = new FileInputStream (filename)
+            code (inputStream)
+        } catch {
+            case ex : IOException =>
+                throw new IOException ("Error during access to file: "
+                                       + filename + ": " + ex.getMessage,
+                                       ex)
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close ()
+                } catch {
+                    case ex : IOException =>
+                        throw new IOException ("Error closing file: "
+                                               + filename
+                                               + ": " + ex.getMessage,
+                                               ex)
+                }
             }
         }
     }
@@ -43,6 +106,9 @@ object Predefs {
                 }
         }
     }
+
+    // /////////////////////////////////////////////////////////////////////
+    // Time
 
     /**
      * Converts Long to TimeUnitFromNumberCreator

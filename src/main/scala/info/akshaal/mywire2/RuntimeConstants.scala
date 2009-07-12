@@ -2,6 +2,8 @@
 
 package info.akshaal.mywire2
 
+import java.util.Properties
+
 import info.akshaal.mywire2.Predefs._
 
 object RuntimeConstants {
@@ -19,38 +21,65 @@ object RuntimeConstants {
     /**
      * OS priority thread for low priority threads
      */
-    val lowPriorityThreadOSPriority = 19
+    val lowPriorityThreadOSPriority = PreferencesLoader.getInt ("os.priority.low")
 
     /**
      * OS priority thread for hi priority threads
      */
-    var hiPriorityThreadOSPriority = -20
+    val hiPriorityThreadOSPriority = PreferencesLoader.getInt ("os.priority.high")
 
     /**
      * Show warning if latency is higher than this value.
      */
-    val warnLatencyNano = 40L * 1000L * 1000L
+    val warnLatency = 40.milliseconds
 
     /**
      * Show warning if actor completed its job in time exceeding this limit.
      */
-    val warnActorTimeNano = 400L * 1000L
+    val warnActorTime = 400.microseconds
 
     /**
      * If an event should be processed in this or smaller number of nanoseconds,
      * then the event will be processed immidiately.
      */
-    val schedulerDriftNano = 300L
+    val schedulerDrift = 1.microseconds
 
     /**
      * How many seconds passes between monitoring check for actors.
      * If some actor doesn't respond with this time, then application
      * is considered as broken and will be restarted.
      */
-    val actorsMonitoringInterval = 200.milliseconds
+    val actorsMonitoringInterval = 1.seconds
 
     /**
      * Give some time to the dying application to complete it work as graceful as possible
      */
     val sleepBeforeDie = 1.seconds
+
+    /**
+     * Load preferences from property file.
+     */
+    private object PreferencesLoader {
+        val properties = new Properties ()
+
+        withCloseableIO {
+            convertNull (this.getClass.getResourceAsStream ("/mywire.properties")) {
+                throw new IllegalArgumentException ("File mywire.properties not found")
+            }
+        } {
+            properties.load (_)
+        }
+    
+        private def getString (name : String) : String = {
+            convertNull (properties.getProperty (name)) {
+                throw new IllegalArgumentException ("Property "
+                                                    + name
+                                                    + " is required")
+            }
+        }
+
+        def getInt (name : String) : Int = {
+            Integer.valueOf(getString (name)).intValue
+        }
+    }
 }

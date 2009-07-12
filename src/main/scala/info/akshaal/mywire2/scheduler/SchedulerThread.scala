@@ -58,7 +58,7 @@ private[scheduler] object SchedulerThread extends Thread with Logging {
         } else {
             val delay = item.nanoTime - System.nanoTime
 
-            if (delay < RuntimeConstants.schedulerDriftNano) {
+            if (delay < RuntimeConstants.schedulerDrift.asNanoseconds) {
                 locked { processFromHead }
             } else {
                 locked { condition.awaitNanos (delay) }
@@ -74,7 +74,7 @@ private[scheduler] object SchedulerThread extends Thread with Logging {
         val latency = latencyStat.measureNano(item.nanoTime)
         LatencyStat.inform (logger,
                             "Event triggered: " + item,
-                            RuntimeConstants.warnLatencyNano,
+                            RuntimeConstants.warnLatency.asNanoseconds,
                             latency)
 
         // Send message to actor

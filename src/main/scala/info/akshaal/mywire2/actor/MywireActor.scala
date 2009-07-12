@@ -49,7 +49,7 @@ trait MywireActor extends Logging {
             val runLatency = latency.measureNano (runExpectation)
             LatencyStat.inform (logger,
                                 "Actor started for message: " + msg,
-                                RuntimeConstants.warnLatencyNano,
+                                RuntimeConstants.warnLatency.asNanoseconds,
                                 runLatency)
 
             val completeExpectation = LatencyStat.expectationInNano (0)
@@ -66,7 +66,7 @@ trait MywireActor extends Logging {
             
             LatencyStat.inform (logger,
                                 "Actor completed for message: " + msg,
-                                RuntimeConstants.warnActorTimeNano,
+                                RuntimeConstants.warnActorTime.asNanoseconds,
                                 completeLatency)
         }
 

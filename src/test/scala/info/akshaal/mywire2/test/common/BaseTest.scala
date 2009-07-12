@@ -31,8 +31,6 @@ private[common] object TestState extends Logging {
 
     private def doInit () {
         info ("Initializing")
-        
-        RuntimeConstants.hiPriorityThreadOSPriority = 0
     }
 }
 
