@@ -10,24 +10,18 @@
     <version>1.0-SNAPSHOT</version>
     <name>mywire2</name>
 
-    <parent>
-        <groupId>info.akshaal</groupId>
-        <artifactId>akbase</artifactId>
-        <version>1</version>
-    </parent>
-
     <!-- = = = = = = = = = = Dependencies = = = = = = = = = = = = = -->
     <dependencies>
         <dependency>
            <groupId>ru.toril.daemonhelper</groupId>
            <artifactId>daemonhelper-api</artifactId>
-           <version>1.0</version>
+           <version>${daemonhelper.version}</version>
         </dependency>
 
         <dependency>
           <groupId>org.testng</groupId>
           <artifactId>testng</artifactId>
-          <version>5.8</version>
+          <version>${testng.version}</version>
           <scope>test</scope>
           <classifier>jdk15</classifier>
         </dependency>
@@ -41,34 +35,31 @@
     	<dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>1.4</version>
+            <version>${commons-io.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>${version.slf4j}</version>
-            <scope>${scope.slf4j}</scope>
+            <version>${slf4j.version}</version>
         </dependency>       
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>${version.slf4j}</version>
-            <scope>${scope.slf4j}</scope>
+            <version>${slf4j.version}</version>
         </dependency>
 
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-            <scope>${scope.log4j}</scope>
-            <version>${version.log4j}</version>
+            <version>${log4j.version}</version>
         </dependency>
         
         <dependency>
             <groupId>org.jetlang</groupId>
             <artifactId>jetlang</artifactId>
-            <version>0.1.7</version>
+            <version>${jetlang.version}</version>
         </dependency>        
     </dependencies>
 
@@ -76,6 +67,15 @@
     <properties>
         <!-- Versions -->
         <scala.version>2.8.0-SNAPSHOT</scala.version>
+        <jetlang.version>0.1.7</jetlang.version>
+        <commons-io.version>1.4</commons-io.version>
+        <testng.version>5.9</testng.version>
+        <daemonhelper.version>1.0</daemonhelper.version>
+        <slf4j.version>1.5.8</slf4j.version>
+        <log4j.version>1.2.15</log4j.version>
+
+        <!-- Plugin versions -->
+        <maven-scala-plugin.version>2.11</maven-scala-plugin.version>
 
         <!-- Mywire properties -->
         <mywire.os.priority.high>0</mywire.os.priority.high>
@@ -138,11 +138,23 @@
         </testResources>
 
         <plugins>
+            <!-- Eclipse -->
+            <plugin>
+                <artifactId>maven-eclipse-plugin</artifactId>
+                <inherited>true</inherited>
+                <configuration>
+                    <downloadSources>true</downloadSources>
+                    <downloadJavadocs>true</downloadJavadocs>
+                    <buildOutputDirectory>
+                        .eclipse/build
+                    </buildOutputDirectory>
+                </configuration>
+            </plugin>
+
             <!-- Testing -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.4.2</version>
                 <configuration>
                     <argLine>
                         -Djava.library.path=${basedir}/src/main/native/${host.native.id}
@@ -157,7 +169,7 @@
     	    <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
-                <version>2.1</version>
+                <version>${maven-scala-plugin.version}</version>
                 <configuration>
                     <scalaVersion>${scala.version}</scalaVersion>
                     <args>
