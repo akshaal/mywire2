@@ -52,6 +52,11 @@ object RuntimeConstants {
     val actorsMonitoringInterval = 1.seconds
 
     /**
+     * Interval between update of the daemon status.
+     */
+    val daemonStatusUpdateInterval = 3.seconds
+
+    /**
      * Load preferences from property file.
      */
     private object PreferencesLoader {
