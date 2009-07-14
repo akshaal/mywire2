@@ -52,11 +52,6 @@ object RuntimeConstants {
     val actorsMonitoringInterval = 1.seconds
 
     /**
-     * Give some time to the dying application to complete it work as graceful as possible
-     */
-    val sleepBeforeDie = 1.seconds
-
-    /**
      * Load preferences from property file.
      */
     private object PreferencesLoader {

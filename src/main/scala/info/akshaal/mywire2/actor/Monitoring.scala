@@ -40,7 +40,7 @@ private[actor] object MonitoringActor2 extends MonitoringActor {
     MonitoringActor1 ! (Add (this))
 }
 
-private[actor] class MonitoringActor extends MywireActor with HiSpeedPool {
+private[actor] class MonitoringActor extends MywireActor with LowPriorityPool {
     schedule payload Monitor every RuntimeConstants.actorsMonitoringInterval
 
     startSkippingMonitoring

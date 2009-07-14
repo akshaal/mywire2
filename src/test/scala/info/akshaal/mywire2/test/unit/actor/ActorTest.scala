@@ -12,7 +12,7 @@ import org.testng.annotations.Test
 import org.testng.Assert._
 
 import info.akshaal.mywire2.test.common.BaseTest
-import info.akshaal.mywire2.actor.{MywireActor, HiSpeedPool, LowSpeedPool}
+import info.akshaal.mywire2.actor.{MywireActor, HiPriorityPool, LowPriorityPool}
 
 class ActorTest extends BaseTest {
     @Test (groups=Array("indie"))
@@ -28,14 +28,14 @@ class ActorTest extends BaseTest {
 
         assertEquals (SampleActor.accuInt, List(7, 3, 1))
         assertEquals (SampleActor.accuString, List("x7", "x3", "x1"))
-        assertTrue (HiSpeedPool.getLatencyNano () > 0, "latnecy cannot be 0")
-        assertTrue (LowSpeedPool.getLatencyNano () > 0, "latnecy cannot be 0")
+        assertTrue (HiPriorityPool.getLatencyNano () > 0, "latnecy cannot be 0")
+        assertTrue (LowPriorityPool.getLatencyNano () > 0, "latnecy cannot be 0")
 
-        debug ("current latency of hiSpeedPool = "
-               + HiSpeedPool.getLatencyNano ())
+        debug ("current latency of hiPriorityPool = "
+               + HiPriorityPool.getLatencyNano ())
 
-        debug ("current latency of LowSpeedPool = "
-               + LowSpeedPool.getLatencyNano ())
+        debug ("current latency of LowPriorityPool = "
+               + LowPriorityPool.getLatencyNano ())
     }
 
     @Test (groups=Array("indie"))
@@ -55,7 +55,7 @@ class ActorTest extends BaseTest {
     private def sleep () = Thread.sleep (1000)
 }
 
-object SampleActor extends MywireActor with HiSpeedPool {
+object SampleActor extends MywireActor with HiPriorityPool {
     var accuString : List[String] = Nil
     var accuInt : List[Int] = Nil
 
@@ -73,7 +73,7 @@ object SampleActor extends MywireActor with HiSpeedPool {
     }
 }
 
-object ToStringActor extends MywireActor with LowSpeedPool {
+object ToStringActor extends MywireActor with LowPriorityPool {
     def act () = {
         case x => {
             debug ("Received message: " + x)
@@ -82,7 +82,7 @@ object ToStringActor extends MywireActor with LowSpeedPool {
     }
 }
 
-object UnstableActor extends MywireActor with HiSpeedPool {
+object UnstableActor extends MywireActor with HiPriorityPool {
     var sum = 0
 
     def act () = {

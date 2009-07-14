@@ -59,9 +59,7 @@ object Daemon extends DummyLogging {
 
         // Dying
         error ("About to die, but first... postmortum information:")
-
         dumpThreads
-        Thread.sleep (RuntimeConstants.sleepBeforeDie.asMilliseconds)
     }
 
     /**

@@ -8,7 +8,7 @@ import org.testng.Assert._
 import info.akshaal.mywire2.Predefs._
 import info.akshaal.mywire2.scheduler.{Scheduler, TimeOut}
 import info.akshaal.mywire2.test.common.BaseTest
-import info.akshaal.mywire2.actor.{MywireActor, HiSpeedPool}
+import info.akshaal.mywire2.actor.{MywireActor, HiPriorityPool}
 
 class SchedulerTest extends BaseTest {
     @Test (groups=Array("indie"))
@@ -74,7 +74,7 @@ class SchedulerTest extends BaseTest {
     }    
 }
 
-object OneTimeTestActor extends MywireActor with HiSpeedPool {
+object OneTimeTestActor extends MywireActor with HiPriorityPool {
     var executed = false
 
     def act () = {
@@ -85,7 +85,7 @@ object OneTimeTestActor extends MywireActor with HiSpeedPool {
     }
 }
 
-object OneTimeTestActor2 extends MywireActor with HiSpeedPool {
+object OneTimeTestActor2 extends MywireActor with HiPriorityPool {
     var executed = false
 
     def act () = {
@@ -96,7 +96,7 @@ object OneTimeTestActor2 extends MywireActor with HiSpeedPool {
     }
 }
 
-object RecurrentTestActor extends MywireActor with HiSpeedPool {
+object RecurrentTestActor extends MywireActor with HiPriorityPool {
     schedule payload "Hi" every 50 milliseconds
     
     var invocations = 0

@@ -13,39 +13,39 @@ import org.jetlang.core.BatchExecutor
 import org.jetlang.fibers.{PoolFiberFactory, Fiber}
 
 /**
- * Pool for low speed actors. Actors in this pool will be processed
+ * Pool for low priority actors. Actors in this pool will be processed
  * when there is no other important task to do.
  */
-trait LowSpeedPool {
+trait LowPriorityPool {
     private[actor] final def createFiber(actor : MywireActor): Fiber =
-        LowSpeedPool.create (actor)
+        LowPriorityPool.create (actor)
 
-    private[actor] val latency = LowSpeedPool.latency
+    private[actor] val latency = LowPriorityPool.latency
 }
 
 /**
- * Pool for low speed actors. Actors in this pool will be processed
+ * Pool for low prirority actors. Actors in this pool will be processed
  * when there is no other important task to do.
  */
-trait HiSpeedPool {
+trait HiPriorityPool {
     private[actor] final def createFiber(actor : MywireActor): Fiber =
-        HiSpeedPool.create (actor)
+        HiPriorityPool.create (actor)
 
-    private[actor] val latency = HiSpeedPool.latency
+    private[actor] val latency = HiPriorityPool.latency
 }
 
 /**
- * Pool itself for low speed actors. Actors in this pool will be processed
+ * Pool itself for low priority actors. Actors in this pool will be processed
  * when there is no other important task to do.
  */
-object LowSpeedPool extends Pool ("LowSpeedPool",
+object LowPriorityPool extends Pool ("LowPriorityPool",
                                   ThreadPriorityChanger.LowPriority ())
 
 /**
- * Pool for hi speed actors. Actors in this pool will be processed
+ * Pool for hi priority actors. Actors in this pool will be processed
  * as soon as possible.
  */
-object HiSpeedPool extends Pool ("HiSpeedPool",
+object HiPriorityPool extends Pool ("HiPriorityPool",
                                  ThreadPriorityChanger.HiPriority ())
 
 /**
