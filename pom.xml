@@ -29,6 +29,8 @@
         <!-- Mywire properties -->
         <mywire.os.priority.high>0</mywire.os.priority.high>
         <mywire.os.priority.low>19</mywire.os.priority.low>
+        <mywire.jdbc-properties.type>resource</mywire.jdbc-properties.type>
+        <mywire.jdbc-properties.location>mywire-jdbc.properties</mywire.jdbc-properties.location>
     </properties>
 
     <!-- = = = = = = = = = = Dependencies = = = = = = = = = = = = = -->
@@ -152,16 +154,12 @@
         </testResources>
 
         <plugins>
-            <!-- Eclipse -->
+            <!-- Resources -->
             <plugin>
-                <artifactId>maven-eclipse-plugin</artifactId>
-                <inherited>true</inherited>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
                 <configuration>
-                    <downloadSources>true</downloadSources>
-                    <downloadJavadocs>true</downloadJavadocs>
-                    <buildOutputDirectory>
-                        .eclipse/build
-                    </buildOutputDirectory>
+                    <escapeString>\</escapeString>
                 </configuration>
             </plugin>
 
@@ -179,7 +177,8 @@
                     <threadCount>3</threadCount>
                 </configuration>
             </plugin>
-	    
+
+            <!-- Scala -->
     	    <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
@@ -201,10 +200,17 @@
                 </executions>
             </plugin>
 
+            <!-- Eclipse -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-eclipse-plugin</artifactId>                
                 <configuration>
+                    <downloadSources>true</downloadSources>
+                    <downloadJavadocs>true</downloadJavadocs>
+                    <buildOutputDirectory>
+                        .eclipse/build
+                    </buildOutputDirectory>
+
                     <excludes>
                         <exclude>org.scala-lang:scala-library</exclude>
                     </excludes>

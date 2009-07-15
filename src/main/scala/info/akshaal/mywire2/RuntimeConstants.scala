@@ -21,12 +21,12 @@ object RuntimeConstants {
     /**
      * OS priority thread for low priority threads
      */
-    val lowPriorityThreadOSPriority = PreferencesLoader.getInt ("os.priority.low")
+    val lowPriorityThreadOSPriority = PrefLoader.getInt ("mywire.os.priority.low")
 
     /**
      * OS priority thread for hi priority threads
      */
-    val hiPriorityThreadOSPriority = PreferencesLoader.getInt ("os.priority.high")
+    val hiPriorityThreadOSPriority = PrefLoader.getInt ("mywire.os.priority.high")
 
     /**
      * Show warning if latency is higher than this value.
@@ -59,7 +59,7 @@ object RuntimeConstants {
     /**
      * Load preferences from property file.
      */
-    private object PreferencesLoader {
+    private object PrefLoader {
         val properties = new Properties ()
 
         withCloseableIO {

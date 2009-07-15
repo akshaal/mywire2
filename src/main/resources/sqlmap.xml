@@ -4,6 +4,8 @@
          "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
 
 <sqlMapConfig>
+    <properties ${mywire.jdbc-properties.type}="${mywire.jdbc-properties.location}" />
+
     <settings cacheModelsEnabled="true"
               enhancementEnabled="true"
               lazyLoadingEnabled="false"
@@ -14,11 +16,16 @@
 
     <transactionManager type="JDBC" >
         <dataSource type="SIMPLE">
-            <property name="JDBC.Driver" value="${driver}"/>
-            <property name="JDBC.ConnectionURL" value="${url}"/>
-            <property name="JDBC.Username" value="${username}"/>
-            <property name="JDBC.Password" value="${password}"/>
+            <property name="JDBC.Driver" value="\${mywire.jdbc.driver}"/>
+            <property name="JDBC.ConnectionURL" value="\${mywire.jdbc.url}"/>
+            <property name="JDBC.Username" value="\${mywire.jdbc.username}"/>
+            <property name="JDBC.Password" value="\${mywire.jdbc.password}"/>
             <property name="JDBC.DefaultAutoCommit" value="true" />
+            <property name="Pool.PingEnabled" value="true"/>
+            <property name="Pool.PingConnectionsNotUsedFor" value="10000"/>
+            <property name="Pool.PingQuery" value="SELECT 1 FROM dual"/>
         </dataSource>
     </transactionManager>
+
+    <sqlMap resource="sqlmaps/Log.xml" />
 </sqlMapConfig>
