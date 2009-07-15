@@ -8,7 +8,7 @@ import org.apache.log4j.spi.LoggingEvent
  */
 final class LogServiceAppender extends AppenderSkeleton {
     override def append (event : LoggingEvent) = {
-        LogActor ! (getLayout, event)
+        LogActor ! (event, System.nanoTime)
     }
     
     override def close () = {}
