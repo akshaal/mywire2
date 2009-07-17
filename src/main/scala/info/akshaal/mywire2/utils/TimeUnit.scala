@@ -8,6 +8,7 @@
 package info.akshaal.mywire2.utils
 
 final class TimeUnit (nano : Long) {
+    @inline
     def asNanoseconds       = nano
 
     lazy val asMicroseconds = nano / 1000L

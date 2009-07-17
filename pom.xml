@@ -188,7 +188,8 @@
                     <args>
                         <arg>-target:jvm-1.5</arg>
                         <arg>-optimise</arg>
-                    </args>
+                        <arg>-deprecation</arg>
+		    </args>
                 </configuration>                
                 <executions>
                     <execution>

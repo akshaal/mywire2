@@ -16,8 +16,6 @@ import info.akshaal.mywire2.logger.Logging
 import info.akshaal.mywire2.utils.{LatencyStat,
                                    ThreadPriorityChanger}
 
-// TODO: Make it stoppable
-
 private[scheduler] object SchedulerThread extends Thread with Logging {
     @volatile
     private var shutdownFlag = false
@@ -28,7 +26,10 @@ private[scheduler] object SchedulerThread extends Thread with Logging {
 
     def getLatencyNano () = latencyStat.getNano
 
-    def shutdown () = shutdownFlag = true
+    def shutdown () = {
+        shutdownFlag = true
+        locked { condition.signal () }
+    }
 
     override def run () {
         info ("Starting scheduler")
@@ -100,6 +101,7 @@ private[scheduler] object SchedulerThread extends Thread with Logging {
         }
     }
 
+    @inline
     private def locked[T] (code : => T) : T = {
         lock.lock
         try {

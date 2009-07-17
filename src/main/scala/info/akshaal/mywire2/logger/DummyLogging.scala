@@ -7,6 +7,8 @@
 
 package info.akshaal.mywire2.logger
 
+// TODO: Fix this crap
+
 trait DummyLogging extends Logging {
     protected[logger] override val logger = null
 

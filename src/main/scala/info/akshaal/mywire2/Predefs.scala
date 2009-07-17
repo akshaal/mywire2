@@ -17,6 +17,7 @@ object Predefs {
      * Create object of interface Runnable which will execute the given
      * block of code.
      */
+    @inline
     def mkRunnable (code : => Unit) = {
         new Runnable () {
             def run () {
@@ -25,6 +26,7 @@ object Predefs {
         }
     }
 
+    @inline
     def convertNull[T] (ref : T) (code : => T) : T = {
         if (ref == null) code else ref
     }
@@ -32,6 +34,7 @@ object Predefs {
     /**
      * Execute code with closeable IO.
      */
+    @inline
     def withCloseableIO[I <: Closeable, T] (createCode : => I) (code : I => T) : T = {
         var inputStream : I = null.asInstanceOf[I]
 
@@ -60,6 +63,7 @@ object Predefs {
     /**
      * Execute code with file input stream.
      */
+    @inline
     def withFileInputStream[T] (filename : String) (code : FileInputStream => T) : T = {
         var inputStream : FileInputStream = null
 
@@ -91,6 +95,7 @@ object Predefs {
      * an exception. If logger is not null, then logger is used to print
      * the message, otherwise message is shown through stderr stream.
      */
+    @inline
     def logIgnoredException (logger : Logger,
                              message : => String) (code : => Unit) =
     {
@@ -113,12 +118,14 @@ object Predefs {
     /**
      * Converts Long to TimeUnitFromNumberCreator
      */
+    @inline
     implicit def long2TimeUnitFromNumberCreator (x : Long) =
         new TimeUnitFromNumberCreator (x)
 
     /**
      * Converts Int to TimeUnitFromLongCreator
      */
+    @inline
     implicit def int2TimeUnitFromNumberCreator (x : Int) =
         new TimeUnitFromNumberCreator (x)
 
@@ -127,14 +134,28 @@ object Predefs {
      * it to TimeUnit object.
      */
     final class TimeUnitFromNumberCreator (x : Long) {
+	@inline
         def nanoseconds  = mk (x)
+
+	@inline
         def microseconds = mk (x * 1000L)
+
+	@inline
         def milliseconds = mk (x * 1000L * 1000L)
+
+	@inline
         def seconds      = mk (x * 1000L * 1000L * 1000L)
+
+	@inline
         def minutes      = mk (x * 1000L * 1000L * 1000L * 60L)
+
+	@inline
         def hours        = mk (x * 1000L * 1000L * 1000L * 60L * 60L)
+
+	@inline
         def days         = mk (x * 1000L * 1000L * 1000L * 60L * 60L * 24L)
 
+	@inline
         def mk (nano : Long) = new TimeUnit (nano)
     }
 }
