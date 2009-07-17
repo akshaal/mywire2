@@ -92,8 +92,7 @@ object Predefs {
 
     /**
      * Execute block of code and print a message if block of code throws
-     * an exception. If logger is not null, then logger is used to print
-     * the message, otherwise message is shown through stderr stream.
+     * an exception.
      */
     @inline
     def logIgnoredException (logger : Logger,
@@ -103,12 +102,7 @@ object Predefs {
             code
         } catch {
             case ex: Exception =>
-                if (logger == null) {
-                    System.err.println (message)
-                    ex.printStackTrace
-                } else {
-                    logger.error (message, ex)
-                }
+                logger.error (message, ex)
         }
     }
 

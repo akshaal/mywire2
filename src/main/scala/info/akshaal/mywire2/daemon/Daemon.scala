@@ -7,7 +7,7 @@ import mywire2.RuntimeConstants
 import scala.collection.JavaConversions._
 import scala.collection.mutable.Map
 
-import logger.DummyLogging
+import logger.{Logging, DummyLogging}
 
 /**
  * Daemon.
