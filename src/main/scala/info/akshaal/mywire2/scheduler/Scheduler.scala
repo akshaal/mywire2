@@ -10,7 +10,7 @@ package info.akshaal.mywire2.scheduler
 import info.akshaal.mywire2.Predefs._
 import info.akshaal.mywire2.utils.TimeUnit
 import info.akshaal.mywire2.logger.Logging
-import info.akshaal.mywire2.actor.MywireActor
+import info.akshaal.mywire2.actor.Actor
 
 /**
  * Scheduler class.
@@ -18,12 +18,12 @@ import info.akshaal.mywire2.actor.MywireActor
 object Scheduler extends Logging {
     SchedulerThread.start
 
-    def in (actor : MywireActor, payload : Any, timeUnit : TimeUnit) =
+    def in (actor : Actor, payload : Any, timeUnit : TimeUnit) =
         SchedulerThread.schedule (new OneTimeSchedule (actor,
                                   payload,
                                   timeUnit.asNanoseconds + System.nanoTime))
   
-    def every (actor : MywireActor, payload : Any, period : TimeUnit) = {
+    def every (actor : Actor, payload : Any, period : TimeUnit) = {
         val periodNano = period.asNanoseconds
         val curNanoTime = System.nanoTime
         val semiStableNumber = actor.getClass.getName.toString.hashCode

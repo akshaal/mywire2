@@ -10,14 +10,14 @@ import scheduler.TimeOut
 import mywire2.RuntimeConstants
 
 private[actor] object Monitoring {
-    def add (actor : MywireActor) = {
+    def add (actor : Actor) = {
         val cmd = Add (actor)
 
         MonitoringActor1 ! cmd
         MonitoringActor2 ! cmd
     }
 
-    def remove (actor : MywireActor) = {
+    def remove (actor : Actor) = {
         val cmd = Remove (actor)
         
         MonitoringActor1 ! cmd
@@ -26,8 +26,8 @@ private[actor] object Monitoring {
 }
 
 private[actor] abstract sealed class MonitoringCommand extends NotNull
-private[actor] final case class Add (actor : MywireActor) extends MonitoringCommand
-private[actor] final case class Remove (actor : MywireActor) extends MonitoringCommand
+private[actor] final case class Add (actor : Actor) extends MonitoringCommand
+private[actor] final case class Remove (actor : Actor) extends MonitoringCommand
 private[actor] case object Ping extends MonitoringCommand
 private[actor] case object Pong extends MonitoringCommand
 private[actor] case object Monitor extends MonitoringCommand
@@ -40,13 +40,13 @@ private[actor] object MonitoringActor2 extends MonitoringActor {
     MonitoringActor1 ! (Add (this))
 }
 
-private[actor] class MonitoringActor extends MywireActor with LowPriorityPool {
+private[actor] class MonitoringActor extends LowPriorityActor {
     schedule payload Monitor every RuntimeConstants.actorsMonitoringInterval
 
     startSkippingMonitoring
 
-    private var currentActors : Set[MywireActor] = new HashSet[MywireActor]
-    private var monitoringActors : Set[MywireActor] = new HashSet[MywireActor]
+    private var currentActors : Set[Actor] = new HashSet[Actor]
+    private var monitoringActors : Set[Actor] = new HashSet[Actor]
 
     def act () = {
         case Add (actor)    => currentActors += actor

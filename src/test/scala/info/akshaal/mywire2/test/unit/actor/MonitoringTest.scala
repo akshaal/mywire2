@@ -1,6 +1,6 @@
 package info.akshaal.mywire2.test.unit.actor
 
-import mywire2.actor.{MywireActor, HiPriorityPool}
+import mywire2.actor.HiPriorityActor
 import mywire2.daemon.Daemon
 
 import org.testng.annotations.Test
@@ -25,7 +25,7 @@ class MonitoringTest {
     }
 }
 
-object BadActor extends MywireActor with HiPriorityPool {
+object BadActor extends HiPriorityActor {
     def act () = {
         case x => {
             debug ("Starting to sleep")

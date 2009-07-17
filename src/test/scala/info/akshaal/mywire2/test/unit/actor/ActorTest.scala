@@ -12,7 +12,8 @@ import org.testng.annotations.Test
 import org.testng.Assert._
 
 import info.akshaal.mywire2.test.common.BaseTest
-import info.akshaal.mywire2.actor.{MywireActor, HiPriorityPool, LowPriorityPool}
+import info.akshaal.mywire2.actor.{HiPriorityActor, LowPriorityActor}
+import info.akshaal.mywire2.utils.{HiPriorityPool, LowPriorityPool}
 
 class ActorTest extends BaseTest {
     @Test (groups=Array("indie"))
@@ -28,14 +29,14 @@ class ActorTest extends BaseTest {
 
         assertEquals (SampleActor.accuInt, List(7, 3, 1))
         assertEquals (SampleActor.accuString, List("x7", "x3", "x1"))
-        assertTrue (HiPriorityPool.getLatencyNano () > 0, "latnecy cannot be 0")
-        assertTrue (LowPriorityPool.getLatencyNano () > 0, "latnecy cannot be 0")
+        assertTrue (HiPriorityPool.latency.getNano () > 0, "latnecy cannot be 0")
+        assertTrue (LowPriorityPool.latency.getNano () > 0, "latnecy cannot be 0")
 
         debug ("current latency of hiPriorityPool = "
-               + HiPriorityPool.getLatencyNano ())
+               + HiPriorityPool.latency.getNano)
 
         debug ("current latency of LowPriorityPool = "
-               + LowPriorityPool.getLatencyNano ())
+               + LowPriorityPool.latency.getNano)
     }
 
     @Test (groups=Array("indie"))
@@ -55,7 +56,7 @@ class ActorTest extends BaseTest {
     private def sleep () = Thread.sleep (1000)
 }
 
-object SampleActor extends MywireActor with HiPriorityPool {
+object SampleActor extends HiPriorityActor {
     var accuString : List[String] = Nil
     var accuInt : List[Int] = Nil
 
@@ -73,7 +74,7 @@ object SampleActor extends MywireActor with HiPriorityPool {
     }
 }
 
-object ToStringActor extends MywireActor with LowPriorityPool {
+object ToStringActor extends LowPriorityActor {
     def act () = {
         case x => {
             debug ("Received message: " + x)
@@ -82,7 +83,7 @@ object ToStringActor extends MywireActor with LowPriorityPool {
     }
 }
 
-object UnstableActor extends MywireActor with HiPriorityPool {
+object UnstableActor extends HiPriorityActor {
     var sum = 0
 
     def act () = {

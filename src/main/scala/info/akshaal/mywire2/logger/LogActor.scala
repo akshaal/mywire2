@@ -5,14 +5,14 @@ import org.apache.log4j.Level
 
 import java.util.Date
 
-import info.akshaal.mywire2.actor.{MywireActor, LowPriorityPool}
+import info.akshaal.mywire2.actor.LowPriorityActor
 import info.akshaal.mywire2.dao.LogDao
 import info.akshaal.mywire2.domain.LogRecord
 
 /**
  * Logs message.
  */
-object LogActor extends MywireActor with LowPriorityPool with DummyLogging {
+object LogActor extends LowPriorityActor {
     def act () = {
         case (event : LoggingEvent, nano : Long) => {
             val stack = event.getThrowableStrRep
@@ -39,7 +39,6 @@ object LogActor extends MywireActor with LowPriorityPool with DummyLogging {
         case level =>
             throw new IllegalArgumentException ("Unsupported level: " + level)
     }
-
 
     start ()
 }

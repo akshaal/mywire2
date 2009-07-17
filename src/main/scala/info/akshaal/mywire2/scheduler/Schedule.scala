@@ -7,12 +7,12 @@
 
 package info.akshaal.mywire2.scheduler
 
-import info.akshaal.mywire2.actor.MywireActor
+import info.akshaal.mywire2.actor.Actor
 
 /**
  * Abstract schedule item.
  */
-private[scheduler] abstract sealed class Schedule (val actor : MywireActor,
+private[scheduler] abstract sealed class Schedule (val actor : Actor,
                                                    val payload : Any,
                                                    val nanoTime : Long)
                             extends Comparable[Schedule] with NotNull
@@ -25,7 +25,7 @@ private[scheduler] abstract sealed class Schedule (val actor : MywireActor,
 /**
  * Object represent schedule item which will be run only once.
  */
-final private[scheduler] class OneTimeSchedule (actor : MywireActor,
+final private[scheduler] class OneTimeSchedule (actor : Actor,
                                                 payload : Any,
                                                 nanoTime : Long)
                             extends Schedule (actor, payload, nanoTime)
@@ -41,7 +41,7 @@ final private[scheduler] class OneTimeSchedule (actor : MywireActor,
 /**
  * Object represent schedule item which for recurrent events.
  */
-final private[scheduler] class RecurrentSchedule (actor : MywireActor,
+final private[scheduler] class RecurrentSchedule (actor : Actor,
                                                   payload : Any,
                                                   nanoTime : Long,
                                                   period : Long)

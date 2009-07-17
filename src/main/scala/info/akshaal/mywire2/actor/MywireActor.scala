@@ -2,25 +2,29 @@ package info.akshaal.mywire2.actor
 
 import info.akshaal.mywire2.Predefs._
 import info.akshaal.mywire2.logger.Logging
-import info.akshaal.mywire2.utils.LatencyStat
+import info.akshaal.mywire2.utils.{LatencyStat,
+                                   HiPriorityPool,
+                                   LowPriorityPool,
+                                   Pool}
 
-import org.jetlang.fibers.Fiber
+import org.jetlang.fibers.{PoolFiberFactory, Fiber}
+import org.jetlang.core.BatchExecutor
+
+/**
+ * Low priority actor.
+ */
+abstract class LowPriorityActor extends Actor (LowPriorityPool)
+
+/**
+ * Hi priority actor.
+ */
+abstract class HiPriorityActor extends Actor (HiPriorityPool)
 
 /**
  * Very simple and hopefully fast implementation of actors
  */
-trait MywireActor extends Logging {
-    protected val schedule = new ActorSchedule (this)
-
-    /**
-     * A fiber used by this actor.
-     */
-    private val fiber = createFiber (this)
-
-    /**
-     * Current sender. Only valid when act method is called.
-     */
-    protected var sender : MywireActor = null
+abstract class Actor (pool : Pool) extends Logging {
+    protected final val schedule = new ActorSchedule (this)
 
     /**
      * Implementing class is supposed to provide a body of the actor.
@@ -28,14 +32,20 @@ trait MywireActor extends Logging {
     protected def act(): PartialFunction[Any, Unit]
 
     /**
-     * Must be provided to create a fiber.
+     * A fiber used by this actor.
      */
-    private[actor] def createFiber (actor : MywireActor): Fiber
+    private val fiber =
+        new PoolFiberFactory (pool.executors).create (new ActorExecutor (this))
 
     /**
-     * Latency to be used for latency measurements.
+     * Current sender. Only valid when act method is called.
      */
-    private[actor] val latency : LatencyStat
+    protected var sender : Actor = null
+
+    /**
+     * Latency.
+     */
+    private val latency = pool.latency
 
     /**
      * Send a message to the actor.
@@ -73,7 +83,7 @@ trait MywireActor extends Logging {
         fiber.execute (runner)
     }
 
-    private def invokeAct (msg : Any, sentFrom : MywireActor) = {
+    private def invokeAct (msg : Any, sentFrom : Actor) = {
         if (act.isDefinedAt (msg)) {
             // Defined
 
@@ -114,4 +124,30 @@ trait MywireActor extends Logging {
         fiber.dispose
         Monitoring.remove (this)
     }
+}
+
+/**
+ * Executor of queued actors.
+ */
+private[actor] class ActorExecutor (actor : Actor) extends BatchExecutor {
+    final def execute (commands: Array[Runnable]) = {
+        // Remember the current actor in thread local variable.
+        // So later it may be referenced from ! method of other actors
+        ThreadLocalState.current.set(actor)
+
+        // Execute
+        for (command <- commands) {
+            command.run
+        }
+
+        // Reset curren actor
+        ThreadLocalState.current.set(null)
+    }
+}
+
+/**
+ * Thread local state of the actor environment.
+ */
+private[actor] object ThreadLocalState {
+    val current = new ThreadLocal[Actor]()
 }
