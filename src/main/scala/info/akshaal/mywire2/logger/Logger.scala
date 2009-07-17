@@ -6,7 +6,7 @@ import org.slf4j.{Logger => SlfLogger}
 /**
  * Abstract logger
  */
-sealed abstract class Logger {
+sealed abstract class Logger extends NotNull {
     def debug (str : String) : Unit
     def info (str : String) : Unit
     def warn (str : String) : Unit

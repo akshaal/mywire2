@@ -13,7 +13,7 @@ import info.akshaal.mywire2.logger.Logger
 /**
  * Help trace latency.
  */
-final class LatencyStat {
+final class LatencyStat extends NotNull {
     private val frame =
         new LongValueFrame (RuntimeConstants.latencyStateFrameSize)
 

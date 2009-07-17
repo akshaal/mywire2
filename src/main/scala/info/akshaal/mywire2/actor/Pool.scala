@@ -52,7 +52,7 @@ object HiPriorityPool extends Pool ("HiPriorityPool",
  * Pool class to be used by actors.
  */
 private[actor] sealed class Pool (name : String,
-                           priority : ThreadPriorityChanger.Priority) {
+                                  priority : ThreadPriorityChanger.Priority) {
     private[actor] val latency = new LatencyStat
 
     private val numberOfThreadInPool =

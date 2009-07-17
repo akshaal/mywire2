@@ -10,6 +10,7 @@ sealed case class LogRecord (@BeanProperty val time       : Date,
                              @BeanProperty val msg        : String,
                              @BeanProperty val thread     : String,
                              @BeanProperty val throwable  : String)
+                    extends NotNull
     
 object LogRecord {
     val debugId = 0

@@ -25,7 +25,7 @@ private[actor] object Monitoring {
     }
 }
 
-private[actor] abstract sealed class MonitoringCommand
+private[actor] abstract sealed class MonitoringCommand extends NotNull
 private[actor] final case class Add (actor : MywireActor) extends MonitoringCommand
 private[actor] final case class Remove (actor : MywireActor) extends MonitoringCommand
 private[actor] case object Ping extends MonitoringCommand

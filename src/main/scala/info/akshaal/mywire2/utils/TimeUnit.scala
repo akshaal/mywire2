@@ -7,7 +7,7 @@
 
 package info.akshaal.mywire2.utils
 
-final class TimeUnit (nano : Long) {
+final class TimeUnit (nano : Long) extends NotNull {
     @inline
     def asNanoseconds       = nano
 

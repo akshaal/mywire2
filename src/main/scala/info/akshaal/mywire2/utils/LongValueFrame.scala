@@ -11,7 +11,7 @@ package info.akshaal.mywire2.utils
  * Frame of values with maximum fixed number of elements.
  * Frame maintains sum of elements.
  */
-final class LongValueFrame (maximum : Int) {
+final class LongValueFrame (maximum : Int) extends NotNull {
     require (maximum > 0, "maximum must be positive number")
 
     private val array = new Array[Long] (maximum)

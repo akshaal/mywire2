@@ -51,4 +51,4 @@ object Scheduler extends Logging {
  * Object of this class will be used as a holder of payload when message
  * is delivered.
  */
-sealed case class TimeOut (val payload : Any)
+sealed case class TimeOut (val payload : Any) extends NotNull

@@ -27,20 +27,20 @@ object Predefs {
     }
 
     @inline
-    def convertNull[T] (ref : T) (code : => T) : T = {
-        if (ref == null) code else ref
+    def convertNull[T] (ref : T) (code : => (T with NotNull)) : (T with NotNull) = {
+        if (ref == null) code else ref.asInstanceOf[T with NotNull]
     }
 
     /**
      * Execute code with closeable IO.
      */
     @inline
-    def withCloseableIO[I <: Closeable, T] (createCode : => I) (code : I => T) : T = {
+    def withCloseableIO[I <: Closeable, T] (createCode : => (I with NotNull)) (code : I with NotNull => T) : T = {
         var inputStream : I = null.asInstanceOf[I]
 
         try {
             inputStream = createCode
-            code (inputStream)
+            code (inputStream.asInstanceOf[I with NotNull])
         } catch {
             case ex : IOException =>
                 throw new IOException ("Error during access to input stream: "
@@ -53,36 +53,6 @@ object Predefs {
                 } catch {
                     case ex : IOException =>
                         throw new IOException ("Error closing input stream: "
-                                               + ": " + ex.getMessage,
-                                               ex)
-                }
-            }
-        }
-    }
-
-    /**
-     * Execute code with file input stream.
-     */
-    @inline
-    def withFileInputStream[T] (filename : String) (code : FileInputStream => T) : T = {
-        var inputStream : FileInputStream = null
-
-        try {
-            inputStream = new FileInputStream (filename)
-            code (inputStream)
-        } catch {
-            case ex : IOException =>
-                throw new IOException ("Error during access to file: "
-                                       + filename + ": " + ex.getMessage,
-                                       ex)
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close ()
-                } catch {
-                    case ex : IOException =>
-                        throw new IOException ("Error closing file: "
-                                               + filename
                                                + ": " + ex.getMessage,
                                                ex)
                 }
@@ -127,29 +97,29 @@ object Predefs {
      * Wrapper for Long that makes it possible to convert
      * it to TimeUnit object.
      */
-    final class TimeUnitFromNumberCreator (x : Long) {
-	@inline
+    final class TimeUnitFromNumberCreator (x : Long) extends NotNull {
+        @inline
         def nanoseconds  = mk (x)
 
-	@inline
+        @inline
         def microseconds = mk (x * 1000L)
 
-	@inline
+        @inline
         def milliseconds = mk (x * 1000L * 1000L)
 
-	@inline
+        @inline
         def seconds      = mk (x * 1000L * 1000L * 1000L)
 
-	@inline
+        @inline
         def minutes      = mk (x * 1000L * 1000L * 1000L * 60L)
 
-	@inline
+        @inline
         def hours        = mk (x * 1000L * 1000L * 1000L * 60L * 60L)
 
-	@inline
+        @inline
         def days         = mk (x * 1000L * 1000L * 1000L * 60L * 60L * 24L)
 
-	@inline
+        @inline
         def mk (nano : Long) = new TimeUnit (nano)
     }
 }

@@ -15,7 +15,7 @@ import info.akshaal.mywire2.actor.MywireActor
 private[scheduler] abstract sealed class Schedule (val actor : MywireActor,
                                                    val payload : Any,
                                                    val nanoTime : Long)
-                            extends Comparable[Schedule]
+                            extends Comparable[Schedule] with NotNull
 {
     def nextSchedule () : Option[Schedule]
 

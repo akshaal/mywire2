@@ -31,12 +31,12 @@ object RuntimeConstants {
     /**
      * Show warning if latency is higher than this value.
      */
-    val warnLatency = 40.milliseconds
+    val warnLatency = 100.milliseconds
 
     /**
      * Show warning if actor completed its job in time exceeding this limit.
      */
-    val warnActorTime = 400.microseconds
+    val warnActorTime = 10.milliseconds
 
     /**
      * If an event should be processed in this or smaller number of nanoseconds,
@@ -49,12 +49,12 @@ object RuntimeConstants {
      * If some actor doesn't respond with this time, then application
      * is considered as broken and will be restarted.
      */
-    val actorsMonitoringInterval = 1.seconds
+    val actorsMonitoringInterval = 2.seconds
 
     /**
      * Interval between update of the daemon status.
      */
-    val daemonStatusUpdateInterval = 3.seconds
+    val daemonStatusUpdateInterval = 5.seconds
 
     /**
      * Load preferences from property file.
