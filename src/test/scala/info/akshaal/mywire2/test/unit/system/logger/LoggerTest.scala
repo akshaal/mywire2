@@ -8,6 +8,8 @@ import test.common.BaseTest
 
 import org.testng.annotations.Test
 
+// TODO: Test appender
+
 class LoggerTest extends BaseTest {  
     @Test (groups=Array("indie"))
     def testLoggerLevels () = {

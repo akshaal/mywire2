@@ -5,7 +5,7 @@
 
 <sqlMap namespace="Log">
     <insert id="insertLogRecord"
-            parameterClass="info.akshaal.mywire2.domain.LogRecord">
+            parameterClass="info.akshaal.mywire2.system.domain.LogRecord">
         INSERT DELAYED INTO log SET time            = #time#,
                                     nano            = #nano#,
                                     log_level_id    = #levelId#,

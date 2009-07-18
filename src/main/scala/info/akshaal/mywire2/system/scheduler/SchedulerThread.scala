@@ -86,7 +86,7 @@ private[scheduler] object SchedulerThread extends Thread with Logging {
         val latency = latencyStat.measureNano(item.nanoTime)
         LatencyStat.inform (logger,
                             "Event triggered: " + item,
-                            RuntimeConstants.warnLatency.asNanoseconds,
+                            RuntimeConstants.warnSchedulerLatency.asNanoseconds,
                             latency)
 
         // Send message to actor

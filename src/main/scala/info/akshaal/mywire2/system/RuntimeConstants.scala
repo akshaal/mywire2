@@ -31,12 +31,29 @@ private[system] object RuntimeConstants {
     /**
      * Show warning if latency is higher than this value.
      */
-    val warnLatency = 100.milliseconds
+    val warnHiPriorityActorLatency = 5.milliseconds
 
     /**
-     * Show warning if actor completed its job in time exceeding this limit.
+     * Show warning if latency is higher than this value.
      */
-    val warnActorTime = 10.milliseconds
+    val warnLowPriorityActorLatency = 100.milliseconds
+
+    /**
+     * Show warning if latency is higher than this value.
+     */
+    val warnSchedulerLatency = 200.microseconds
+
+    /**
+     * Show warning if hi priority actor completed its job in
+     * time exceeding this limit.
+     */
+    val warnHiPriorityActorTime = 1.milliseconds
+
+    /**
+     * Show warning if hi priority actor completed its job in
+     * time exceeding this limit.
+     */
+    val warnLowPriorityActorTime = 400.milliseconds
 
     /**
      * If an event should be processed in this or smaller number of nanoseconds,
@@ -55,6 +72,11 @@ private[system] object RuntimeConstants {
      * Interval between update of the daemon status.
      */
     val daemonStatusUpdateInterval = 5.seconds
+
+    /**
+     * Ignore time measurements (latencies) in first moments after the start
+     */
+    val ignoreLatencyStatsTime = 1.seconds
 
     /**
      * Load preferences from property file.

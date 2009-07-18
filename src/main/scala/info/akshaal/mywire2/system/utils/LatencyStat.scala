@@ -18,7 +18,11 @@ private[system] final class LatencyStat extends NotNull {
         new LongValueFrame (RuntimeConstants.latencyStateFrameSize)
 
     @inline
-    def measureNano (exp : Long) = {
+    def measureNano (exp : Long) : Long = {
+        if (System.nanoTime < LatencyStat.allowedAfter) {
+            return 0L
+        }
+
         val latency = LatencyStat.calculateLatencyNano (exp)
         frame.put (latency)
         latency
@@ -29,6 +33,9 @@ private[system] final class LatencyStat extends NotNull {
 }
 
 private[system] object LatencyStat {
+    private[utils] val allowedAfter =
+        System.nanoTime + RuntimeConstants.ignoreLatencyStatsTime.asNanoseconds
+
     @inline
     def expectationInNano (nano : Long) : Long =
         System.nanoTime() + nano
@@ -55,6 +62,10 @@ private[system] object LatencyStat {
                 allowedLatency : Long,
                 latency : Long) : Unit =
     {
+        if (System.nanoTime < LatencyStat.allowedAfter) {
+            return;
+        }
+
         if (latency > allowedLatency) {
             logger.warn (message + ". Latency: " + latency + " ns")
         } else {

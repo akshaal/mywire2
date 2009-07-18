@@ -2,7 +2,8 @@ package info.akshaal.mywire2.system.actor
 
 import mywire2.Predefs._
 import logger.Logging
-import utils.{LatencyStat, HiPriorityPool, LowPriorityPool, Pool}
+import utils.{LatencyStat, HiPriorityPool, LowPriorityPool, Pool, TimeUnit}
+import system.RuntimeConstants
 
 import org.jetlang.fibers.{PoolFiberFactory, Fiber}
 import org.jetlang.core.BatchExecutor
@@ -10,17 +11,25 @@ import org.jetlang.core.BatchExecutor
 /**
  * Low priority actor.
  */
-abstract class LowPriorityActor extends Actor (LowPriorityPool)
+abstract class LowPriorityActor
+                    extends Actor (LowPriorityPool,
+                                   RuntimeConstants.warnLowPriorityActorTime,
+                                   RuntimeConstants.warnLowPriorityActorLatency)
 
 /**
  * Hi priority actor.
  */
-abstract class HiPriorityActor extends Actor (HiPriorityPool)
+abstract class HiPriorityActor
+                    extends Actor (HiPriorityPool,
+                                   RuntimeConstants.warnHiPriorityActorTime,
+                                   RuntimeConstants.warnHiPriorityActorLatency)
 
 /**
  * Very simple and hopefully fast implementation of actors
  */
-abstract class Actor (pool : Pool) extends Logging {
+abstract class Actor (pool : Pool,
+                      warnActorTime : TimeUnit,
+                      warnLatency : TimeUnit) extends Logging {
     protected final val schedule = new ActorSchedule (this)
 
     /**
@@ -56,7 +65,7 @@ abstract class Actor (pool : Pool) extends Logging {
             val runLatency = latency.measureNano (runExpectation)
             LatencyStat.inform (logger,
                                 "Actor started for message: " + msg,
-                                RuntimeConstants.warnLatency.asNanoseconds,
+                                warnLatency.asNanoseconds,
                                 runLatency)
 
             val completeExpectation = LatencyStat.expectationInNano (0)
@@ -73,7 +82,7 @@ abstract class Actor (pool : Pool) extends Logging {
             
             LatencyStat.inform (logger,
                                 "Actor completed for message: " + msg,
-                                RuntimeConstants.warnActorTime.asNanoseconds,
+                                warnActorTime.asNanoseconds,
                                 completeLatency)
         }
 

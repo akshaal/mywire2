@@ -29,9 +29,7 @@ class ActorTest extends BaseTest {
 
         assertEquals (SampleActor.accuInt, List(7, 3, 1))
         assertEquals (SampleActor.accuString, List("x7", "x3", "x1"))
-        assertTrue (TestHelper.getHiPriorityPoolLatency > 0, "latnecy cannot be 0")
-        assertTrue (TestHelper.getLowPriorityPoolLatency > 0, "latnecy cannot be 0")
-
+        
         debug ("current latency of hiPriorityPool = "
                + TestHelper.getHiPriorityPoolLatency)
 
