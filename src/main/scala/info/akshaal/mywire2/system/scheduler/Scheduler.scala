@@ -42,9 +42,9 @@ object Scheduler extends Logging {
                                                          periodNano))
     }
 
-    def getLatencyNano () = SchedulerThread.getLatencyNano
+    private[system] def getLatencyNano () = SchedulerThread.getLatencyNano
 
-    def shutdown () = SchedulerThread.shutdown
+    private[system] def shutdown () = SchedulerThread.shutdown
 }
 
 /**

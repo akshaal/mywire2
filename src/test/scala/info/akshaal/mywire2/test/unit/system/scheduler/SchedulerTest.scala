@@ -9,11 +9,12 @@ import mywire2.Predefs._
 import mywire2.system.scheduler.{Scheduler, TimeOut}
 import test.common.BaseTest
 import mywire2.system.actor.HiPriorityActor
+import mywire2.system.test.TestHelper
 
 class SchedulerTest extends BaseTest {
     @Test (groups=Array("indie"))
     def testRecurrentScheduling () = {
-        RecurrentTestActor.start ()
+        TestHelper.startActor (RecurrentTestActor)
 
         RecurrentTestActor.invocations = 0
         Thread.sleep (400)
@@ -30,15 +31,15 @@ class SchedulerTest extends BaseTest {
         assertTrue (RecurrentTestActor.invocations <= 18,
                     "After 800ms, RecurrentTestActor should be executed 18 at the most")
 
-        RecurrentTestActor.exit ()
+        TestHelper.exitActor (RecurrentTestActor)
 
-        debug ("Scheduler latency " + Scheduler.getLatencyNano)
+        debug ("Scheduler latency " + TestHelper.getSchedulerLatencyNano)
     }
 
     @Test (groups=Array("indie"))
     def testOneTimeScheduling () = {
-        OneTimeTestActor.start
-        OneTimeTestActor2.start
+        TestHelper.startActor (OneTimeTestActor)
+        TestHelper.startActor (OneTimeTestActor2)
 
         Scheduler.in (OneTimeTestActor, 123, 130.milliseconds)
         Scheduler.in (OneTimeTestActor2, 234, 50.milliseconds)
@@ -67,10 +68,10 @@ class SchedulerTest extends BaseTest {
         assertTrue (OneTimeTestActor2.executed,
                     "Actor must be executed at this point")
 
-        OneTimeTestActor.exit
-        OneTimeTestActor2.exit
+        TestHelper.exitActor (OneTimeTestActor)
+        TestHelper.exitActor (OneTimeTestActor2)
 
-        debug ("Scheduler latency " + Scheduler.getLatencyNano)
+        debug ("Scheduler latency " + TestHelper.getSchedulerLatencyNano)
     }    
 }
 
