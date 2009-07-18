@@ -18,7 +18,7 @@ class MonitoringTest {
         BadActor ! "Hi"
         assertFalse (Daemon.isDying, "The application must not be dying at this moment!")
 
-        Thread.sleep (RuntimeConstants.actorsMonitoringInterval.asMilliseconds * 2)
+        Thread.sleep (RuntimeConstants.actorsMonitoringInterval.asMilliseconds * 3)
         assertTrue (Daemon.isDying, "The application must be dying at this moment!")
 
         BadActor.exit
@@ -29,7 +29,7 @@ object BadActor extends HiPriorityActor {
     def act () = {
         case x => {
             debug ("Starting to sleep")
-            Thread.sleep (3000) // Sleep 3000 ms
+            Thread.sleep (RuntimeConstants.actorsMonitoringInterval.asMilliseconds * 2)
             debug ("We slept well")
         }
     }

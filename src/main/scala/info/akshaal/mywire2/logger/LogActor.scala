@@ -12,7 +12,7 @@ import info.akshaal.mywire2.domain.LogRecord
 /**
  * Logs message.
  */
-object LogActor extends LowPriorityActor {
+object LogActor extends LowPriorityActor with DummyLogging {
     def act () = {
         case (event : LoggingEvent, nano : Long) => {
             val stack = event.getThrowableStrRep
