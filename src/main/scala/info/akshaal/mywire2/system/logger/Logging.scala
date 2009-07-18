@@ -5,7 +5,7 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.logger
+package info.akshaal.mywire2.system.logger
 
 trait Logging {
     protected[logger] val logger = Logger.get (this)

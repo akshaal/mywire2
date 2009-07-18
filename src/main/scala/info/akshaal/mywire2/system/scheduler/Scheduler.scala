@@ -5,12 +5,12 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.scheduler
+package info.akshaal.mywire2.system.scheduler
 
-import info.akshaal.mywire2.Predefs._
-import info.akshaal.mywire2.utils.TimeUnit
-import info.akshaal.mywire2.logger.Logging
-import info.akshaal.mywire2.actor.Actor
+import mywire2.Predefs._
+import utils.TimeUnit
+import logger.Logging
+import actor.Actor
 
 /**
  * Scheduler class.

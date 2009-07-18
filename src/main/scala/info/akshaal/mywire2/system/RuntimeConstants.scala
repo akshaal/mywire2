@@ -1,12 +1,12 @@
 /** Akshaal (C) 2009. GNU GPL. http://akshaal.info */
 
-package info.akshaal.mywire2
+package info.akshaal.mywire2.system
 
 import java.util.Properties
 
-import info.akshaal.mywire2.Predefs._
+import mywire2.Predefs._
 
-object RuntimeConstants {
+private[system] object RuntimeConstants {
     /**
      * For each thread pool number of threads created is equal to
      * nunber of processes multiplied to this constant.

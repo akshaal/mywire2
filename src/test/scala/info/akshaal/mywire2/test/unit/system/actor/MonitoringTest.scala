@@ -1,7 +1,8 @@
-package info.akshaal.mywire2.test.unit.actor
+package info.akshaal.mywire2.test.unit.system.actor
 
-import mywire2.actor.HiPriorityActor
-import mywire2.daemon.Daemon
+import mywire2.system.actor.HiPriorityActor
+import mywire2.system.daemon.Daemon
+import mywire2.system.RuntimeConstants
 
 import org.testng.annotations.Test
 import org.testng.Assert._

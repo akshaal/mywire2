@@ -9,8 +9,8 @@ package info.akshaal.mywire2
 
 import java.io.{FileInputStream, IOException, Closeable}
 
-import info.akshaal.mywire2.logger.Logger
-import info.akshaal.mywire2.utils.TimeUnit
+import system.logger.Logger
+import system.utils.TimeUnit
 
 object Predefs {
     /**

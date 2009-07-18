@@ -1,7 +1,7 @@
-package info.akshaal.mywire2.test.unit.daemon
+package info.akshaal.mywire2.test.unit.system.daemon
 
-import info.akshaal.mywire2.daemon.Daemon
-import info.akshaal.mywire2.test.common.BaseTest
+import mywire2.system.daemon.Daemon
+import test.common.BaseTest
 
 import org.testng.annotations.Test
 

@@ -5,15 +5,15 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.utils
+package info.akshaal.mywire2.system.utils
 
-import info.akshaal.mywire2.RuntimeConstants
-import info.akshaal.mywire2.logger.Logger
+import system.RuntimeConstants
+import logger.Logger
 
 /**
  * Help trace latency.
  */
-final class LatencyStat extends NotNull {
+private[system] final class LatencyStat extends NotNull {
     private val frame =
         new LongValueFrame (RuntimeConstants.latencyStateFrameSize)
 
@@ -28,7 +28,7 @@ final class LatencyStat extends NotNull {
     def getNano () : Long = frame.average()
 }
 
-object LatencyStat {
+private[system] object LatencyStat {
     @inline
     def expectationInNano (nano : Long) : Long =
         System.nanoTime() + nano

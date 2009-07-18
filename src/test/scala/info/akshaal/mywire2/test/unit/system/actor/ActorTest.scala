@@ -11,9 +11,9 @@ import collection.immutable.List
 import org.testng.annotations.Test
 import org.testng.Assert._
 
-import info.akshaal.mywire2.test.common.BaseTest
-import info.akshaal.mywire2.actor.{HiPriorityActor, LowPriorityActor}
-import info.akshaal.mywire2.utils.{HiPriorityPool, LowPriorityPool}
+import test.common.BaseTest
+import mywire2.system.actor.{HiPriorityActor, LowPriorityActor}
+import mywire2.system.utils.{HiPriorityPool, LowPriorityPool}
 
 class ActorTest extends BaseTest {
     @Test (groups=Array("indie"))

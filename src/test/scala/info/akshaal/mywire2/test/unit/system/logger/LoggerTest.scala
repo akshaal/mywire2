@@ -2,9 +2,9 @@
 
 package info.akshaal.mywire2.test.unit.logger
 
-import info.akshaal.mywire2.daemon.Daemon
-import info.akshaal.mywire2.logger.Logger
-import info.akshaal.mywire2.test.common.BaseTest
+import mywire2.system.daemon.Daemon
+import mywire2.system.logger.Logger
+import test.common.BaseTest
 
 import org.testng.annotations.Test
 

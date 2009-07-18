@@ -1,11 +1,8 @@
-package info.akshaal.mywire2.actor
+package info.akshaal.mywire2.system.actor
 
-import info.akshaal.mywire2.Predefs._
-import info.akshaal.mywire2.logger.Logging
-import info.akshaal.mywire2.utils.{LatencyStat,
-                                   HiPriorityPool,
-                                   LowPriorityPool,
-                                   Pool}
+import mywire2.Predefs._
+import logger.Logging
+import utils.{LatencyStat, HiPriorityPool, LowPriorityPool, Pool}
 
 import org.jetlang.fibers.{PoolFiberFactory, Fiber}
 import org.jetlang.core.BatchExecutor
@@ -106,12 +103,15 @@ abstract class Actor (pool : Pool) extends Logging {
     /**
      * Start this actor.
      */
-    final def startSkippingMonitoring = {
+    private[system] final def startSkippingMonitoring = {
         debug ("About to start")
         fiber.start
     }
 
-    final def start () = {
+    /**
+     * Start actor.
+     */
+    private[system] final def start () = {
         startSkippingMonitoring
         Monitoring.add (this)
     }
@@ -119,7 +119,7 @@ abstract class Actor (pool : Pool) extends Logging {
     /**
      * Stop the actor.
      */
-    final def exit() = {
+    private[system] final def exit() = {
         debug ("About to stop")
         fiber.dispose
         Monitoring.remove (this)

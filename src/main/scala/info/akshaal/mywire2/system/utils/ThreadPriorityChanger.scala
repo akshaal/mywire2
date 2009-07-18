@@ -5,14 +5,14 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.utils
+package info.akshaal.mywire2.system.utils
 
-import info.akshaal.mywire2.RuntimeConstants
-import info.akshaal.mywire2.logger.Logging
+import system.RuntimeConstants
+import logger.Logging
 
 import ru.toril.daemonhelper.{DaemonHelper, OSException}
 
-object ThreadPriorityChanger extends Logging {
+private[system] object ThreadPriorityChanger extends Logging {
     abstract sealed class Priority
     case class LowPriority () extends Priority
     case class HiPriority () extends Priority

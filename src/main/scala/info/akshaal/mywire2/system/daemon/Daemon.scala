@@ -1,9 +1,9 @@
 /** Akshaal (C) 2009. GNU GPL. http://akshaal.info */
 
-package info.akshaal.mywire2.daemon
+package info.akshaal.mywire2.system.daemon
 
 import collection.immutable.{List, Nil}
-import mywire2.RuntimeConstants
+import system.RuntimeConstants
 import scala.collection.JavaConversions._
 import scala.collection.mutable.Map
 

@@ -1,13 +1,13 @@
 /** Akshaal (C) 2009. GNU GPL. http://akshaal.info */
 
-package info.akshaal.mywire2.actor
+package info.akshaal.mywire2.system.actor
 
-import daemon.Daemon
 import scala.collection.mutable.HashSet
 import scala.collection.mutable.Set
 
+import daemon.Daemon
 import scheduler.TimeOut
-import mywire2.RuntimeConstants
+import system.RuntimeConstants
 
 private[actor] object Monitoring {
     def add (actor : Actor) = {

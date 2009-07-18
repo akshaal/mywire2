@@ -1,8 +1,8 @@
 /** Akshaal (C) 2009. GNU GPL. http://akshaal.info */
 
-package info.akshaal.mywire2.utils
+package info.akshaal.mywire2.system.utils
 
-import info.akshaal.mywire2.Predefs._
+import mywire2.Predefs._
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
@@ -10,19 +10,22 @@ import java.util.concurrent.{Executors, ThreadFactory}
 /**
  * Pool itself for low priority execution.
  */
-object LowPriorityPool extends Pool ("LowPriorityPool",
-                                     ThreadPriorityChanger.LowPriority ())
+private[system] object LowPriorityPool
+                extends Pool ("LowPriorityPool",
+                              ThreadPriorityChanger.LowPriority ())
 
 /**
  * Pool for hi priority actors.
  */
-object HiPriorityPool extends Pool ("HiPriorityPool",
-                                    ThreadPriorityChanger.HiPriority ())
+private[system] object HiPriorityPool
+                extends Pool ("HiPriorityPool",
+                              ThreadPriorityChanger.HiPriority ())
 /**
  * Pool class to be used by actors.
  */
-sealed class Pool (name : String,
-                   priority : ThreadPriorityChanger.Priority) {
+private[system] sealed abstract class Pool (
+                                   name : String,
+                                   priority : ThreadPriorityChanger.Priority) {
     val latency = new LatencyStat
 
     private val numberOfThreadInPool =

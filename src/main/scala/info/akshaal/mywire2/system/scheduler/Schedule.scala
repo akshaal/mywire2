@@ -5,9 +5,9 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.scheduler
+package info.akshaal.mywire2.system.scheduler
 
-import info.akshaal.mywire2.actor.Actor
+import actor.Actor
 
 /**
  * Abstract schedule item.

@@ -14,8 +14,8 @@ import org.testng.annotations.{AfterMethod,
                                AfterSuite,
                                BeforeSuite}
 
-import info.akshaal.mywire2.RuntimeConstants
-import info.akshaal.mywire2.logger.Logging
+import mywire2.system.RuntimeConstants
+import mywire2.system.logger.Logging
 
 private[common] object TestState extends Logging {
     var ready = false

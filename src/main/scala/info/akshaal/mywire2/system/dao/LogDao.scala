@@ -1,8 +1,8 @@
-package info.akshaal.mywire2.dao
+package info.akshaal.mywire2.system.dao
 
-import info.akshaal.mywire2.domain.LogRecord
+import domain.LogRecord
 
-object LogDao extends BaseDao {
+private[system] object LogDao extends BaseDao {
     def insertRecord (logRecord : LogRecord) = {
         sqlmap.insert ("insertLogRecord", logRecord)
     }

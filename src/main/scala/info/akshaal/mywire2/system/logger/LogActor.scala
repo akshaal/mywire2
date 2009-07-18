@@ -1,18 +1,18 @@
-package info.akshaal.mywire2.logger
+package info.akshaal.mywire2.system.logger
 
 import org.apache.log4j.spi.LoggingEvent
 import org.apache.log4j.Level
 
 import java.util.Date
 
-import info.akshaal.mywire2.actor.LowPriorityActor
-import info.akshaal.mywire2.dao.LogDao
-import info.akshaal.mywire2.domain.LogRecord
+import actor.LowPriorityActor
+import dao.LogDao
+import domain.LogRecord
 
 /**
  * Logs message.
  */
-object LogActor extends LowPriorityActor with DummyLogging {
+private[logger] object LogActor extends LowPriorityActor with DummyLogging {
     def act () = {
         case (event : LoggingEvent, nano : Long) => {
             val stack = event.getThrowableStrRep
