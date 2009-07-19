@@ -1,6 +1,6 @@
 /** Akshaal (C) 2009. GNU GPL. http://akshaal.info */
 
-package info.akshaal.mywire2.test.unit.logger
+package info.akshaal.mywire2.system.test.unit.logger
 
 import mywire2.system.daemon.Daemon
 import mywire2.system.logger.Logger

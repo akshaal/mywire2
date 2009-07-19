@@ -57,6 +57,4 @@ trait BaseTest extends Logging {
 
         info ("Test has completed its execution: " + methodSignature)
     }
-
-
 }

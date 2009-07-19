@@ -5,7 +5,7 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.test.unit.fs
+package info.akshaal.mywire2.system.test.unit.fs
 
 import collection.immutable.List
 import org.testng.annotations.Test

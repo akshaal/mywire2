@@ -2,7 +2,7 @@
  * Akshaal (C) 2009. GNU GPL. http://akshaal.info
  */
 
-package info.akshaal.mywire2.test.unit.system.utils
+package info.akshaal.mywire2.system.test.unit.utils
 
 import mywire2.system.utils.LongValueFrame
 import test.common.BaseTest

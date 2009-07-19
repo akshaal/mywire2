@@ -1,6 +1,6 @@
 /** Akshaal (C) 2009. GNU GPL. http://akshaal.info */
 
-package info.akshaal.mywire2.test.unit.system.actor
+package info.akshaal.mywire2.system.test.unit.actor
 
 import org.testng.annotations.Test
 import org.testng.Assert._

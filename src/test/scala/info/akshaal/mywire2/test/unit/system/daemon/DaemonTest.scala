@@ -1,4 +1,4 @@
-package info.akshaal.mywire2.test.unit.system.daemon
+package info.akshaal.mywire2.system.test.unit.daemon
 
 import mywire2.system.daemon.Daemon
 import test.common.BaseTest

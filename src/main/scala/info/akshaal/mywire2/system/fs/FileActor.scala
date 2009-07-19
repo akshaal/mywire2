@@ -123,29 +123,22 @@ private [fs] final class WriteCompletionHandler (buf : ByteBuffer,
     }
 }
 
-// TODO: [system]
-abstract sealed class FileMessage
+private[system] abstract sealed class FileMessage
 
-// TODO: [system]
-final case class WriteFile (file : File, content : String)
+private[system] final case class WriteFile (file : File, content : String)
                            extends FileMessage
 
-// TODO: [system]
-final case class ReadFile (name : String)
+private[system] final case class ReadFile (name : String)
                             extends FileMessage
 
-// TODO: [system]
-final case class WriteFileDone (file : File)
+private[system] final case class WriteFileDone (file : File)
                             extends FileMessage
 
-// TODO: [system]
-final case class WriteFileFailed (file : File, exc : Throwable)
+private[system] final case class WriteFileFailed (file : File, exc : Throwable)
                             extends FileMessage
 
-// TODO: [system]
-final case class ReadFileDone (file : File)
+private[system] final case class ReadFileDone (file : File)
                             extends FileMessage
 
-// TODO: [system]
-final case class ReadFileFailed (file : File, exc : Throwable)
+private[system] final case class ReadFileFailed (file : File, exc : Throwable)
                             extends FileMessage

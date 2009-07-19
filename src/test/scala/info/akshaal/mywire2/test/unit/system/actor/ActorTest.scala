@@ -5,7 +5,7 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.test.unit.actor
+package info.akshaal.mywire2.system.test.unit.actor
 
 import collection.immutable.List
 import org.testng.annotations.Test
