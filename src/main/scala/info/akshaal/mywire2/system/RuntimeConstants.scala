@@ -79,6 +79,11 @@ private[system] object RuntimeConstants {
     val ignoreLatencyStatsTime = 1.seconds
 
     /**
+     * Encoding to read and write files in.
+     */
+    val fileEncoding = "UTF-8"
+
+    /**
      * Load preferences from property file.
      */
     private object PrefLoader {

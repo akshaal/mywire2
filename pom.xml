@@ -15,7 +15,6 @@
         <!-- Versions -->
         <scala.version>2.8.0-SNAPSHOT</scala.version>
         <jetlang.version>0.1.7</jetlang.version>
-        <commons-io.version>1.4</commons-io.version>
         <testng.version>5.9</testng.version>
         <daemonhelper.version>1.0</daemonhelper.version>
         <slf4j.version>1.5.8</slf4j.version>
@@ -53,12 +52,6 @@
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>${scala.version}</version>
-        </dependency>
-
-    	<dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>${commons-io.version}</version>
         </dependency>
 
         <dependency>

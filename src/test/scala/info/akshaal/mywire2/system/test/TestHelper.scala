@@ -10,6 +10,7 @@ package info.akshaal.mywire2.system.test
 import actor.Actor
 import system.RuntimeConstants
 import scheduler.Scheduler
+import fs.FileActor
 import utils.{HiPriorityPool, LowPriorityPool}
 
 object TestHelper {
@@ -24,4 +25,6 @@ object TestHelper {
     def getHiPriorityPoolLatency = HiPriorityPool.latency.getNano
 
     def getLowPriorityPoolLatency = LowPriorityPool.latency.getNano
+
+    val fileActor : Actor = FileActor
 }
