@@ -38,7 +38,14 @@ class FileActorTest extends BaseTest {
         assertEquals (WriteTestActor.done, 2)
         assertEquals (WriteTestActor.excs, 0)
 
+        WriteTestActor ! (new File ("/oops/oops/ooopsss!!"), "Ooops")
+        sleep ()
+        assertEquals (WriteTestActor.done, 2)
+        assertEquals (WriteTestActor.excs, 1)
+
         TestHelper.exitActor (WriteTestActor)
+
+        // TODO test exceptions while writing
     }
 
     private def sleep () = Thread.sleep (1000)

@@ -12,11 +12,12 @@ import java.nio.file.Path;
 import java.io.{File, IOException}
 import java.nio.file.StandardOpenOption.{READ, WRITE, CREATE, TRUNCATE_EXISTING}
 import java.nio.{ByteBuffer, CharBuffer}
-import java.nio.channels.CompletionHandler;
+import java.nio.channels.CompletionHandler
 import java.nio.charset.Charset
 
-import actor.HiPriorityActor
+import actor.{HiPriorityActor, Actor}
 import system.RuntimeConstants
+import logger.Logging
 
 /**
  * Fast async file reader/writer. Can read only limited number of bytes.
@@ -32,7 +33,6 @@ private[system] object FileActor extends HiPriorityActor {
      * Process actor message.
      */
     override def act () = {
-        // Write file
         case WriteFile(file, content) => writeFile (file, content)
     }
 
@@ -40,50 +40,86 @@ private[system] object FileActor extends HiPriorityActor {
      * Open file and initiate writing to the file.
      */
     private def writeFile (file : File, content : String) = {
-        val ch = AsynchronousFileChannel.open (file.toPath,
-                                               WRITE,
-                                               CREATE,
-                                               TRUNCATE_EXISTING)
         val buf = encoder.encode(CharBuffer.wrap (content))
-        val bufLen = buf.remaining
-        val origSender = sender
-        val handler = new CompletionHandler[Integer, Object] () {
-            override def completed (bytes : java.lang.Integer,
-                                    ignored : Object) : Unit = {
-                if (bufLen != bytes) {
-                    failed (new IOException ("Only " + bytes
-                                             + " number of bytes out of "
-                                             + bufLen + " has been written"),
-                            null)
-                } else {
-                    // TODO: Measure time
+        val handler = new WriteCompletionHandler (buf, file, sender)
 
-                    if (origSender != null) {
-                        origSender ! (WriteFileDone (file))
-                    }
+        try {
+            val ch = AsynchronousFileChannel.open (file.toPath,
+                                                   WRITE,
+                                                   CREATE,
+                                                   TRUNCATE_EXISTING)
+            handler.setChannel (ch)
 
-                    ch.close ()
-                }
+            ch.write (buf, 0, null, handler)
+        } catch {
+            case exc : IOException => handler.failed (exc, null)
+        }
+    }
+}
+
+/**
+ * Write completion handler
+ */
+private [fs] final class WriteCompletionHandler (buf : ByteBuffer,
+                                                 file : File,
+                                                 sender : Actor)
+                       extends CompletionHandler [Integer, Object]
+                       with Logging {
+    val bufLen = buf.remaining
+    var channel : AsynchronousFileChannel = null
+
+    /**
+     * Associate a channel this handler serves.
+     */
+    def setChannel (ch : AsynchronousFileChannel) =
+        channel = ch
+
+    /**
+     * Called when write operation is finished.
+     */
+    override def completed (bytes : java.lang.Integer,
+                            ignored : Object) : Unit = {
+        if (bufLen != bytes) {
+            failed (new IOException ("Only " + bytes
+                                     + " number of bytes out of "
+                                     + bufLen + " has been written for file"
+                                     + file),
+                    null)
+        } else {
+            // TODO: Measure time
+
+            if (sender != null) {
+                sender ! (WriteFileDone (file))
             }
 
-            override def failed (exc : Throwable, ignored : Object) : Unit = {
-                // TODO: Measure time
-
-                if (origSender == null) {
-                    error ("Failed to write to file: " + file, exc)
-                } else {
-                    origSender ! (WriteFileFailed (file, exc))
-                }
-
-                ch.close ()
-            }
-
-            override def cancelled (ignored : Object) : Unit = {
-                throw new RuntimeException ("Impossible")
+            if (channel != null) {
+                channel.close ()
             }
         }
+    }
 
-        ch.write (buf, 0, null, handler)
+    /**
+     * Called when write operation failed.
+     */
+    override def failed (exc : Throwable, ignored : Object) : Unit = {
+        // TODO: Measure time
+
+        if (sender == null) {
+            error ("Failed to write to file: " + file, exc)
+        } else {
+            sender ! (WriteFileFailed (file, exc))
+        }
+
+        if (channel != null) {
+            channel.close ()
+        }
+    }
+
+    /**
+     * Called when write operation is canceled. This must not happen.
+     */
+    override def cancelled (ignored : Object) : Unit = {
+        throw new RuntimeException ("Impossible")
     }
 }
 

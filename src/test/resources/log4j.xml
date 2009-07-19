@@ -32,6 +32,14 @@
     </layout>
   </appender>
 
+  <category name="java.sql">
+     <priority value="INFO"/>
+  </category>
+
+  <category name="com.ibatis">
+     <priority value="INFO"/>
+  </category>
+
   <category name="info.akshaal">
      <priority value="TRACE"/>
      <appender-ref ref="LOG_SERVICE" />
