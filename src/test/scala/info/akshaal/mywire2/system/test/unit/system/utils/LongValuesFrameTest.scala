@@ -5,7 +5,7 @@
 package info.akshaal.mywire2.system.test.unit.utils
 
 import mywire2.system.utils.LongValueFrame
-import test.common.BaseTest
+import mywire2.test.common.BaseTest
 
 import org.testng.annotations.Test
 import org.testng.Assert._

@@ -11,42 +11,42 @@ import collection.immutable.List
 import org.testng.annotations.Test
 import org.testng.Assert._
 
-import test.common.BaseTest
-import mywire2.system.test.TestHelper
+import mywire2.test.common.BaseTest
 import mywire2.system.actor.{HiPriorityActor, LowPriorityActor}
+import mywire2.system.utils.{HiPriorityPool, LowPriorityPool}
 
 class ActorTest extends BaseTest {
     @Test (groups=Array("indie"))
     def testPingPong () = {
         SampleActor ! 1
-        TestHelper.startActor (SampleActor)
-        TestHelper.startActor (ToStringActor)
+        SampleActor.start
+        ToStringActor.start
         SampleActor ! 3
         SampleActor ! 7
         sleep ()
-        TestHelper.exitActor (SampleActor)
-        TestHelper.exitActor (ToStringActor)
+        SampleActor.exit
+        ToStringActor.exit
 
         assertEquals (SampleActor.accuInt, List(7, 3, 1))
         assertEquals (SampleActor.accuString, List("x7", "x3", "x1"))
         
         debug ("current latency of hiPriorityPool = "
-               + TestHelper.getHiPriorityPoolLatency)
+               + HiPriorityPool.latency.getNano)
 
         debug ("current latency of LowPriorityPool = "
-               + TestHelper.getLowPriorityPoolLatency)
+               + LowPriorityPool.latency.getNano)
     }
 
     @Test (groups=Array("indie"))
     def testExceptionResistance () = {
-        TestHelper.startActor (UnstableActor)
+        UnstableActor.start
 
         for (i <- 1 to 10) {
             UnstableActor ! i
         }
 
         sleep
-        TestHelper.exitActor (UnstableActor)
+        UnstableActor.exit
 
         assertEquals (UnstableActor.sum, 1+3+5+7+9)
     }
