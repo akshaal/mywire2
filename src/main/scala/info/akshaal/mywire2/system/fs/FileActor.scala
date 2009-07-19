@@ -7,23 +7,23 @@
 
 package info.akshaal.mywire2.system.fs
 
-import java.nio.channels.AsynchronousFileChannel;
-import java.nio.file.Path;
+import java.nio.channels.AsynchronousFileChannel
+import java.nio.file.{Path, OpenOption}
 import java.io.{File, IOException}
 import java.nio.file.StandardOpenOption.{READ, WRITE, CREATE, TRUNCATE_EXISTING}
 import java.nio.{ByteBuffer, CharBuffer}
 import java.nio.channels.CompletionHandler
 import java.nio.charset.Charset
 
-import actor.{HiPriorityActor, Actor}
+import mywire2.Predefs._
+import actor.{NormalPriorityActor, Actor}
 import system.RuntimeConstants
 import logger.Logging
 
 /**
  * Fast async file reader/writer. Can read only limited number of bytes.
  */
-// TODO: NormalPriorityActor
-private[system] object FileActor extends HiPriorityActor {
+private[system] object FileActor extends NormalPriorityActor {
     start ()
 
     private val encoder =
@@ -86,15 +86,11 @@ private [fs] final class WriteCompletionHandler (buf : ByteBuffer,
                                      + file),
                     null)
         } else {
-            // TODO: Measure time
-
             if (sender != null) {
                 sender ! (WriteFileDone (file))
             }
 
-            if (channel != null) {
-                channel.close ()
-            }
+            closeChannel ()
         }
     }
 
@@ -102,17 +98,13 @@ private [fs] final class WriteCompletionHandler (buf : ByteBuffer,
      * Called when write operation failed.
      */
     override def failed (exc : Throwable, ignored : Object) : Unit = {
-        // TODO: Measure time
-
         if (sender == null) {
             error ("Failed to write to file: " + file, exc)
         } else {
             sender ! (WriteFileFailed (file, exc))
         }
 
-        if (channel != null) {
-            channel.close ()
-        }
+        closeChannel ()
     }
 
     /**
@@ -120,6 +112,14 @@ private [fs] final class WriteCompletionHandler (buf : ByteBuffer,
      */
     override def cancelled (ignored : Object) : Unit = {
         throw new RuntimeException ("Impossible")
+    }
+
+    def closeChannel () = {
+        if (channel != null) {
+            logIgnoredException (logger, "unable to close channel") {
+                channel.close ()
+            }
+        }
     }
 }
 

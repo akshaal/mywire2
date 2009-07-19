@@ -14,8 +14,9 @@ import ru.toril.daemonhelper.{DaemonHelper, OSException}
 
 private[system] object ThreadPriorityChanger extends Logging {
     abstract sealed class Priority
-    case class LowPriority () extends Priority
-    case class HiPriority () extends Priority
+    case object LowPriority extends Priority
+    case object NormalPriority extends Priority
+    case object HiPriority extends Priority
 
     def change (priority : Priority) = {
         val pid = DaemonHelper.getPid
@@ -24,10 +25,13 @@ private[system] object ThreadPriorityChanger extends Logging {
         val identifier = name + " (pid=" + pid + ", tid=" + tid + ")"
         val osPriority =
             priority match {
-                case LowPriority () =>
+                case LowPriority =>
                     RuntimeConstants.lowPriorityThreadOSPriority
 
-                case HiPriority () =>
+                case NormalPriority =>
+                    RuntimeConstants.normalPriorityThreadOSPriority
+
+                case HiPriority =>
                     RuntimeConstants.hiPriorityThreadOSPriority
             }
 

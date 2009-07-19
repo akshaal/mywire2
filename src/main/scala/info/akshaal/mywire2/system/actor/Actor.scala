@@ -2,7 +2,12 @@ package info.akshaal.mywire2.system.actor
 
 import mywire2.Predefs._
 import logger.Logging
-import utils.{LatencyStat, HiPriorityPool, LowPriorityPool, Pool, TimeUnit}
+import utils.{LatencyStat,
+              HiPriorityPool,
+              NormalPriorityPool,
+              LowPriorityPool,
+              Pool,
+              TimeUnit}
 import system.RuntimeConstants
 
 import org.jetlang.fibers.{PoolFiberFactory, Fiber}
@@ -12,17 +17,24 @@ import org.jetlang.core.BatchExecutor
  * Low priority actor.
  */
 abstract class LowPriorityActor
-                    extends Actor (LowPriorityPool,
-                                   RuntimeConstants.warnLowPriorityActorTime,
-                                   RuntimeConstants.warnLowPriorityActorLatency)
+                extends Actor (LowPriorityPool,
+                               RuntimeConstants.warnLowPriorityActorTime,
+                               RuntimeConstants.warnLowPriorityActorLatency)
 
+/**
+ * Normal priority actor.
+ */
+abstract class NormalPriorityActor
+                extends Actor (NormalPriorityPool,
+                               RuntimeConstants.warnNormalPriorityActorTime,
+                               RuntimeConstants.warnNormalPriorityActorLatency)
 /**
  * Hi priority actor.
  */
 abstract class HiPriorityActor
-                    extends Actor (HiPriorityPool,
-                                   RuntimeConstants.warnHiPriorityActorTime,
-                                   RuntimeConstants.warnHiPriorityActorLatency)
+                extends Actor (HiPriorityPool,
+                               RuntimeConstants.warnHiPriorityActorTime,
+                               RuntimeConstants.warnHiPriorityActorLatency)
 
 /**
  * Very simple and hopefully fast implementation of actors

@@ -12,14 +12,21 @@ import java.util.concurrent.{Executors, ThreadFactory}
  */
 private[system] object LowPriorityPool
                 extends Pool ("LowPriorityPool",
-                              ThreadPriorityChanger.LowPriority ())
+                              ThreadPriorityChanger.LowPriority)
 
 /**
- * Pool for hi priority actors.
+ * Pool for normal priority tasks..
+ */
+private[system] object NormalPriorityPool
+                extends Pool ("NormalPriorityPool",
+                              ThreadPriorityChanger.NormalPriority)
+
+/**
+ * Pool for hi priority tasks..
  */
 private[system] object HiPriorityPool
                 extends Pool ("HiPriorityPool",
-                              ThreadPriorityChanger.HiPriority ())
+                              ThreadPriorityChanger.HiPriority)
 /**
  * Pool class to be used by actors.
  */

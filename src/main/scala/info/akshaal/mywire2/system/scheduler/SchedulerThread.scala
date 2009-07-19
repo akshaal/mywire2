@@ -46,7 +46,7 @@ private[scheduler] object SchedulerThread extends Thread with Logging {
         info ("Starting scheduler")
         this.setName("Scheduler")
 
-        ThreadPriorityChanger.change (ThreadPriorityChanger.HiPriority ())
+        ThreadPriorityChanger.change (ThreadPriorityChanger.HiPriority)
 
         // Main loop
         while (!shutdownFlag) {

@@ -18,30 +18,48 @@ private[system] object RuntimeConstants {
      */
     val latencyStateFrameSize = 100
 
+    // ////////// LOW PRIORITY
+
     /**
      * OS priority thread for low priority threads
      */
     val lowPriorityThreadOSPriority = PrefLoader.getInt ("mywire.os.priority.low")
 
     /**
+     * Show warning if hi priority actor completed its job in
+     * time exceeding this limit.
+     */
+    val warnLowPriorityActorTime = 200.milliseconds
+
+    /**
+     * Show warning if latency is higher than this value.
+     */
+    val warnLowPriorityActorLatency = 600.milliseconds
+
+    // ////////// NORMAL PRIORITY
+
+    /**
+     * OS priority thread for hi priority threads
+     */
+    val normalPriorityThreadOSPriority = PrefLoader.getInt ("mywire.os.priority.normal")
+
+    /**
+     * Show warning if hi priority actor completed its job in
+     * time exceeding this limit.
+     */
+    val warnNormalPriorityActorTime = 20.milliseconds
+
+    /*
+     * Show warning if latency is higher than this value.
+     */
+    val warnNormalPriorityActorLatency = 60.milliseconds
+
+    // ////////// HI PRIORITY
+
+    /**
      * OS priority thread for hi priority threads
      */
     val hiPriorityThreadOSPriority = PrefLoader.getInt ("mywire.os.priority.high")
-
-    /**
-     * Show warning if latency is higher than this value.
-     */
-    val warnHiPriorityActorLatency = 5.milliseconds
-
-    /**
-     * Show warning if latency is higher than this value.
-     */
-    val warnLowPriorityActorLatency = 100.milliseconds
-
-    /**
-     * Show warning if latency is higher than this value.
-     */
-    val warnSchedulerLatency = 200.microseconds
 
     /**
      * Show warning if hi priority actor completed its job in
@@ -50,16 +68,24 @@ private[system] object RuntimeConstants {
     val warnHiPriorityActorTime = 1.milliseconds
 
     /**
-     * Show warning if hi priority actor completed its job in
-     * time exceeding this limit.
+     * Show warning if latency is higher than this value.
      */
-    val warnLowPriorityActorTime = 400.milliseconds
+    val warnHiPriorityActorLatency = 3.milliseconds
+
+    // ////////// SCHEDULER
+
+    /**
+     * Show warning if latency is higher than this value.
+     */
+    val warnSchedulerLatency = 200.microseconds
 
     /**
      * If an event should be processed in this or smaller number of nanoseconds,
      * then the event will be processed immidiately.
      */
     val schedulerDrift = 1.microseconds
+
+    // //////////// MONITORING
 
     /**
      * How many seconds passes between monitoring check for actors.

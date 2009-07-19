@@ -27,6 +27,7 @@
 
         <!-- Mywire properties -->
         <mywire.os.priority.high>0</mywire.os.priority.high>
+        <mywire.os.priority.normal>10</mywire.os.priority.normal>
         <mywire.os.priority.low>19</mywire.os.priority.low>
         <mywire.jdbc-properties.type>resource</mywire.jdbc-properties.type>
         <mywire.jdbc-properties.location>mywire-jdbc.properties</mywire.jdbc-properties.location>
