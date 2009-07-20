@@ -76,7 +76,7 @@ object ToStringActor extends LowPriorityActor {
     def act () = {
         case x => {
             debug ("Received message: " + x)
-            sender ! ("x" + x);
+            sender.foreach(_ ! ("x" + x))
         }
     }
 }

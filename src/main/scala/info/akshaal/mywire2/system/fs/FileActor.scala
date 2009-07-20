@@ -62,7 +62,7 @@ private[system] object FileActor extends NormalPriorityActor {
  */
 private [fs] final class WriteCompletionHandler (buf : ByteBuffer,
                                                  file : File,
-                                                 sender : Actor)
+                                                 sender : Option[Actor])
                        extends CompletionHandler [Integer, Object]
                        with Logging {
     val bufLen = buf.remaining
@@ -86,9 +86,7 @@ private [fs] final class WriteCompletionHandler (buf : ByteBuffer,
                                      + file),
                     null)
         } else {
-            if (sender != null) {
-                sender ! (WriteFileDone (file))
-            }
+            sender.foreach (_ ! (WriteFileDone (file)))
 
             closeChannel ()
         }
@@ -101,7 +99,7 @@ private [fs] final class WriteCompletionHandler (buf : ByteBuffer,
         if (sender == null) {
             error ("Failed to write to file: " + file, exc)
         } else {
-            sender ! (WriteFileFailed (file, exc))
+            sender.foreach (_ ! (WriteFileFailed (file, exc)))
         }
 
         closeChannel ()

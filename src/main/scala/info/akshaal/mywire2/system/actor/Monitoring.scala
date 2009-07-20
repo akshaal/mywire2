@@ -54,7 +54,7 @@ private[actor] class MonitoringActor extends LowPriorityActor {
 
         case TimeOut(Monitor) => monitor
 
-        case Pong => monitoringActors -= sender
+        case Pong => sender.foreach(actor => monitoringActors -= actor)
     }
 
     private def monitor () = {

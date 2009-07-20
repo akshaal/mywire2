@@ -41,7 +41,9 @@ abstract class HiPriorityActor
  */
 abstract class Actor (pool : Pool,
                       warnActorTime : TimeUnit,
-                      warnLatency : TimeUnit) extends Logging {
+                      warnLatency : TimeUnit)
+         extends Logging
+            with NotNull {
     protected final val schedule = new ActorSchedule (this)
 
     /**
@@ -58,7 +60,7 @@ abstract class Actor (pool : Pool,
     /**
      * Current sender. Only valid when act method is called.
      */
-    protected var sender : Actor = null
+    protected var sender : Option[Actor] = None
 
     /**
      * Latency.
@@ -84,7 +86,7 @@ abstract class Actor (pool : Pool,
 
             // Execute            
             msg match {
-                case Ping => sentFrom ! Pong
+                case Ping => sentFrom.foreach(_ ! Pong)
                 case other => invokeAct (msg, sentFrom)
             }
 
@@ -101,7 +103,11 @@ abstract class Actor (pool : Pool,
         fiber.execute (runner)
     }
 
-    private def invokeAct (msg : Any, sentFrom : Actor) = {
+    /**
+     * Invokes this actor's act() method.
+     */
+    private[this] def invokeAct (msg : Any, sentFrom : Option[Actor]) =
+    {
         if (act.isDefinedAt (msg)) {
             // Defined
 
@@ -114,7 +120,7 @@ abstract class Actor (pool : Pool,
                 act () (msg)
             }
 
-            sender = null
+            sender = None
         } else {
             // Not defined
             warn ("Actor ignored the message: " + msg)
@@ -150,11 +156,12 @@ abstract class Actor (pool : Pool,
 /**
  * Executor of queued actors.
  */
-private[actor] class ActorExecutor (actor : Actor) extends BatchExecutor {
+private[actor] class ActorExecutor (actor : Actor)
+                extends BatchExecutor {
     final def execute (commands: Array[Runnable]) = {
         // Remember the current actor in thread local variable.
         // So later it may be referenced from ! method of other actors
-        ThreadLocalState.current.set(actor)
+        ThreadLocalState.current.set(Some(actor))
 
         // Execute
         for (command <- commands) {
@@ -162,7 +169,7 @@ private[actor] class ActorExecutor (actor : Actor) extends BatchExecutor {
         }
 
         // Reset curren actor
-        ThreadLocalState.current.set(null)
+        ThreadLocalState.current.set(None)
     }
 }
 
@@ -170,5 +177,5 @@ private[actor] class ActorExecutor (actor : Actor) extends BatchExecutor {
  * Thread local state of the actor environment.
  */
 private[actor] object ThreadLocalState {
-    val current = new ThreadLocal[Actor]()
+    val current = new ThreadLocal[Option[Actor]]()
 }
