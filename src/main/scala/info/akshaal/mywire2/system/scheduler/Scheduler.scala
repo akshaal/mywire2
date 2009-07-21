@@ -15,14 +15,36 @@ import actor.Actor
 /**
  * Scheduler class.
  */
-object Scheduler extends Logging {
-    SchedulerThread.start
+private[system] final class Scheduler (latencyLimit : TimeUnit)
+                        extends Logging
+{
+    private[this] val schedulerThread = new SchedulerThread (latencyLimit)
 
-    def in (actor : Actor, payload : Any, timeUnit : TimeUnit) =
-        SchedulerThread.schedule (new OneTimeSchedule (actor,
-                                  payload,
-                                  timeUnit.asNanoseconds + System.nanoTime))
-  
+    /**
+     * Get average latency of the scheduler.
+     */
+    def averageLatency = schedulerThread.latencyTiming.average
+
+    /**
+     * Shutdown scheduler.
+     */
+    def shutdown () = schedulerThread.shutdown
+
+    /**
+     * Schedule payload for actor to be delivered in timeUnit.
+     */
+    def in (actor : Actor, payload : Any, timeUnit : TimeUnit) = {
+        val schedule =
+            new OneTimeSchedule (actor,
+                                 payload,
+                                 timeUnit.asNanoseconds + System.nanoTime)
+
+            schedulerThread.schedule (schedule)
+    }
+
+    /**
+     * Schedule payload for actor to be delivered every timeUnit.
+     */
     def every (actor : Actor, payload : Any, period : TimeUnit) = {
         val periodNano = period.asNanoseconds
         val curNanoTime = System.nanoTime
@@ -36,15 +58,11 @@ object Scheduler extends Logging {
         val nanoTime =
             if (variantOfNanoTime < curNanoTime) calc(1) else variantOfNanoTime
 
-        SchedulerThread.schedule (new RecurrentSchedule (actor,
+        schedulerThread.schedule (new RecurrentSchedule (actor,
                                                          payload,
                                                          nanoTime,
                                                          periodNano))
     }
-
-    private[system] def getLatencyNano () = SchedulerThread.getLatencyNano
-
-    private[system] def shutdown () = SchedulerThread.shutdown
 }
 
 /**

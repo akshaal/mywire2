@@ -7,36 +7,45 @@ import mywire2.Predefs._
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
 
-/**
- * Pool itself for low priority execution.
- */
-private[system] object LowPriorityPool
-                extends Pool ("LowPriorityPool",
-                              ThreadPriorityChanger.LowPriority)
+private[system] final class HiPriorityPool (threads : Int,
+                                            latencyLimit : TimeUnit,
+                                            executionLimit : TimeUnit)
+                extends Pool (name = "HiPriorityPool",
+                              priority = ThreadPriorityChanger.HiPriority,
+                              threads = threads,
+                              latencyLimit = latencyLimit,
+                              executionLimit = executionLimit)
 
-/**
- * Pool for normal priority tasks..
- */
-private[system] object NormalPriorityPool
-                extends Pool ("NormalPriorityPool",
-                              ThreadPriorityChanger.NormalPriority)
+private[system] final class NormalPriorityPool (threads : Int,
+                                                latencyLimit : TimeUnit,
+                                                executionLimit : TimeUnit)
+                extends Pool (name = "NormalPriorityPool",
+                              priority = ThreadPriorityChanger.NormalPriority,
+                              threads = threads,
+                              latencyLimit = latencyLimit,
+                              executionLimit = executionLimit)
 
-/**
- * Pool for hi priority tasks..
- */
-private[system] object HiPriorityPool
-                extends Pool ("HiPriorityPool",
-                              ThreadPriorityChanger.HiPriority)
+private[system] final class LowPriorityPool (threads : Int,
+                                             latencyLimit : TimeUnit,
+                                             executionLimit : TimeUnit)
+                extends Pool (name = "LowPriorityPool",
+                              priority = ThreadPriorityChanger.LowPriority,
+                              threads = threads,
+                              latencyLimit = latencyLimit,
+                              executionLimit = executionLimit)
+
 /**
  * Pool class to be used by actors.
  */
 private[system] sealed abstract class Pool (
-                                   name : String,
-                                   priority : ThreadPriorityChanger.Priority) {
-    val latency = new LatencyStat
-
-    private val numberOfThreadInPool =
-                    RuntimeConstants.threadsMultiplier * Runtime.getRuntime.availableProcessors
+                            name : String,
+                            priority : ThreadPriorityChanger.Priority,
+                            threads : Int,
+                            latencyLimit : TimeUnit,
+                            executionLimit : TimeUnit)
+{
+    val latencyTiming = new Timing (latencyLimit)
+    val executionTiming = new Timing (latencyLimit)
 
     private val threadFactory = new ThreadFactory {
         val counter = new AtomicInteger (0)
@@ -56,8 +65,5 @@ private[system] sealed abstract class Pool (
         }
     }
 
-    val executors =
-        Executors.newFixedThreadPool (numberOfThreadInPool, threadFactory);
-
-    final def getLatencyNano () = latency.getNano
+    val executors = Executors.newFixedThreadPool (threads, threadFactory)
 }

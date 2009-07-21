@@ -6,22 +6,22 @@ import scala.collection.mutable.HashSet
 import scala.collection.mutable.Set
 
 import daemon.Daemon
-import scheduler.TimeOut
+import scheduler.{TimeOut, Scheduler}
 import system.RuntimeConstants
+import utils.{TimeUnit, NormalPriorityPool}
 
-private[actor] object Monitoring {
+private[system] final class Monitoring (monitoringActors : List[MonitoringActor])
+{
     def add (actor : Actor) = {
         val cmd = Add (actor)
 
-        MonitoringActor1 ! cmd
-        MonitoringActor2 ! cmd
+        monitoringActors.foreach (_ ! cmd)
     }
 
     def remove (actor : Actor) = {
         val cmd = Remove (actor)
         
-        MonitoringActor1 ! cmd
-        MonitoringActor2 ! cmd
+        monitoringActors.foreach (_ ! cmd)
     }
 }
 
@@ -32,18 +32,12 @@ private[actor] case object Ping extends MonitoringCommand
 private[actor] case object Pong extends MonitoringCommand
 private[actor] case object Monitor extends MonitoringCommand
 
-private[actor] object MonitoringActor1 extends MonitoringActor {
-    MonitoringActor2 ! (Add (this))
-}
-
-private[actor] object MonitoringActor2 extends MonitoringActor {
-    MonitoringActor1 ! (Add (this))
-}
-
-private[actor] class MonitoringActor extends LowPriorityActor {
-    schedule payload Monitor every RuntimeConstants.actorsMonitoringInterval
-
-    startSkippingMonitoring
+private[system] final class MonitoringActor (pool : NormalPriorityPool,
+                                             scheduler : Scheduler,
+                                             interval : TimeUnit)
+                extends Actor (pool, scheduler)
+{
+    schedule payload Monitor every interval
 
     private var currentActors : Set[Actor] = new HashSet[Actor]
     private var monitoringActors : Set[Actor] = new HashSet[Actor]
@@ -54,7 +48,7 @@ private[actor] class MonitoringActor extends LowPriorityActor {
 
         case TimeOut(Monitor) => monitor
 
-        case Pong => sender.foreach(actor => monitoringActors -= actor)
+        case Pong => sender.foreach (actor => monitoringActors -= actor)
     }
 
     private def monitor () = {

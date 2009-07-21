@@ -21,17 +21,20 @@ final class TimeSpec[T] (number : Long, action : TimeUnit => T) extends NotNull 
     def days         = action (number.days)
 }
 
-final class Trigger (actor : Actor, payload : Any) extends NotNull {
+final class Trigger (actor : Actor, payload : Any, scheduler : Scheduler)
+                extends NotNull{
     def in (number : Long)    = new TimeSpec[Unit] (number, scheduleIn)
     def every (number : Long) = new TimeSpec[Unit] (number, scheduleEvery)
 
     def in (time : TimeUnit)    = scheduleIn (time)
     def every (time : TimeUnit) = scheduleEvery (time)
 
-    private def scheduleIn (time : TimeUnit)    = Scheduler.in (actor, payload, time)
-    private def scheduleEvery (time : TimeUnit) = Scheduler.every (actor, payload, time)
+    private def scheduleIn (time : TimeUnit)    = scheduler.in (actor, payload, time)
+    private def scheduleEvery (time : TimeUnit) = scheduler.every (actor, payload, time)
 }
 
-final class ActorSchedule (actor : Actor) extends NotNull {
-    def payload (payload : Any) = new Trigger (actor, payload)
+final class ActorSchedule (actor : Actor, scheduler : Scheduler)
+            extends NotNull
+{
+    def payload (payload : Any) = new Trigger (actor, payload, scheduler)
 }

@@ -14,9 +14,9 @@ private[system] object RuntimeConstants {
     val threadsMultiplier = 1
 
     /**
-     * Take average from that number of latency measurements.
+     * Take average from that number of timings measurements.
      */
-    val latencyStateFrameSize = 100
+    val timingFrameSize = 100
 
     // ////////// LOW PRIORITY
 
@@ -102,7 +102,7 @@ private[system] object RuntimeConstants {
     /**
      * Ignore time measurements (latencies) in first moments after the start
      */
-    val ignoreLatencyStatsTime = 1.seconds
+    val ignoreTimingsFor = 1.seconds
 
     /**
      * Encoding to read and write files in.

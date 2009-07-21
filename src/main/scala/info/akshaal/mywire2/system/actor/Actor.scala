@@ -2,49 +2,20 @@ package info.akshaal.mywire2.system.actor
 
 import mywire2.Predefs._
 import logger.Logging
-import utils.{LatencyStat,
-              HiPriorityPool,
-              NormalPriorityPool,
-              LowPriorityPool,
-              Pool,
-              TimeUnit}
+import utils.{Pool, TimeUnit}
 import system.RuntimeConstants
+import scheduler.Scheduler
 
 import org.jetlang.fibers.{PoolFiberFactory, Fiber}
 import org.jetlang.core.BatchExecutor
 
 /**
- * Low priority actor.
- */
-abstract class LowPriorityActor
-                extends Actor (LowPriorityPool,
-                               RuntimeConstants.warnLowPriorityActorTime,
-                               RuntimeConstants.warnLowPriorityActorLatency)
-
-/**
- * Normal priority actor.
- */
-abstract class NormalPriorityActor
-                extends Actor (NormalPriorityPool,
-                               RuntimeConstants.warnNormalPriorityActorTime,
-                               RuntimeConstants.warnNormalPriorityActorLatency)
-/**
- * Hi priority actor.
- */
-abstract class HiPriorityActor
-                extends Actor (HiPriorityPool,
-                               RuntimeConstants.warnHiPriorityActorTime,
-                               RuntimeConstants.warnHiPriorityActorLatency)
-
-/**
  * Very simple and hopefully fast implementation of actors
  */
-abstract class Actor (pool : Pool,
-                      warnActorTime : TimeUnit,
-                      warnLatency : TimeUnit)
+abstract class Actor (pool : Pool, scheduler : Scheduler)
          extends Logging
             with NotNull {
-    protected final val schedule = new ActorSchedule (this)
+    protected final val schedule = new ActorSchedule (this, scheduler)
 
     /**
      * Implementing class is supposed to provide a body of the actor.
@@ -52,52 +23,38 @@ abstract class Actor (pool : Pool,
     protected def act(): PartialFunction[Any, Unit]
 
     /**
-     * A fiber used by this actor.
-     */
-    private val fiber =
-        new PoolFiberFactory (pool.executors).create (new ActorExecutor (this))
-
-    /**
      * Current sender. Only valid when act method is called.
      */
     protected var sender : Option[Actor] = None
 
     /**
-     * Latency.
+     * A fiber used by this actor.
      */
-    private val latency = pool.latency
+    private[this] val fiber =
+        new PoolFiberFactory (pool.executors).create (new ActorExecutor (this))
 
     /**
      * Send a message to the actor.
      */
     final def !(msg: Any): Unit = {
         val sentFrom = ThreadLocalState.current.get
-        val runExpectation = LatencyStat.expectationInNano (0)
+        val runTimingFinisher = pool.latencyTiming.createFinisher
 
+        // This runner will be executed by executor when time has come
+        // to process the message
         val runner = mkRunnable {
-            // Show run latency
-            val runLatency = latency.measureNano (runExpectation)
-            LatencyStat.inform (logger,
-                                "Actor started for message: " + msg,
-                                warnLatency.asNanoseconds,
-                                runLatency)
+            runTimingFinisher ("Actor started for message: " + msg)
 
-            val completeExpectation = LatencyStat.expectationInNano (0)
+            val executeTimingFinisher = pool.executionTiming.createFinisher
 
             // Execute            
             msg match {
-                case Ping => sentFrom.foreach(_ ! Pong)
+                case Ping => sentFrom.foreach (_ ! Pong)
                 case other => invokeAct (msg, sentFrom)
             }
 
             // Show complete latency
-            val completeLatency =
-                LatencyStat.calculateLatencyNano (completeExpectation)
-            
-            LatencyStat.inform (logger,
-                                "Actor completed for message: " + msg,
-                                warnActorTime.asNanoseconds,
-                                completeLatency)
+            executeTimingFinisher ("Actor completed for message: " + msg)
         }
 
         fiber.execute (runner)
@@ -109,52 +66,39 @@ abstract class Actor (pool : Pool,
     private[this] def invokeAct (msg : Any, sentFrom : Option[Actor]) =
     {
         if (act.isDefinedAt (msg)) {
-            // Defined
-
             sender = sentFrom
 
-            logIgnoredException (logger,
-                                 "Exception in actor while processing message: "
-                                 + msg)
-            {
+            logIgnoredException ("Error processing message: " + msg) {
                 act () (msg)
             }
 
             sender = None
         } else {
-            // Not defined
-            warn ("Actor ignored the message: " + msg)
+            warn ("Ignored message: " + msg)
         }
-    }
-
-    /**
-     * Start this actor.
-     */
-    private[system] final def startSkippingMonitoring = {
-        debug ("About to start")
-        fiber.start
     }
 
     /**
      * Start actor.
      */
-    private[system] final def start () = {
-        startSkippingMonitoring
-        Monitoring.add (this)
+    private[actor] final def start () = {
+        debug ("About to start")
+        fiber.start
     }
 
     /**
      * Stop the actor.
      */
-    private[system] final def exit() = {
+    private[actor] final def exit() = {
         debug ("About to stop")
         fiber.dispose
-        Monitoring.remove (this)
     }
 }
 
 /**
  * Executor of queued actors.
+ * @param actor this actor will be used as a current actor
+ *        when processing messages of the actor.
  */
 private[actor] class ActorExecutor (actor : Actor)
                 extends BatchExecutor {

@@ -65,8 +65,7 @@ object Predefs {
      * an exception.
      */
     @inline
-    def logIgnoredException (logger : Logger,
-                             message : => String) (code : => Unit) =
+    def logIgnoredException (message : => String) (code : => Unit) (implicit logger : Logger) =
     {
         try {
             code

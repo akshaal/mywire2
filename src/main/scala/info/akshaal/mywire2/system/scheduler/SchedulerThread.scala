@@ -13,15 +13,18 @@ import java.util.PriorityQueue
 import mywire2.Predefs._
 import system.RuntimeConstants
 import logger.Logging
-import utils.{LatencyStat, ThreadPriorityChanger}
+import utils.{Timing, TimeUnit, ThreadPriorityChanger}
 
-private[scheduler] object SchedulerThread extends Thread with Logging {
+private[scheduler] final class SchedulerThread (latencyLimit : TimeUnit)
+                       extends Thread with Logging
+{
     @volatile
     private var shutdownFlag = false
     private val lock = new ReentrantLock
     private val condition = lock.newCondition
     private val queue = new PriorityQueue[Schedule]
-    private val latencyStat = new LatencyStat
+    
+    val latencyTiming = new Timing (latencyLimit)
 
     def schedule (item : Schedule) = {
         synchronized {
@@ -34,8 +37,6 @@ private[scheduler] object SchedulerThread extends Thread with Logging {
             }
         }
     }
-
-    def getLatencyNano () = latencyStat.getNano
 
     def shutdown () = {
         shutdownFlag = true
@@ -50,9 +51,7 @@ private[scheduler] object SchedulerThread extends Thread with Logging {
 
         // Main loop
         while (!shutdownFlag) {
-            logIgnoredException (logger,
-                                 "Ignored exception during wait and process")
-            {
+            logIgnoredException ("Ignored exception during wait and process") {
                 waitAndProcess
             }
         }
@@ -83,11 +82,8 @@ private[scheduler] object SchedulerThread extends Thread with Logging {
         val item = synchronized { queue.poll }
 
         // Measure latency
-        val latency = latencyStat.measureNano(item.nanoTime)
-        LatencyStat.inform (logger,
-                            "Event triggered: " + item,
-                            RuntimeConstants.warnSchedulerLatency.asNanoseconds,
-                            latency)
+        latencyTiming.finishedButExpected (item.nanoTime,
+                                           "Event triggered: " + item)
 
         // Send message to actor
         item.actor ! (TimeOut (item.payload))

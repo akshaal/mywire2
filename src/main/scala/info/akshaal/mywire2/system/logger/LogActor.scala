@@ -5,14 +5,20 @@ import org.apache.log4j.Level
 
 import java.util.Date
 
-import actor.LowPriorityActor
+import actor.Actor
 import dao.LogDao
 import domain.LogRecord
+import scheduler.Scheduler
+import utils.LowPriorityPool
 
 /**
  * Logs message.
  */
-private[logger] object LogActor extends LowPriorityActor with DummyLogging {
+private[system] final class LogActor (pool : LowPriorityPool,
+                                      scheduler : Scheduler)
+                      extends Actor (pool, scheduler)
+                      with DummyLogging
+{
     def act () = {
         case (event : LoggingEvent, nano : Long) => {
             val stack = event.getThrowableStrRep
@@ -39,6 +45,4 @@ private[logger] object LogActor extends LowPriorityActor with DummyLogging {
         case level =>
             throw new IllegalArgumentException ("Unsupported level: " + level)
     }
-
-    start ()
 }
