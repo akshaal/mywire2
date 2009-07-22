@@ -6,7 +6,7 @@
  */
 
 package info.akshaal.mywire2.system.test.unit.fs
-
+/*
 import collection.immutable.List
 import org.testng.annotations.Test
 import org.testng.Assert._
@@ -78,3 +78,4 @@ object WriteTestActor extends HiPriorityActor {
         }
     }
 }
+*/

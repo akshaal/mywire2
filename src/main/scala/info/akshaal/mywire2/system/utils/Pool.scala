@@ -7,45 +7,46 @@ import mywire2.Predefs._
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
 
-private[system] final class HiPriorityPool (threads : Int,
-                                            latencyLimit : TimeUnit,
-                                            executionLimit : TimeUnit)
-                extends Pool (name = "HiPriorityPool",
-                              priority = ThreadPriorityChanger.HiPriority,
-                              threads = threads,
-                              latencyLimit = latencyLimit,
-                              executionLimit = executionLimit)
+import ThreadPriorityChanger.{HiPriority, NormalPriority, LowPriority}
 
-private[system] final class NormalPriorityPool (threads : Int,
-                                                latencyLimit : TimeUnit,
-                                                executionLimit : TimeUnit)
-                extends Pool (name = "NormalPriorityPool",
-                              priority = ThreadPriorityChanger.NormalPriority,
-                              threads = threads,
-                              latencyLimit = latencyLimit,
-                              executionLimit = executionLimit)
+private[system] abstract class HiPriorityPool extends Pool {
+    private[utils] override final val name = "HiPriorityPool"
 
-private[system] final class LowPriorityPool (threads : Int,
-                                             latencyLimit : TimeUnit,
-                                             executionLimit : TimeUnit)
-                extends Pool (name = "LowPriorityPool",
-                              priority = ThreadPriorityChanger.LowPriority,
-                              threads = threads,
-                              latencyLimit = latencyLimit,
-                              executionLimit = executionLimit)
+    private[utils] override final val priority = HiPriority
+}
+
+private[system] abstract class NormalPriorityPool extends Pool {
+    private[utils] override final val name = "NormalPriorityPool"
+
+    private[utils] override final val priority = NormalPriority
+}
+
+private[system] abstract class LowPriorityPool extends Pool {
+    private[utils] override final val name = "LowPriorityPool"
+
+    private[utils] override final val priority = LowPriority
+}
 
 /**
  * Pool class to be used by actors.
  */
-private[system] sealed abstract class Pool (
-                            name : String,
-                            priority : ThreadPriorityChanger.Priority,
-                            threads : Int,
-                            latencyLimit : TimeUnit,
-                            executionLimit : TimeUnit)
+private[system] sealed abstract class Pool
 {
-    val latencyTiming = new Timing (latencyLimit)
-    val executionTiming = new Timing (latencyLimit)
+    private[utils] val name : String
+
+    private[utils] val priority : ThreadPriorityChanger.Priority
+
+    val threads : Int
+
+    val latencyLimit : TimeUnit
+
+    val executionLimit : TimeUnit
+
+    // -- - - - - -  - -- -- - -  - - - - - - --  - -- - - -
+    // Concrete
+
+    final val latencyTiming = new Timing (latencyLimit)
+    final val executionTiming = new Timing (latencyLimit)
 
     private val threadFactory = new ThreadFactory {
         val counter = new AtomicInteger (0)
@@ -65,5 +66,5 @@ private[system] sealed abstract class Pool (
         }
     }
 
-    val executors = Executors.newFixedThreadPool (threads, threadFactory)
+    final val executors = Executors.newFixedThreadPool (threads, threadFactory)
 }

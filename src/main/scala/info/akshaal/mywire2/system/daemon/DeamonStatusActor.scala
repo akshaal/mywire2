@@ -2,12 +2,12 @@
 package info.akshaal.mywire2.system.daemon
 
 import system.RuntimeConstants
-import actor.LowPriorityActor
+import actor.Actor
 
-private[daemon] object DeamonStatusActor extends LowPriorityActor {
+private[daemon] abstract class DeamonStatusActor extends Actor {
     schedule payload 'DoIt every RuntimeConstants.daemonStatusUpdateInterval
 
-    def act () = {
+    final def act () = {
         case 'DoIt => {
             // TODO: Implement it
         }

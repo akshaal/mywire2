@@ -10,15 +10,20 @@ import scheduler.{TimeOut, Scheduler}
 import system.RuntimeConstants
 import utils.{TimeUnit, NormalPriorityPool}
 
-private[system] final class Monitoring (monitoringActors : List[MonitoringActor])
+private[system] abstract class Monitoring
 {
-    def add (actor : Actor) = {
+    val monitoringActors : List[MonitoringActor]
+
+    // -- - - - - -  - -- -- - -  - - - - - - --  - -- - - -
+    // Concrete
+
+    final def add (actor : Actor) = {
         val cmd = Add (actor)
 
         monitoringActors.foreach (_ ! cmd)
     }
 
-    def remove (actor : Actor) = {
+    final def remove (actor : Actor) = {
         val cmd = Remove (actor)
         
         monitoringActors.foreach (_ ! cmd)
@@ -32,17 +37,21 @@ private[actor] case object Ping extends MonitoringCommand
 private[actor] case object Pong extends MonitoringCommand
 private[actor] case object Monitor extends MonitoringCommand
 
-private[system] final class MonitoringActor (pool : NormalPriorityPool,
-                                             scheduler : Scheduler,
-                                             interval : TimeUnit)
-                extends Actor (pool, scheduler)
+private[system] abstract class MonitoringActor extends Actor
 {
     schedule payload Monitor every interval
 
-    private var currentActors : Set[Actor] = new HashSet[Actor]
-    private var monitoringActors : Set[Actor] = new HashSet[Actor]
+    protected val pool : NormalPriorityPool
 
-    def act () = {
+    protected val interval : TimeUnit
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Concrete
+
+    private[this] val currentActors : Set[Actor] = new HashSet[Actor]
+    private[this] var monitoringActors : Set[Actor] = new HashSet[Actor]
+
+    final def act () = {
         case Add (actor)    => currentActors += actor
         case Remove (actor) => currentActors -= actor
 
@@ -51,7 +60,7 @@ private[system] final class MonitoringActor (pool : NormalPriorityPool,
         case Pong => sender.foreach (actor => monitoringActors -= actor)
     }
 
-    private def monitor () = {
+    private[this] def monitor () = {
         // Check currently monitoring actors
         val notResponding =
                 monitoringActors.filter (currentActors.contains (_))

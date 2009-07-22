@@ -12,15 +12,22 @@ import org.jetlang.core.BatchExecutor
 /**
  * Very simple and hopefully fast implementation of actors
  */
-abstract class Actor (pool : Pool, scheduler : Scheduler)
-         extends Logging
-            with NotNull {
-    protected final val schedule = new ActorSchedule (this, scheduler)
+abstract class Actor extends Logging with NotNull {
+    /** Pool to be used by actor. */
+    protected val pool : Pool
+
+    /** Scheduler to be used by actor */
+    protected val scheduler : Scheduler
 
     /**
      * Implementing class is supposed to provide a body of the actor.
      */
     protected def act(): PartialFunction[Any, Unit]
+
+    // ===================================================================
+    // Concrete methods
+
+    protected final val schedule = new ActorSchedule (this, scheduler)
 
     /**
      * Current sender. Only valid when act method is called.
@@ -121,5 +128,5 @@ private[actor] class ActorExecutor (actor : Actor)
  * Thread local state of the actor environment.
  */
 private[actor] object ThreadLocalState {
-    val current = new ThreadLocal[Option[Actor]]()
+    final val current = new ThreadLocal[Option[Actor]]()
 }

@@ -3,7 +3,7 @@
  */
 
 package info.akshaal.mywire2.system.test.unit.utils
-
+/*
 import mywire2.system.utils.LongValueFrame
 import mywire2.test.common.BaseTest
 
@@ -107,3 +107,4 @@ class LongValuesFrameTest extends BaseTest {
         assertEquals (frame.average (), 2L)
     }
 }
+*/

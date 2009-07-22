@@ -181,8 +181,8 @@
                     <scalaVersion>${scala.version}</scalaVersion>
                     <args>
                         <arg>-target:jvm-1.5</arg>
-			<!-- <arg>-optimise</arg> -->
-			<!-- <arg>-Ydebug</arg> -->
+                        <!-- <arg>-optimise</arg> -->
+                        <!-- <arg>-Ydebug</arg> -->
                         <arg>-deprecation</arg>
                         <!-- <arg>-Xcheck-null</arg> -->
                         <!-- <arg>-Xwarninit</arg> -->

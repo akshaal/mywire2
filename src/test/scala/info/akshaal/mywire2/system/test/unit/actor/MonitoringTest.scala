@@ -1,5 +1,5 @@
 package info.akshaal.mywire2.system.test.unit.actor
-
+/*
 import mywire2.system.actor.HiPriorityActor
 import mywire2.system.daemon.Daemon
 import mywire2.system.RuntimeConstants
@@ -37,3 +37,4 @@ object BadActor extends HiPriorityActor {
         }
     }
 }
+*/

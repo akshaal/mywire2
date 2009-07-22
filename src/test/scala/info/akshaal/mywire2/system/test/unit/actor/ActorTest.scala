@@ -6,13 +6,13 @@
  */
 
 package info.akshaal.mywire2.system.test.unit.actor
-
+/*
 import collection.immutable.List
 import org.testng.annotations.Test
 import org.testng.Assert._
 
 import mywire2.test.common.BaseTest
-import mywire2.system.actor.{HiPriorityActor, LowPriorityActor}
+import mywire2.system.actor.Actor
 import mywire2.system.utils.{HiPriorityPool, LowPriorityPool}
 
 class ActorTest extends BaseTest {
@@ -81,7 +81,7 @@ object ToStringActor extends LowPriorityActor {
     }
 }
 
-object UnstableActor extends HiPriorityActor {
+object UnstableActor extends Actor {
     var sum = 0
 
     def act () = {
@@ -94,3 +94,4 @@ object UnstableActor extends HiPriorityActor {
         }
     }
 }
+*/

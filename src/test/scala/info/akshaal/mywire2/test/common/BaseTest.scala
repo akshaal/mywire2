@@ -17,6 +17,9 @@ import org.testng.annotations.{AfterMethod,
 import mywire2.system.RuntimeConstants
 import mywire2.system.logger.Logging
 
+/**
+ * Basic initialization.
+ */
 private[common] object TestState extends Logging {
     var ready = false
 
@@ -34,14 +37,17 @@ private[common] object TestState extends Logging {
     }
 }
 
-trait BaseTest extends Logging {
+/**
+ * Base class for all tests.
+ */
+class BaseTest extends Logging {
     @BeforeSuite
     def beforeSuite () {
         TestState.init
     }
 
     @AfterSuite
-    def AfterSuite () {
+    def afterSuite () {
     }
 
     @BeforeMethod

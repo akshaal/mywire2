@@ -14,12 +14,13 @@ import utils.LowPriorityPool
 /**
  * Logs message.
  */
-private[system] final class LogActor (pool : LowPriorityPool,
-                                      scheduler : Scheduler)
-                      extends Actor (pool, scheduler)
-                      with DummyLogging
+private[system] abstract class LogActor  extends Actor with DummyLogging
 {
-    def act () = {
+    protected override val pool : LowPriorityPool
+
+    // ///////////////////////////////////////////////////////////////////
+
+    final def act () = {
         case (event : LoggingEvent, nano : Long) => {
             val stack = event.getThrowableStrRep
             val stackStr = if (stack == null) "" else stack.mkString("\n")

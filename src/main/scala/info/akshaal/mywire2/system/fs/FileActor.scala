@@ -16,15 +16,19 @@ import java.nio.channels.CompletionHandler
 import java.nio.charset.Charset
 
 import mywire2.Predefs._
-import actor.{NormalPriorityActor, Actor}
+import actor.Actor
 import system.RuntimeConstants
 import logger.Logging
+import utils.NormalPriorityPool
 
 /**
  * Fast async file reader/writer. Can read only limited number of bytes.
  */
-private[system] object FileActor extends NormalPriorityActor {
-    start ()
+private[system] abstract class FileActor extends Actor {
+    protected val pool : NormalPriorityPool
+
+    // - - - - - - - - - - - - - - -- - - - -- -  - -
+    // Concrete
 
     private val encoder =
         Charset.forName(RuntimeConstants.fileEncoding).newEncoder()
@@ -32,7 +36,7 @@ private[system] object FileActor extends NormalPriorityActor {
     /**
      * Process actor message.
      */
-    override def act () = {
+    override final def act () = {
         case WriteFile(file, content) => writeFile (file, content)
     }
 
@@ -64,7 +68,8 @@ private [fs] final class WriteCompletionHandler (buf : ByteBuffer,
                                                  file : File,
                                                  sender : Option[Actor])
                        extends CompletionHandler [Integer, Object]
-                       with Logging {
+                       with Logging
+{
     val bufLen = buf.remaining
     var channel : AsynchronousFileChannel = null
 
@@ -96,10 +101,12 @@ private [fs] final class WriteCompletionHandler (buf : ByteBuffer,
      * Called when write operation failed.
      */
     override def failed (exc : Throwable, ignored : Object) : Unit = {
-        if (sender == null) {
-            error ("Failed to write to file: " + file, exc)
-        } else {
-            sender.foreach (_ ! (WriteFileFailed (file, exc)))
+        sender match {
+            case None =>
+                error ("Failed to write to file: " + file, exc)
+
+            case Some (actor) =>
+                actor ! (WriteFileFailed (file, exc))
         }
 
         closeChannel ()
@@ -114,7 +121,7 @@ private [fs] final class WriteCompletionHandler (buf : ByteBuffer,
 
     def closeChannel () = {
         if (channel != null) {
-            logIgnoredException (logger, "unable to close channel") {
+            logIgnoredException ("unable to close channel of file: " + file) {
                 channel.close ()
             }
         }
