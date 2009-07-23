@@ -7,8 +7,8 @@
 
 package info.akshaal.mywire2.system.logger
 
-trait Logging {
-    protected[logger] implicit val logger = Logger.get (this)
+private[logger] trait AbstractLogging {
+    protected[logger] implicit val logger : Logger
 
     def debug (str : String) = logger.debug (str)
     def info (str : String)  = logger.info (str)
@@ -35,4 +35,12 @@ trait Logging {
     def infoLazy (obj : AnyRef, e : Throwable)  = logger.infoLazy (obj, e)
     def warnLazy (obj : AnyRef, e : Throwable)  = logger.warnLazy (obj, e)
     def errorLazy (obj : AnyRef, e : Throwable) = logger.errorLazy (obj, e)
+}
+
+trait Logging extends AbstractLogging {
+    protected[logger] override implicit val logger = Logger.get (this)
+}
+
+trait DummyLogging extends AbstractLogging {
+    protected[logger] override implicit val logger = DummyLogger
 }
