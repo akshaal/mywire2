@@ -27,17 +27,17 @@ private[system] trait Scheduler extends Logging
     /**
      * Get average latency of the scheduler.
      */
-    def averageLatency = schedulerThread.latencyTiming.average
+    final def averageLatency = schedulerThread.latencyTiming.average
 
     /**
      * Shutdown scheduler.
      */
-    def shutdown () = schedulerThread.shutdown
+    final def shutdown () = schedulerThread.shutdown
 
     /**
      * Schedule payload for actor to be delivered in timeUnit.
      */
-    def in (actor : Actor, payload : Any, timeUnit : TimeUnit) = {
+    final def in (actor : Actor, payload : Any, timeUnit : TimeUnit) = {
         val schedule =
             new OneTimeSchedule (actor,
                                  payload,
@@ -49,7 +49,7 @@ private[system] trait Scheduler extends Logging
     /**
      * Schedule payload for actor to be delivered every timeUnit.
      */
-    def every (actor : Actor, payload : Any, period : TimeUnit) = {
+    final def every (actor : Actor, payload : Any, period : TimeUnit) = {
         val periodNano = period.asNanoseconds
         val curNanoTime = System.nanoTime
         val semiStableNumber = actor.getClass.getName.toString.hashCode

@@ -41,6 +41,7 @@ trait Logging extends AbstractLogging {
     protected[logger] override implicit val logger = Logger.get (this)
 }
 
-trait DummyLogging extends AbstractLogging {
+trait DummyLogging extends {
     protected[logger] override implicit val logger = DummyLogger
-}
+} with AbstractLogging
+
