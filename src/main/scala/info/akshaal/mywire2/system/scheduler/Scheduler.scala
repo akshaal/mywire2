@@ -15,9 +15,13 @@ import actor.Actor
 /**
  * Scheduler class.
  */
-private[system] final class Scheduler (latencyLimit : TimeUnit)
-                        extends Logging
+private[system] trait Scheduler extends Logging
 {
+    val latencyLimit : TimeUnit
+
+    // ///////////////////////////////////////////////////////////////////
+    // Concrete
+
     private[this] val schedulerThread = new SchedulerThread (latencyLimit)
 
     /**

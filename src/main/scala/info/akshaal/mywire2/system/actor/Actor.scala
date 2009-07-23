@@ -12,7 +12,7 @@ import org.jetlang.core.BatchExecutor
 /**
  * Very simple and hopefully fast implementation of actors
  */
-abstract class Actor extends Logging with NotNull {
+trait Actor extends Logging with NotNull {
     /** Pool to be used by actor. */
     protected val pool : Pool
 

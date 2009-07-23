@@ -4,13 +4,13 @@ package info.akshaal.mywire2.system.test.unit.logger
 
 import mywire2.system.daemon.Daemon
 import mywire2.system.logger.Logger
-import mywire2.test.common.BaseTest
+import mywire2.system.test.unit.BaseUnitTest
 
 import org.testng.annotations.Test
 
 // TODO: Test appender
 
-class LoggerTest extends BaseTest {  
+class LoggerTest extends BaseUnitTest {
     @Test (groups=Array("indie"))
     def testLoggerLevels () = {
         logger.debug ("Debug level")

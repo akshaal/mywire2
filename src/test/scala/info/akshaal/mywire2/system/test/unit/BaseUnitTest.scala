@@ -16,6 +16,7 @@ import org.testng.annotations.{AfterMethod,
 
 import mywire2.system.RuntimeConstants
 import mywire2.system.logger.Logging
+import mywire2.test.common.BaseTest
 
 /**
  * Basic initialization.

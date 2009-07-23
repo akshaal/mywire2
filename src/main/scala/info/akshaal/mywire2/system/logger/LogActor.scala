@@ -14,7 +14,7 @@ import utils.LowPriorityPool
 /**
  * Logs message.
  */
-private[system] abstract class LogActor  extends Actor with DummyLogging
+private[system] abstract class LogActor extends Actor with DummyLogging
 {
     protected override val pool : LowPriorityPool
 

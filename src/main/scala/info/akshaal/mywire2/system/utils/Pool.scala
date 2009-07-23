@@ -9,28 +9,28 @@ import java.util.concurrent.{Executors, ThreadFactory}
 
 import ThreadPriorityChanger.{HiPriority, NormalPriority, LowPriority}
 
-private[system] abstract class HiPriorityPool extends Pool {
+private[system] trait HiPriorityPool extends {
     private[utils] override final val name = "HiPriorityPool"
 
     private[utils] override final val priority = HiPriority
-}
+} with Pool
 
-private[system] abstract class NormalPriorityPool extends Pool {
+private[system] trait NormalPriorityPool extends {
     private[utils] override final val name = "NormalPriorityPool"
 
     private[utils] override final val priority = NormalPriority
-}
+} with Pool
 
-private[system] abstract class LowPriorityPool extends Pool {
+private[system] trait LowPriorityPool extends {
     private[utils] override final val name = "LowPriorityPool"
 
     private[utils] override final val priority = LowPriority
-}
+} with Pool
 
 /**
  * Pool class to be used by actors.
  */
-private[system] sealed abstract class Pool
+private[system] trait Pool
 {
     private[utils] val name : String
 

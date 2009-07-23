@@ -3,9 +3,9 @@
  */
 
 package info.akshaal.mywire2.system.test.unit.utils
-/*
+
 import mywire2.system.utils.LongValueFrame
-import mywire2.test.common.BaseTest
+import mywire2.system.test.unit.BaseUnitTest
 
 import org.testng.annotations.Test
 import org.testng.Assert._
@@ -13,7 +13,7 @@ import org.testng.Assert._
 /**
  * Test Long Value Frame.
  */
-class LongValuesFrameTest extends BaseTest {
+class LongValuesFrameTest extends BaseUnitTest {
     val MAGIC_3 = 3L
     val MAGIC_4 = 4L
     val MAGIC_5 = 5L
@@ -107,4 +107,3 @@ class LongValuesFrameTest extends BaseTest {
         assertEquals (frame.average (), 2L)
     }
 }
-*/
