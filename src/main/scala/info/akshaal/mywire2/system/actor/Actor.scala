@@ -50,7 +50,7 @@ trait Actor extends Logging with NotNull {
         // This runner will be executed by executor when time has come
         // to process the message
         val runner = mkRunnable {
-            runTimingFinisher ("Actor started for message: " + msg)
+            runTimingFinisher ("[latency] Actor started for message: " + msg)
 
             val executeTimingFinisher = pool.executionTiming.createFinisher
 
@@ -61,7 +61,7 @@ trait Actor extends Logging with NotNull {
             }
 
             // Show complete latency
-            executeTimingFinisher ("Actor completed for message: " + msg)
+            executeTimingFinisher ("[execution] Actor completed for message: " + msg)
         }
 
         fiber.execute (runner)
@@ -96,7 +96,7 @@ trait Actor extends Logging with NotNull {
     /**
      * Stop the actor.
      */
-    private[actor] final def exit() = {
+    private[actor] final def stop() = {
         debug ("About to stop")
         fiber.dispose
     }

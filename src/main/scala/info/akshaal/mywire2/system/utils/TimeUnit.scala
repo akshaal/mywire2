@@ -11,10 +11,46 @@ final class TimeUnit (nano : Long) extends NotNull {
     @inline
     def asNanoseconds       = nano
 
-    lazy val asMicroseconds = nano / 1000L
-    lazy val asMilliseconds = nano / 1000L / 1000L
-    lazy val asSeconds      = nano / 1000L / 1000L / 1000L
-    lazy val asMinutes      = nano / 1000L / 1000L / 1000L / 60L
-    lazy val asHours        = nano / 1000L / 1000L / 1000L / 60L / 60L
-    lazy val asDays         = nano / 1000L / 1000L / 1000L / 60L / 60L / 24L
+    lazy val asMicroseconds = nano / TimeUnit.nsInUs
+    lazy val asMilliseconds = nano / TimeUnit.nsInMs
+    lazy val asSeconds      = nano / TimeUnit.nsInSec
+    lazy val asMinutes      = nano / TimeUnit.nsInMin
+    lazy val asHours        = nano / TimeUnit.nsInHour
+    lazy val asDays         = nano / TimeUnit.nsInDay
+
+    override lazy val toString = {
+        // Split into components
+        var cur = nano
+        var comps : List[String] = Nil
+
+        for ((name : String, value : Long) <- TimeUnit.units) {
+            val div = cur / value
+            cur = cur % value
+
+            if (div != 0L) {
+                comps = (div + name) :: comps
+            }
+        }
+
+        // Return
+        if (comps == Nil) "0ns" else comps.reverse.mkString(" ")
+    }
+}
+
+private[utils] object TimeUnit {
+    val nsInUs   = 1000L
+    val nsInMs   = 1000000L
+    val nsInSec  = 1000000000L
+    val nsInMin  = 60000000000L
+    val nsInHour = 3600000000000L
+    val nsInDay  = 86400000000000L
+
+    val units : List[(String, Long)] =
+            List (("days", nsInDay),
+                  ("hours", nsInHour),
+                  ("mins", nsInMin),
+                  ("secs", nsInSec),
+                  ("ms", nsInMs),
+                  ("us", nsInUs),
+                  ("ns", 1L))
 }

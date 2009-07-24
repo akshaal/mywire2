@@ -21,9 +21,9 @@ private[system] final class Timing (limit : TimeUnit) extends NotNull {
 
             // Inform
             if (time > limit.asNanoseconds) {
-                logger.warn(message + ". Timing(ns) = " + time)
+                logger.warn(message + ". Timing = " + time.nanoseconds)
             } else {
-                logger.debugLazy(message + ". Timing(ns) = " + time)
+                logger.debugLazy(message + ". Timing = " + time.nanoseconds)
             }
         }
     }

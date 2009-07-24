@@ -44,10 +44,11 @@ private[unit] object UnitTestState extends Logging {
  * Base class for all tests.
  */
 class BaseUnitTest extends BaseTest {
+
     @BeforeSuite
-    override def beforeSuite () {
+    def beforeSuite0 () {
         UnitTestState.init
-        
-        super.beforeSuite
     }
+
+    val module = UnitTestModule
 }

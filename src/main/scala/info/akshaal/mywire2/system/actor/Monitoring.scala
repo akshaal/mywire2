@@ -10,20 +10,20 @@ import scheduler.{TimeOut, Scheduler}
 import system.RuntimeConstants
 import utils.{TimeUnit, NormalPriorityPool}
 
-private[system] abstract class Monitoring
+private[system] trait Monitoring
 {
     val monitoringActors : List[MonitoringActor]
 
     // -- - - - - -  - -- -- - -  - - - - - - --  - -- - - -
     // Concrete
 
-    final def add (actor : Actor) = {
+    private[actor] final def add (actor : Actor) = {
         val cmd = Add (actor)
 
         monitoringActors.foreach (_ ! cmd)
     }
 
-    final def remove (actor : Actor) = {
+    private[actor] final def remove (actor : Actor) = {
         val cmd = Remove (actor)
         
         monitoringActors.foreach (_ ! cmd)
@@ -37,7 +37,7 @@ private[actor] case object Ping extends MonitoringCommand
 private[actor] case object Pong extends MonitoringCommand
 private[actor] case object Monitor extends MonitoringCommand
 
-private[system] abstract class MonitoringActor extends Actor
+private[system] trait MonitoringActor extends Actor
 {
     schedule payload Monitor every interval
 
@@ -48,8 +48,8 @@ private[system] abstract class MonitoringActor extends Actor
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Concrete
 
-    private[this] val currentActors : Set[Actor] = new HashSet[Actor]
-    private[this] var monitoringActors : Set[Actor] = new HashSet[Actor]
+    private val currentActors : Set[Actor] = new HashSet[Actor]
+    private var monitoringActors : Set[Actor] = new HashSet[Actor]
 
     final def act () = {
         case Add (actor)    => currentActors += actor

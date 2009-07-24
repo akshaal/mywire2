@@ -6,47 +6,39 @@
  */
 
 package info.akshaal.mywire2.system.test.unit.actor
-/*
+
 import collection.immutable.List
 import org.testng.annotations.Test
 import org.testng.Assert._
 
-import mywire2.test.common.BaseTest
-import mywire2.system.actor.Actor
-import mywire2.system.utils.{HiPriorityPool, LowPriorityPool}
+import mywire2.system.test.unit.{BaseUnitTest, UnitTestModule, HiPriorityActor}
 
-class ActorTest extends BaseTest {
+class ActorTest extends BaseUnitTest {
     @Test (groups=Array("indie"))
     def testPingPong () = {
         SampleActor ! 1
-        SampleActor.start
-        ToStringActor.start
+        UnitTestModule.ActorManagerImpl.startActor (SampleActor)
+        UnitTestModule.ActorManagerImpl.startActor (ToStringActor)
         SampleActor ! 3
         SampleActor ! 7
         sleep ()
-        SampleActor.exit
-        ToStringActor.exit
+        UnitTestModule.ActorManagerImpl.stopActor (SampleActor)
+        UnitTestModule.ActorManagerImpl.stopActor (ToStringActor)
 
         assertEquals (SampleActor.accuInt, List(7, 3, 1))
         assertEquals (SampleActor.accuString, List("x7", "x3", "x1"))
-        
-        debug ("current latency of hiPriorityPool = "
-               + HiPriorityPool.latency.getNano)
-
-        debug ("current latency of LowPriorityPool = "
-               + LowPriorityPool.latency.getNano)
     }
 
     @Test (groups=Array("indie"))
     def testExceptionResistance () = {
-        UnstableActor.start
+        UnitTestModule.ActorManagerImpl.startActor (UnstableActor)
 
         for (i <- 1 to 10) {
             UnstableActor ! i
         }
 
         sleep
-        UnstableActor.exit
+        UnitTestModule.ActorManagerImpl.stopActor (UnstableActor)
 
         assertEquals (UnstableActor.sum, 1+3+5+7+9)
     }
@@ -72,7 +64,7 @@ object SampleActor extends HiPriorityActor {
     }
 }
 
-object ToStringActor extends LowPriorityActor {
+object ToStringActor extends HiPriorityActor {
     def act () = {
         case x => {
             debug ("Received message: " + x)
@@ -81,7 +73,7 @@ object ToStringActor extends LowPriorityActor {
     }
 }
 
-object UnstableActor extends Actor {
+object UnstableActor extends HiPriorityActor {
     var sum = 0
 
     def act () = {
@@ -94,4 +86,3 @@ object UnstableActor extends Actor {
         }
     }
 }
-*/
