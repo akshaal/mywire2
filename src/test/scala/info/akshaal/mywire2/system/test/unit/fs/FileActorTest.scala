@@ -6,20 +6,20 @@
  */
 
 package info.akshaal.mywire2.system.test.unit.fs
-/*
+
 import collection.immutable.List
 import org.testng.annotations.Test
 import org.testng.Assert._
 import java.io.{File, FileReader, BufferedReader}
 
-import mywire2.test.common.BaseTest
-import mywire2.system.actor.HiPriorityActor
-import mywire2.system.fs.{FileActor, WriteFile, WriteFileDone, WriteFileFailed}
+import mywire2.system.test.unit.{BaseUnitTest, UnitTestModule, HiPriorityActor}
 
-class FileActorTest extends BaseTest {
+import mywire2.system.fs.{WriteFile, WriteFileDone, WriteFileFailed}
+
+class FileActorTest extends BaseUnitTest {
     @Test (groups=Array("indie"))
     def testWrite () = {
-        WriteTestActor.start
+        UnitTestModule.ActorManagerImpl.startActor (WriteTestActor)
 
         val file = File.createTempFile ("mywire2", "test")
         file.deleteOnExit
@@ -42,7 +42,7 @@ class FileActorTest extends BaseTest {
         assertEquals (WriteTestActor.done, 2)
         assertEquals (WriteTestActor.excs, 1)
 
-        WriteTestActor.exit
+        UnitTestModule.ActorManagerImpl.stopActor (WriteTestActor)
     }
 
     private def sleep () = Thread.sleep (1000)
@@ -64,7 +64,7 @@ object WriteTestActor extends HiPriorityActor {
     def act () = {
         case msg @ (file : File, content : String) => {
             debug ("Received message: " + msg)
-            FileActor ! (WriteFile (file, content))
+            UnitTestModule.FileActorImpl ! (WriteFile (file, content))
         }
 
         case msg @ WriteFileDone (file) => {
@@ -78,4 +78,3 @@ object WriteTestActor extends HiPriorityActor {
         }
     }
 }
-*/

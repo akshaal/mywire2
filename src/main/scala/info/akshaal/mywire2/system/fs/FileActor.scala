@@ -24,7 +24,7 @@ import utils.NormalPriorityPool
 /**
  * Fast async file reader/writer. Can read only limited number of bytes.
  */
-private[system] abstract class FileActor extends Actor {
+private[system] trait FileActor extends Actor {
     protected val pool : NormalPriorityPool
 
     // - - - - - - - - - - - - - - -- - - - -- -  - -

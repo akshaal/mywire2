@@ -13,6 +13,7 @@ import mywire2.system.utils.{LowPriorityPool, NormalPriorityPool, HiPriorityPool
 import mywire2.system.scheduler.Scheduler
 import mywire2.system.actor.{Monitoring, MonitoringActor, ActorManager, Actor}
 import mywire2.system.daemon.DaemonStatus
+import mywire2.system.fs.FileActor
 
 abstract class HiPriorityActor extends {
     override val scheduler = UnitTestModule.SchedulerImpl
@@ -47,7 +48,7 @@ object UnitTestModule {
     // Scheduler
 
     object SchedulerImpl extends {
-        override val latencyLimit = 4.milliseconds
+        override val latencyLimit = 8.milliseconds
     } with Scheduler
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
@@ -71,6 +72,11 @@ object UnitTestModule {
         override val scheduler = SchedulerImpl
         override val pool = LowPriorityPoolImpl
     } with LogActor
+
+    object FileActorImpl extends {
+        override val scheduler = SchedulerImpl
+        override val pool = NormalPriorityPoolImpl
+    } with FileActor
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Daemon
@@ -97,7 +103,9 @@ object UnitTestModule {
     LogServiceAppender.logActor = Some(LogActorImpl)
 
     // Run actors
-    val actors = List(LogActorImpl) ++ MonitoringImpl.monitoringActors
+    val actors = MonitoringImpl.monitoringActors ++
+                 List(LogActorImpl,
+                      FileActorImpl)
 
     actors.foreach (ActorManagerImpl.startActor (_))
 
