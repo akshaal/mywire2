@@ -23,7 +23,7 @@ import mywire2.system.logger.Logging
 private[common] object TestState extends Logging {
     var ready = false
 
-    def init () {
+    def init () = {
         synchronized {
             if (!ready) {
                 doInit
@@ -32,7 +32,7 @@ private[common] object TestState extends Logging {
         }
     }
 
-    private def doInit () {
+    private def doInit () = {
         info ("Initializing")
     }
 }
@@ -42,23 +42,23 @@ private[common] object TestState extends Logging {
  */
 class BaseTest extends Logging {
     @BeforeSuite
-    def beforeSuite () {
+    def beforeSuite () = {
         TestState.init
     }
 
     @AfterSuite
-    def afterSuite () {
+    def afterSuite () = {
     }
 
     @BeforeMethod
-    def beforeEachMethod (method : Method) {
+    def beforeEachMethod (method : Method) = {
         val methodSignature = method.toGenericString
         
         info ("About to run test: " + methodSignature)
     }
 
     @AfterMethod
-    def afterEachMethod (method : Method) {
+    def afterEachMethod (method : Method) = {
         val methodSignature = method.toGenericString
 
         info ("Test has completed its execution: " + methodSignature)

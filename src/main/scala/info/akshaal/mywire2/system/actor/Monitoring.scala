@@ -5,7 +5,7 @@ package info.akshaal.mywire2.system.actor
 import scala.collection.mutable.HashSet
 import scala.collection.mutable.Set
 
-import daemon.Daemon
+import daemon.DaemonStatus
 import scheduler.{TimeOut, Scheduler}
 import system.RuntimeConstants
 import utils.{TimeUnit, NormalPriorityPool}
@@ -45,6 +45,8 @@ private[system] trait MonitoringActor extends Actor
 
     protected val interval : TimeUnit
 
+    protected val daemonStatus : DaemonStatus
+
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Concrete
 
@@ -67,9 +69,10 @@ private[system] trait MonitoringActor extends Actor
 
         if (notResponding.isEmpty) {
             debug ("Actors are OK")
+            daemonStatus.monitoringAlive
         } else {
             error ("There are actors not responding: " + notResponding)
-            Daemon.die ()
+            daemonStatus.die ()
         }
 
         // Start monitoring current set of actors

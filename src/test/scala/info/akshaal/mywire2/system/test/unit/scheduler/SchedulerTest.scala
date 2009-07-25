@@ -1,19 +1,19 @@
 /** Akshaal (C) 2009. GNU GPL. http://akshaal.info */
 
 package info.akshaal.mywire2.system.test.unit.actor
-/*
+
 import org.testng.annotations.Test
 import org.testng.Assert._
 
 import mywire2.Predefs._
-import mywire2.system.scheduler.{Scheduler, TimeOut}
-import mywire2.test.common.BaseTest
-import mywire2.system.actor.HiPriorityActor
+import mywire2.system.scheduler.TimeOut
 
-class SchedulerTest extends BaseTest {
+import mywire2.system.test.unit.{BaseUnitTest, UnitTestModule, HiPriorityActor}
+
+class SchedulerTest extends BaseUnitTest {
     @Test (groups=Array("indie"))
     def testRecurrentScheduling () = {
-        RecurrentTestActor.start
+        UnitTestModule.ActorManagerImpl.startActor (RecurrentTestActor)
 
         RecurrentTestActor.invocations = 0
         Thread.sleep (400)
@@ -30,18 +30,16 @@ class SchedulerTest extends BaseTest {
         assertTrue (RecurrentTestActor.invocations <= 18,
                     "After 800ms, RecurrentTestActor should be executed 18 at the most")
 
-        RecurrentTestActor.exit
-
-        debug ("Scheduler latency " + Scheduler.getLatencyNano)
+        UnitTestModule.ActorManagerImpl.stopActor (RecurrentTestActor)
     }
 
     @Test (groups=Array("indie"))
     def testOneTimeScheduling () = {
-        OneTimeTestActor.start
-        OneTimeTestActor2.start
+        UnitTestModule.ActorManagerImpl.startActor (OneTimeTestActor)
+        UnitTestModule.ActorManagerImpl.startActor (OneTimeTestActor2)
 
-        Scheduler.in (OneTimeTestActor, 123, 130.milliseconds)
-        Scheduler.in (OneTimeTestActor2, 234, 50.milliseconds)
+        UnitTestModule.SchedulerImpl.in (OneTimeTestActor, 123, 130.milliseconds)
+        UnitTestModule.SchedulerImpl.in (OneTimeTestActor2, 234, 50.milliseconds)
 
         Thread.sleep (30)
 
@@ -67,10 +65,8 @@ class SchedulerTest extends BaseTest {
         assertTrue (OneTimeTestActor2.executed,
                     "Actor must be executed at this point")
 
-        OneTimeTestActor.exit
-        OneTimeTestActor2.exit
-
-        debug ("Scheduler latency " + Scheduler.getLatencyNano)
+        UnitTestModule.ActorManagerImpl.stopActor (OneTimeTestActor)
+        UnitTestModule.ActorManagerImpl.stopActor (OneTimeTestActor2)
     }    
 }
 
@@ -108,4 +104,3 @@ object RecurrentTestActor extends HiPriorityActor {
         }
     }
 }
-*/

@@ -12,6 +12,7 @@ import mywire2.system.logger.{LogActor, LogServiceAppender}
 import mywire2.system.utils.{LowPriorityPool, NormalPriorityPool, HiPriorityPool}
 import mywire2.system.scheduler.Scheduler
 import mywire2.system.actor.{Monitoring, MonitoringActor, ActorManager, Actor}
+import mywire2.system.daemon.DaemonStatus
 
 abstract class HiPriorityActor extends {
     override val scheduler = UnitTestModule.SchedulerImpl
@@ -32,21 +33,21 @@ object UnitTestModule {
 
     object NormalPriorityPoolImpl extends {
         override val threads = 2
-        override val latencyLimit = 400.milliseconds
-        override val executionLimit = 100.milliseconds
+        override val latencyLimit = 800.milliseconds
+        override val executionLimit = 200.milliseconds
     } with NormalPriorityPool
 
     object HiPriorityPoolImpl extends {
         override val threads = 2
-        override val latencyLimit = 1.milliseconds
-        override val executionLimit = 400.microseconds
+        override val latencyLimit = 10.milliseconds
+        override val executionLimit = 800.microseconds
     } with HiPriorityPool
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Scheduler
 
     object SchedulerImpl extends {
-        override val latencyLimit = 300.microseconds
+        override val latencyLimit = 4.milliseconds
     } with Scheduler
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
@@ -72,12 +73,18 @@ object UnitTestModule {
     } with LogActor
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
+    // Daemon
+
+    object DaemonStatusImpl extends DaemonStatus
+
+    // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Monitoring Actors
 
     class MonitoringActorImpl extends {
         override val scheduler = SchedulerImpl
         override val pool = NormalPriorityPoolImpl
         override val interval = monitoringInterval
+        override val daemonStatus = DaemonStatusImpl
     } with MonitoringActor
 
     object MonitoringActor1Impl extends MonitoringActorImpl
@@ -86,9 +93,14 @@ object UnitTestModule {
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Init code
 
+    // Init logger
+    LogServiceAppender.logActor = Some(LogActorImpl)
+
+    // Run actors
     val actors = List(LogActorImpl) ++ MonitoringImpl.monitoringActors
 
-    LogServiceAppender.logActor = Some(LogActorImpl)
-    
     actors.foreach (ActorManagerImpl.startActor (_))
+
+    // Start scheduling
+    SchedulerImpl.start ()
 }

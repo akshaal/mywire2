@@ -14,9 +14,9 @@ import org.testng.annotations.{AfterMethod,
                                AfterSuite,
                                BeforeSuite}
 
-import mywire2.system.RuntimeConstants
 import mywire2.system.logger.Logging
 import mywire2.test.common.BaseTest
+import org.testng.Assert._
 
 /**
  * Basic initialization.
@@ -24,7 +24,7 @@ import mywire2.test.common.BaseTest
 private[unit] object UnitTestState extends Logging {
     var ready = false
 
-    def init () {
+    def init () = {
         synchronized {
             if (!ready) {
                 doInit
@@ -33,7 +33,7 @@ private[unit] object UnitTestState extends Logging {
         }
     }
 
-    private def doInit () {
+    private def doInit () = {
         UnitTestModule // Touching
 
         info ("Initializing")
@@ -44,11 +44,14 @@ private[unit] object UnitTestState extends Logging {
  * Base class for all tests.
  */
 class BaseUnitTest extends BaseTest {
-
-    @BeforeSuite
-    def beforeSuite0 () {
-        UnitTestState.init
+    @AfterMethod
+    def checkDaemonStatus () = {
+        assertFalse (UnitTestModule.DaemonStatusImpl.isDying,
+                     "The application must not be dying at this moment!")
     }
 
-    val module = UnitTestModule
+    @BeforeSuite
+    def beforeSuite0 () = {
+        UnitTestState.init
+    }
 }

@@ -35,6 +35,11 @@ private[system] trait Scheduler extends Logging
     final def shutdown () = schedulerThread.shutdown
 
     /**
+     * Start scheduler.
+     */
+    final def start () = schedulerThread.start
+
+    /**
      * Schedule payload for actor to be delivered in timeUnit.
      */
     final def in (actor : Actor, payload : Any, timeUnit : TimeUnit) = {
