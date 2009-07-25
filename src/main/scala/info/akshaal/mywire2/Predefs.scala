@@ -116,9 +116,6 @@ object Predefs {
         def hours        = mk (x * 1000L * 1000L * 1000L * 60L * 60L)
 
         @inline
-        def days         = mk (x * 1000L * 1000L * 1000L * 60L * 60L * 24L)
-
-        @inline
         def mk (nano : Long) = new TimeUnit (nano)
     }
 }

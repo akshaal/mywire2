@@ -35,6 +35,19 @@ final class TimeUnit (nano : Long) extends NotNull {
         // Return
         if (comps == Nil) "0ns" else comps.reverse.mkString(" ")
     }
+
+    def + (that : TimeUnit) = new TimeUnit (nano + that.asNanoseconds)
+    def - (that : TimeUnit) = new TimeUnit (nano - that.asNanoseconds)
+    def * (that : TimeUnit) = new TimeUnit (nano * that.asNanoseconds)
+    def * (that : Int) = new TimeUnit (nano * that.asInstanceOf[Long])
+    def / (that : TimeUnit) = new TimeUnit (nano / that.asNanoseconds)
+    def / (that : Int) = new TimeUnit (nano / that.asInstanceOf[Long])
+
+    override def equals (that : Any) = that match {
+        case thatTimeUnit : TimeUnit => nano == thatTimeUnit.asNanoseconds
+    }
+
+    override def hashCode = nano.asInstanceOf[Int]
 }
 
 private[utils] object TimeUnit {

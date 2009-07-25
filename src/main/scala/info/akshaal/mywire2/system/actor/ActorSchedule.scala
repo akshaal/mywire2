@@ -18,7 +18,6 @@ final class TimeSpec[T] (number : Long, action : TimeUnit => T) extends NotNull 
     def seconds      = action (number.seconds)
     def minutes      = action (number.minutes)
     def hours        = action (number.hours)
-    def days         = action (number.days)
 }
 
 final class Trigger (actor : Actor, payload : Any, scheduler : Scheduler)
