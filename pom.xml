@@ -168,7 +168,14 @@
                     <argLine>
                         -Djava.library.path=${basedir}/src/main/native/${host.native.id}
                     </argLine>
-        
+
+                    <suiteXmlFiles>
+                        <suiteXmlFile>
+                            src/test/resources/testng.xml
+                        </suiteXmlFile>
+                    </suiteXmlFiles>
+
+                    <failIfNoTests>true</failIfNoTests>
                     <forkMode>once</forkMode>
                     <parallel>methods</parallel>
                     <threadCount>${test.threads}</threadCount>
