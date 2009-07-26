@@ -6,7 +6,7 @@ import scala.collection.mutable.HashSet
 import scala.collection.mutable.Set
 
 import daemon.DaemonStatus
-import scheduler.{TimeOut, Scheduler}
+import scheduler.{TimeOut, Scheduler, UnfixedScheduling}
 import system.RuntimeConstants
 import utils.{TimeUnit, NormalPriorityPool}
 
@@ -37,7 +37,7 @@ private[actor] case object Ping extends MonitoringCommand
 private[actor] case object Pong extends MonitoringCommand
 private[actor] case object Monitor extends MonitoringCommand
 
-private[system] trait MonitoringActor extends Actor
+private[system] trait MonitoringActor extends Actor with UnfixedScheduling
 {
     schedule payload Monitor every interval
 

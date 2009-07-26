@@ -13,6 +13,12 @@ import logger.Logging
 import actor.Actor
 
 /**
+ * Marks an actor for which scheduling shift can be selected at random
+ * (depending on actor's hashcode).
+ */
+private[system] trait UnfixedScheduling
+
+/**
  * Scheduler class.
  */
 private[system] trait Scheduler extends Logging
@@ -57,7 +63,11 @@ private[system] trait Scheduler extends Logging
     final def every (actor : Actor, payload : Any, period : TimeUnit) = {
         val periodNano = period.asNanoseconds
         val curNanoTime = System.nanoTime
-        val semiStableNumber = actor.getClass.getName.toString.hashCode
+        val semiStableNumber =
+            actor match {
+                case unfixed : UnfixedScheduling => actor.hashCode
+                case _ => actor.getClass.getName.toString.hashCode
+            }
 
         def calc (shift : Long) =
             ((curNanoTime / periodNano + shift) * periodNano

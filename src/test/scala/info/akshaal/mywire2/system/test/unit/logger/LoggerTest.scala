@@ -11,7 +11,7 @@ import org.testng.annotations.Test
 // TODO: Test appender
 
 class LoggerTest extends BaseUnitTest {
-    @Test (groups=Array("indie"))
+    @Test (groups=Array("unit"))
     def testLoggerLevels () = {
         logger.debug ("Debug level")
         logger.info ("Info level")

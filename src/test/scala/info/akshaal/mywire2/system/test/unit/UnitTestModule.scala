@@ -21,7 +21,7 @@ abstract class HiPriorityActor extends {
 } with Actor
 
 object UnitTestModule {
-    val monitoringInterval = 1.seconds
+    val monitoringInterval = 2.seconds
 
     // - - - - - - -  - - - - - - - - - - - - - - - - - -
     // Pools

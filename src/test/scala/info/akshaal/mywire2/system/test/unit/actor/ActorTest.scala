@@ -14,7 +14,7 @@ import org.testng.Assert._
 import mywire2.system.test.unit.{BaseUnitTest, UnitTestModule, HiPriorityActor}
 
 class ActorTest extends BaseUnitTest {
-    @Test (groups=Array("indie"))
+    @Test (groups=Array("unit"))
     def testPingPong () = {
         SampleActor ! 1
         UnitTestModule.ActorManagerImpl.startActor (SampleActor)
@@ -29,7 +29,7 @@ class ActorTest extends BaseUnitTest {
         assertEquals (SampleActor.accuString, List("x7", "x3", "x1"))
     }
 
-    @Test (groups=Array("indie"))
+    @Test (groups=Array("unit"))
     def testExceptionResistance () = {
         UnitTestModule.ActorManagerImpl.startActor (UnstableActor)
 

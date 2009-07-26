@@ -51,7 +51,7 @@ object MonitoringTestModule {
 class MonitoringTest extends BaseUnitTest {
     MonitoringTestModule // We use it
 
-    @Test (groups=Array("indie"))
+    @Test (groups=Array("unit"))
     def testBadActor () = {
         MonitoringTestModule.ActorManagerImpl.startActor (BadActor)
         BadActor ! "Hi"

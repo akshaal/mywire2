@@ -12,6 +12,9 @@
 
     <!-- = = = = = = = = = = = = Default properties = = = = = = = = = = -->
     <properties>
+        <!-- Build -->
+        <test.threads>10</test.threads>
+
         <!-- Versions -->
         <scala.version>2.8.0-SNAPSHOT</scala.version>
         <jetlang.version>0.1.7</jetlang.version>
@@ -168,7 +171,7 @@
         
                     <forkMode>once</forkMode>
                     <parallel>methods</parallel>
-                    <threadCount>3</threadCount>
+                    <threadCount>${test.threads}</threadCount>
                 </configuration>
             </plugin>
 

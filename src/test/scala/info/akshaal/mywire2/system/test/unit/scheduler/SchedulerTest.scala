@@ -11,7 +11,7 @@ import mywire2.system.scheduler.TimeOut
 import mywire2.system.test.unit.{BaseUnitTest, UnitTestModule, HiPriorityActor}
 
 class SchedulerTest extends BaseUnitTest {
-    @Test (groups=Array("indie"))
+    @Test (groups=Array("unit"))
     def testRecurrentScheduling () = {
         UnitTestModule.ActorManagerImpl.startActor (RecurrentTestActor)
 
@@ -33,7 +33,7 @@ class SchedulerTest extends BaseUnitTest {
         UnitTestModule.ActorManagerImpl.stopActor (RecurrentTestActor)
     }
 
-    @Test (groups=Array("indie"))
+    @Test (groups=Array("unit"))
     def testOneTimeScheduling () = {
         UnitTestModule.ActorManagerImpl.startActor (OneTimeTestActor)
         UnitTestModule.ActorManagerImpl.startActor (OneTimeTestActor2)

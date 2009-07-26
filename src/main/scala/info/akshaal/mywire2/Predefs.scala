@@ -14,6 +14,22 @@ import system.utils.TimeUnit
 
 object Predefs {
     /**
+     * Create list repeating code n times.
+     */
+    @inline
+    def repeatToList[T] (n : Int) (code : => T) : List[T] = {
+        var l : List[T] = Nil
+        var i = n
+
+        while (i > 0) {
+            i -= 1
+            l = code :: l
+        }
+
+        l
+    }
+
+    /**
      * Create object of interface Runnable which will execute the given
      * block of code.
      */

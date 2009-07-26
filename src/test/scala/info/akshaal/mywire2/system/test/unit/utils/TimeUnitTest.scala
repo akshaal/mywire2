@@ -12,7 +12,7 @@ import org.testng.annotations.Test
 import org.testng.Assert.{assertEquals, assertTrue}
 
 class TimeUnitTest extends BaseUnitTest {
-    @Test (groups = Array("indie"))
+    @Test (groups = Array("unit"))
     def testConstruction () = {
         assertEquals (10.nanoseconds.asNanoseconds, 10L)
         assertEquals (11.microseconds.asNanoseconds, 11L * 1000L)
@@ -22,7 +22,7 @@ class TimeUnitTest extends BaseUnitTest {
         assertEquals (15.hours.asNanoseconds, 15L * 1000L * 1000L * 1000L * 60L * 60L)
     }
 
-    @Test (groups = Array("indie"))
+    @Test (groups = Array("unit"))
     def testEquals () = {
         assertEquals (1.milliseconds, 1.milliseconds)
         assertTrue (1.milliseconds != 10.milliseconds)
@@ -36,7 +36,7 @@ class TimeUnitTest extends BaseUnitTest {
         assertTrue (30.seconds != 30.minutes)
     }
 
-    @Test (groups = Array("indie"))
+    @Test (groups = Array("unit"))
     def testArith () = {
         assertEquals (23.hours + 1.hours, 24.hours)
         assertEquals (50.minutes + 10.minutes + 3.hours, 4.hours)

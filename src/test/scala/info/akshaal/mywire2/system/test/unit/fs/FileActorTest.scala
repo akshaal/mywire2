@@ -17,7 +17,7 @@ import mywire2.system.test.unit.{BaseUnitTest, UnitTestModule, HiPriorityActor}
 import mywire2.system.fs.{WriteFile, WriteFileDone, WriteFileFailed}
 
 class FileActorTest extends BaseUnitTest {
-    @Test (groups=Array("indie"))
+    @Test (groups=Array("unit"))
     def testWrite () = {
         UnitTestModule.ActorManagerImpl.startActor (WriteTestActor)
 
