@@ -22,7 +22,7 @@ class JmxTest extends BaseUnitTest {
     @Test (groups=Array("unit"))
     def test () = {
         val obj = new ObjectName (JmxTestObject.jmxObjectName)
-        val srv = JmxTestObject.mbeanServer
+        val srv = ManagementFactory.getPlatformMBeanServer()
 
         // r
         assertEquals (JmxTestObject.r, 1)
@@ -57,10 +57,7 @@ object JmxTestObject extends SimpleJmx {
     var rw : Int = 3
 
     var operCalled = false
-
-    override lazy val mbeanServer =
-               ManagementFactory.getPlatformMBeanServer()
-
+              
     override lazy val jmxObjectName = "mywire:name=jmxTestObject"
 
     override lazy val jmxAttributes = List (

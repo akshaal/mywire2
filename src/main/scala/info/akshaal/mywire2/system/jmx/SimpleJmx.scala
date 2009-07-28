@@ -7,6 +7,7 @@
 
 package info.akshaal.mywire2.system.jmx
 
+import java.lang.management.ManagementFactory
 import javax.management.{MBeanInfo, DynamicMBean, Attribute,
                          AttributeList, MBeanAttributeInfo,
                          MBeanOperationInfo, MBeanServer,
@@ -18,7 +19,6 @@ import scala.collection.JavaConversions._
 trait SimpleJmx {
     private final type JmxGeneralAttr = JmxAttr[Nothing, Any]
 
-    protected def mbeanServer : MBeanServer
     protected def jmxObjectName : String
     protected def jmxAttributes : List[JmxGeneralAttr] = Nil
     protected def jmxOperations : List[JmxOper] = Nil
@@ -36,7 +36,8 @@ trait SimpleJmx {
     }
 
     // Register
-    mbeanServer.registerMBean (MBean, new ObjectName(jmxObjectName))
+    ManagementFactory.getPlatformMBeanServer()
+                     .registerMBean (MBean, new ObjectName(jmxObjectName))
 
     /**
      * MBean definition.
