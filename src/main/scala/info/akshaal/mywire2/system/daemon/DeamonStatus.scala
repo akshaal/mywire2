@@ -39,7 +39,7 @@ private[system] abstract class DaemonStatus
      * List of exposed JMX operations.
      */
     override lazy val jmxOperations = List (
-        JmxOper ("shutdown", () => shutdown ())
+        JmxOper ("shutdown", () => shutdown)
     )
 
     /**
@@ -65,16 +65,9 @@ private[system] abstract class DaemonStatus
     /**
      * Called when application is no more reliable and must die.
      */
-    final def die () : Unit = {
-        // Don't die twice
-        synchronized {
-            if (dying) {
-                error ("Already dying. A request for dying is ignored")
-                return
-            }
-
-            dying = true
-        }
+    final lazy val die : Unit = {
+        // Mark as dying
+        dying = true
 
         // Dying
         error ("Soon will die, but first... postmortum information:")
@@ -87,13 +80,9 @@ private[system] abstract class DaemonStatus
     /**
      * Called when shutdown is requested.
      */
-    final def shutdown () : Unit = {
-        synchronized {
-            if (!shuttingDown) {
-                info ("Shutdown requested. Shutting down...")
-                shuttingDown = true
-            }
-        }
+    final lazy val shutdown = {
+        info ("Shutdown requested. Shutting down...")
+        shuttingDown = true
     }
 
     /**

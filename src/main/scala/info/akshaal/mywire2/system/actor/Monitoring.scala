@@ -72,7 +72,7 @@ private[system] trait MonitoringActor extends Actor with UnfixedScheduling
             daemonStatus.monitoringAlive
         } else {
             error ("There are actors not responding: " + notResponding)
-            daemonStatus.die ()
+            daemonStatus.die
         }
 
         // Start monitoring current set of actors
