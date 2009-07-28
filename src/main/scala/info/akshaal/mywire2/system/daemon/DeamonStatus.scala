@@ -15,6 +15,9 @@ import scala.collection.mutable.Map
 
 private[system] class DaemonStatus extends DummyLogging {
     @volatile
+    private var shuttingDown = false
+
+    @volatile
     private var dying = false
     
     @volatile
@@ -24,6 +27,11 @@ private[system] class DaemonStatus extends DummyLogging {
      * Returns true if application is dying (feels bad).
      */
     final def isDying = dying
+
+    /**
+     * Returns true if the application is shutting down.
+     */
+    final def isShuttingDown = shuttingDown
 
     /**
      * Returns timestamp when the application was alive last time.
@@ -50,8 +58,23 @@ private[system] class DaemonStatus extends DummyLogging {
         }
 
         // Dying
-        error ("About to die, but first... postmortum information:")
+        error ("Soon will die, but first... postmortum information:")
         dumpThreads
+        
+        // Shutdown gracefully if possible
+        shutdown
+    }
+
+    /**
+     * Called when shutdown is requested.
+     */
+    final def shutdown () : Unit = {
+        synchronized {
+            if (!shuttingDown) {
+                info ("Shutdown requested. Shutting down...")
+                shuttingDown = true
+            }
+        }
     }
 
     /**

@@ -57,10 +57,14 @@ class MonitoringTest extends BaseUnitTest {
         BadActor ! "Hi"
         assertFalse (MonitoringTestModule.DaemonStatusImpl.isDying,
                      "The application must not be dying at this moment!")
+        assertFalse (MonitoringTestModule.DaemonStatusImpl.isShuttingDown,
+                     "The application must not be shutting down at this moment!")
 
         Thread.sleep (UnitTestModule.monitoringInterval.asMilliseconds * 4)
         assertTrue (MonitoringTestModule.DaemonStatusImpl.isDying,
                     "The application must be dying at this moment!")
+        assertTrue (MonitoringTestModule.DaemonStatusImpl.isShuttingDown,
+                     "The application must be shutting down at this moment!")
 
         MonitoringTestModule.ActorManagerImpl.stopActor (BadActor)
     }
