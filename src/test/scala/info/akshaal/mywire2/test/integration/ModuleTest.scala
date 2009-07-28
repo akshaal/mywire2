@@ -10,16 +10,25 @@ package info.akshaal.mywire2.test.integration
 import org.testng.annotations.Test
 import org.testng.Assert._
 
+import java.lang.management.ManagementFactory
+import javax.management.ObjectName
+
 import mywire2.Predefs._
 import system.module.Module
 import common.BaseTest
 
 class ModuleTest extends BaseTest {
-    TestModule // touch it
+    TestModule.start
 
     @Test (groups=Array("integration"), dependsOnGroups=Array("unit"))
-    def test () = {
-        // TODO
+    def basic () = {
+        val srv = ManagementFactory.getPlatformMBeanServer()
+        val statusObj = new ObjectName (TestModule.daemonStatusJmxName)
+
+        // Check status, it must no be dying or shutting down
+        assertNotNull (statusObj)
+        assertEquals (srv.getAttribute (statusObj, "dying"), false)
+        assertEquals (srv.getAttribute (statusObj, "shuttingDown"), false)
     }
 }
 

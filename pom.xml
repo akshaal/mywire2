@@ -195,7 +195,7 @@
                         <!-- <arg>-Ydebug</arg> -->
                         <arg>-deprecation</arg>
                         <!-- <arg>-Xcheck-null</arg> -->
-                        <arg>-Xwarninit</arg>
+                        <!-- <arg>-Xwarninit</arg> -->
                     </args>
                 </configuration>                
                 <executions>

@@ -33,10 +33,14 @@ trait Module {
 
     val schedulerLatencyLimit : TimeUnit
 
+    val daemonStatusJmxName = "mywire:name=status"
+
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Daemon
 
-    private object DaemonStatusImpl extends DaemonStatus
+    private object DaemonStatusImpl extends DaemonStatus {
+        override lazy val jmxObjectName = daemonStatusJmxName
+    }
 
     // - - - - - - -  - - - - - - - - - - - - - - - - - -
     // Pools
@@ -107,28 +111,30 @@ trait Module {
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Useful addons
 
-    def startActors (it : Iterable[Actor]) = {
-        actors.foreach (ActorManagerImpl.startActor (_))
+    final def startActors (it : Iterable[Actor]) = {
+        it.foreach (ActorManagerImpl.startActor (_))
     }
 
-    def stopActors (it : Iterable[Actor]) = {
-        actors.foreach (ActorManagerImpl.stopActor (_))
+    final def stopActors (it : Iterable[Actor]) = {
+        it.foreach (ActorManagerImpl.stopActor (_))
     }
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Init code
 
-    // Init logger
-    LogServiceAppender.logActor = Some(LogActorImpl)
+    final lazy val start : Unit = {
+        // Init logger
+        LogServiceAppender.logActor = Some(LogActorImpl)
 
-    // Run actors
-    private val actors =
-        (LogActorImpl
-         :: FileActorImpl
-         :: MonitoringImpl.monitoringActors)
+        // Run actors
+        val actors =
+            (LogActorImpl
+             :: FileActorImpl
+             :: MonitoringImpl.monitoringActors)
 
-    startActors (actors)
+        startActors (actors)
 
-    // Start scheduling
-    SchedulerImpl.start ()
+        // Start scheduling
+        SchedulerImpl.start ()
+    }
 }

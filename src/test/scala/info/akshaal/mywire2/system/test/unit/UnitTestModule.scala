@@ -22,6 +22,7 @@ abstract class HiPriorityActor extends {
 
 object UnitTestModule {
     val monitoringInterval = 2.seconds
+    val daemonStatusJmxName = "mywire:name=unitTestDaemonStatus"
 
     // - - - - - - -  - - - - - - - - - - - - - - - - - -
     // Pools
@@ -81,7 +82,9 @@ object UnitTestModule {
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Daemon
 
-    object DaemonStatusImpl extends DaemonStatus
+    object DaemonStatusImpl extends DaemonStatus {
+        override lazy val jmxObjectName = daemonStatusJmxName
+    }
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Monitoring Actors

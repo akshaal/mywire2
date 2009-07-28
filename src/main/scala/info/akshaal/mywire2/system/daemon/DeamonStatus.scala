@@ -9,11 +9,15 @@ package info.akshaal.mywire2.system.daemon
 
 import mywire2.Predefs._
 import logger.DummyLogging
+import jmx.{SimpleJmx, JmxAttr, JmxOper}
+
 import collection.immutable.{List, Nil}
 import scala.collection.JavaConversions._
 import scala.collection.mutable.Map
 
-private[system] class DaemonStatus extends DummyLogging {
+private[system] abstract class DaemonStatus
+                extends DummyLogging with SimpleJmx
+{
     @volatile
     private var shuttingDown = false
 
@@ -22,6 +26,21 @@ private[system] class DaemonStatus extends DummyLogging {
     
     @volatile
     private var lastAliveTimestamp = System.nanoTime.nanoseconds
+
+    /**
+     * List of exposed JMX attributes.
+     */
+    override lazy val jmxAttributes = List (
+        JmxAttr ("dying",           Some (() => dying),          None),
+        JmxAttr ("shuttingDown",    Some (() => shuttingDown),   None)
+    )
+
+    /**
+     * List of exposed JMX operations.
+     */
+    override lazy val jmxOperations = List (
+        JmxOper ("shutdown", () => shutdown ())
+    )
 
     /**
      * Returns true if application is dying (feels bad).
