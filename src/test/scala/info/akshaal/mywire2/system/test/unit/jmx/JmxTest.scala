@@ -47,7 +47,8 @@ class JmxTest extends BaseUnitTest {
 
         // Invocation
         assertFalse (JmxTestObject.operCalled)
-        // TODO: Implement ivocation
+        // TODO: Implement invocation (here, in test)
+
         // assertTrue (JmxTestObject.operCalled)
     }
 }

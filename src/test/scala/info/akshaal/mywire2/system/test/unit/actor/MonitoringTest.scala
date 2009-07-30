@@ -13,7 +13,7 @@ import org.testng.Assert._
 import java.lang.management.ManagementFactory
 import javax.management.ObjectName
 
-// XXX: This test cannot use usual Test module, because it must not set
+// NOTE: This test cannot use usual Test module, because it must not set
 // it to dying state!, so we redefine some objects
 
 object MonitoringTestModule {
