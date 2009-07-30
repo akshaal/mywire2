@@ -5,15 +5,17 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system.daemon
-
-import mywire2.Predefs._
-import logger.DummyLogging
-import jmx.{SimpleJmx, JmxAttr, JmxOper}
+package info.akshaal.mywire2
+package system
+package daemon
 
 import collection.immutable.{List, Nil}
 import scala.collection.JavaConversions._
 import scala.collection.mutable.Map
+
+import Predefs._
+import logger.DummyLogging
+import jmx.{SimpleJmx, JmxAttr, JmxOper}
 
 private[system] abstract class DaemonStatus
                 extends DummyLogging with SimpleJmx

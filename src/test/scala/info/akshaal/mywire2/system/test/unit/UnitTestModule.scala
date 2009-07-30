@@ -5,15 +5,17 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system.test.unit
+package info.akshaal.mywire2
+package system.test.unit
 
-import mywire2.Predefs._
-import mywire2.system.logger.{LogActor, LogServiceAppender}
-import mywire2.system.utils.{LowPriorityPool, NormalPriorityPool, HiPriorityPool}
-import mywire2.system.scheduler.Scheduler
-import mywire2.system.actor.{Monitoring, MonitoringActor, ActorManager, Actor}
-import mywire2.system.daemon.DaemonStatus
-import mywire2.system.fs.FileActor
+import Predefs._
+import system.logger.{LogActor, LogServiceAppender}
+import system.utils.{LowPriorityPool, NormalPriorityPool, HiPriorityPool}
+import system.scheduler.Scheduler
+import system.actor.{Monitoring, MonitoringActor, ActorManager, Actor}
+import system.daemon.DaemonStatus
+import system.fs.FileActor
+import system.dao.LogDao
 
 abstract class HiPriorityActor extends {
     override val scheduler = UnitTestModule.SchedulerImpl
@@ -67,11 +69,17 @@ object UnitTestModule {
     } with ActorManager
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
+    // Daos
+
+    object LogDaoImpl extends LogDao
+
+    // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Actors
 
     object LogActorImpl extends {
         override val scheduler = SchedulerImpl
         override val pool = LowPriorityPoolImpl
+        override val logDao = LogDaoImpl
     } with LogActor
 
     object FileActorImpl extends {

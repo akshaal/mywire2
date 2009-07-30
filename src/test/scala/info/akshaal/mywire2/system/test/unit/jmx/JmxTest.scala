@@ -5,7 +5,8 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system.test.unit.jmx
+package info.akshaal.mywire2
+package system.test.unit.jmx
 
 import java.lang.management.ManagementFactory
 import javax.management.{ObjectName, Attribute}
@@ -13,8 +14,8 @@ import javax.management.{ObjectName, Attribute}
 import org.testng.annotations.Test
 import org.testng.Assert._
 
-import mywire2.system.test.unit.{BaseUnitTest, UnitTestModule, HiPriorityActor}
-import mywire2.system.jmx.{JmxAttr, JmxOper, SimpleJmx}
+import system.test.unit.{BaseUnitTest, UnitTestModule, HiPriorityActor}
+import system.jmx.{JmxAttr, JmxOper, SimpleJmx}
 
 class JmxTest extends BaseUnitTest {
     JmxTestObject

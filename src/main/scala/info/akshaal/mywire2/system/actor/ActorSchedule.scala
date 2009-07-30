@@ -5,11 +5,13 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system.actor
+package info.akshaal.mywire2
+package system
+package actor
 
 import scheduler.Scheduler
 import utils.TimeUnit
-import mywire2.Predefs._
+import Predefs._
 
 final class TimeSpec[T] (number : Long, action : TimeUnit => T) extends NotNull {
     def nanoseconds  = action (number.nanoseconds)

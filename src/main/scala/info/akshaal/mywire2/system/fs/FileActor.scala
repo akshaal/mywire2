@@ -5,7 +5,9 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system.fs
+package info.akshaal.mywire2
+package system
+package fs
 
 import java.nio.channels.AsynchronousFileChannel
 import java.nio.file.{Path, OpenOption}
@@ -15,7 +17,7 @@ import java.nio.{ByteBuffer, CharBuffer}
 import java.nio.channels.CompletionHandler
 import java.nio.charset.Charset
 
-import mywire2.Predefs._
+import Predefs._
 import actor.Actor
 import system.RuntimeConstants
 import logger.Logging

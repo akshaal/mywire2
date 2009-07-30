@@ -5,7 +5,9 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system.utils
+package info.akshaal.mywire2
+package system
+package utils
 
 import system.RuntimeConstants
 import logger.Logging

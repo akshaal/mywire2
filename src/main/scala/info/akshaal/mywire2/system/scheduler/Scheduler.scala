@@ -5,9 +5,11 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system.scheduler
+package info.akshaal.mywire2
+package system
+package scheduler
 
-import mywire2.Predefs._
+import Predefs._
 import utils.TimeUnit
 import logger.Logging
 import actor.Actor

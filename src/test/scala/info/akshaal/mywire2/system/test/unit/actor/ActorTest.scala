@@ -5,13 +5,14 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system.test.unit.actor
+package info.akshaal.mywire2
+package system.test.unit.actor
 
 import collection.immutable.List
 import org.testng.annotations.Test
 import org.testng.Assert._
 
-import mywire2.system.test.unit.{BaseUnitTest, UnitTestModule, HiPriorityActor}
+import system.test.unit.{BaseUnitTest, UnitTestModule, HiPriorityActor}
 
 class ActorTest extends BaseUnitTest {
     @Test (groups=Array("unit"))

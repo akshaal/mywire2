@@ -5,17 +5,17 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.test.common
+package info.akshaal.mywire2
+package test.common
 
 import java.lang.reflect.Method
-
 import org.testng.annotations.{AfterMethod,
                                BeforeMethod,
                                AfterSuite,
                                BeforeSuite}
 
-import mywire2.system.RuntimeConstants
-import mywire2.system.logger.Logging
+import system.RuntimeConstants
+import system.logger.Logging
 
 /**
  * Basic initialization.

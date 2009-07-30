@@ -1,13 +1,13 @@
 /** Akshaal (C) 2009. GNU GPL. http://akshaal.info */
 
-package info.akshaal.mywire2.system.actor
+package info.akshaal.mywire2.system
+package actor
 
 import scala.collection.mutable.HashSet
 import scala.collection.mutable.Set
 
 import daemon.DaemonStatus
 import scheduler.{TimeOut, Scheduler, UnfixedScheduling}
-import system.RuntimeConstants
 import utils.{TimeUnit, NormalPriorityPool}
 
 private[system] trait Monitoring

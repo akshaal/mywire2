@@ -1,10 +1,11 @@
-package info.akshaal.mywire2.system.test.unit.actor
+package info.akshaal.mywire2
+package system.test.unit.actor
 
-import mywire2.Predefs._
-import mywire2.system.test.unit.{BaseUnitTest, UnitTestModule}
-import mywire2.system.utils.HiPriorityPool
-import mywire2.system.actor.{Monitoring, MonitoringActor, ActorManager, Actor}
-import mywire2.system.daemon.DaemonStatus
+import Predefs._
+import system.test.unit.{BaseUnitTest, UnitTestModule}
+import system.utils.HiPriorityPool
+import system.actor.{Monitoring, MonitoringActor, ActorManager, Actor}
+import system.daemon.DaemonStatus
 
 import org.testng.annotations.Test
 import org.testng.Assert._

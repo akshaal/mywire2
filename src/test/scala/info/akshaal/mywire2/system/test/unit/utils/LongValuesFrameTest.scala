@@ -2,10 +2,12 @@
  * Akshaal (C) 2009. GNU GPL. http://akshaal.info
  */
 
-package info.akshaal.mywire2.system.test.unit.utils
+package info.akshaal.mywire2
+package system
+package test.unit.utils
 
-import mywire2.system.utils.LongValueFrame
-import mywire2.system.test.unit.BaseUnitTest
+import system.utils.LongValueFrame
+import system.test.unit.BaseUnitTest
 
 import org.testng.annotations.Test
 import org.testng.Assert._

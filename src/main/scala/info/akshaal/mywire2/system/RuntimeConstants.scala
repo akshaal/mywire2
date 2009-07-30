@@ -4,7 +4,7 @@ package info.akshaal.mywire2.system
 
 import java.util.Properties
 
-import mywire2.Predefs._
+import info.akshaal.mywire2.Predefs._
 
 private[system] object RuntimeConstants {
     /**

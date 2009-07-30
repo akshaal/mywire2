@@ -2,11 +2,12 @@
  * Akshaal (C) 2009. GNU GPL. http://akshaal.info
  */
 
-package info.akshaal.mywire2.system.test.unit.utils
+package info.akshaal.mywire2
+package system.test.unit.utils
 
-import mywire2.Predefs._
-import mywire2.system.utils.TimeUnit
-import mywire2.system.test.unit.BaseUnitTest
+import Predefs._
+import system.utils.TimeUnit
+import system.test.unit.BaseUnitTest
 
 import org.testng.annotations.Test
 import org.testng.Assert.{assertEquals, assertTrue}

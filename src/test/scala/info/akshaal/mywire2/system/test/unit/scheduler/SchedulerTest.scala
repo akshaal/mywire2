@@ -1,14 +1,15 @@
 /** Akshaal (C) 2009. GNU GPL. http://akshaal.info */
 
-package info.akshaal.mywire2.system.test.unit.actor
+package info.akshaal.mywire2
+package system.test.unit.actor
 
 import org.testng.annotations.Test
 import org.testng.Assert._
 
-import mywire2.Predefs._
-import mywire2.system.scheduler.TimeOut
+import Predefs._
+import system.scheduler.TimeOut
 
-import mywire2.system.test.unit.{BaseUnitTest, UnitTestModule, HiPriorityActor}
+import system.test.unit.{BaseUnitTest, UnitTestModule, HiPriorityActor}
 
 class SchedulerTest extends BaseUnitTest {
     @Test (groups=Array("unit"))

@@ -1,7 +1,7 @@
 
-package info.akshaal.mywire2.system.daemon
+package info.akshaal.mywire2.system
+package daemon
 
-import system.RuntimeConstants
 import actor.Actor
 
 private[daemon] abstract class DeamonStatusActor extends Actor {

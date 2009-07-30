@@ -5,13 +5,14 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system.scheduler
+package info.akshaal.mywire2
+package system
+package scheduler
 
 import java.util.concurrent.locks.ReentrantLock
 import java.util.PriorityQueue
 
-import mywire2.Predefs._
-import system.RuntimeConstants
+import Predefs._
 import logger.Logging
 import utils.{Timing, TimeUnit, ThreadPriorityChanger}
 

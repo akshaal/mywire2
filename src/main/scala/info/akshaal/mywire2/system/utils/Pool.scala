@@ -2,7 +2,7 @@
 
 package info.akshaal.mywire2.system.utils
 
-import mywire2.Predefs._
+import info.akshaal.mywire2.Predefs._
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}

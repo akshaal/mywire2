@@ -1,13 +1,15 @@
-package info.akshaal.mywire2.system.actor
+package info.akshaal.mywire2
+package system
+package actor
 
-import mywire2.Predefs._
+import org.jetlang.fibers.{PoolFiberFactory, Fiber}
+import org.jetlang.core.BatchExecutor
+
+import Predefs._
 import logger.Logging
 import utils.{Pool, TimeUnit}
 import system.RuntimeConstants
 import scheduler.Scheduler
-
-import org.jetlang.fibers.{PoolFiberFactory, Fiber}
-import org.jetlang.core.BatchExecutor
 
 /**
  * Very simple and hopefully fast implementation of actors

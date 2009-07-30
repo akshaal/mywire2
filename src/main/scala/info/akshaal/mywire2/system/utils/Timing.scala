@@ -1,7 +1,8 @@
-package info.akshaal.mywire2.system.utils
+package info.akshaal.mywire2
+package system
+package utils
 
-import mywire2.Predefs._
-import system.RuntimeConstants
+import Predefs._
 import logger.Logger
 
 /**

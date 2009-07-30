@@ -1,4 +1,6 @@
-package info.akshaal.mywire2.system.logger
+package info.akshaal.mywire2
+package system
+package logger
 
 import org.apache.log4j.{AppenderSkeleton, Layout}
 import org.apache.log4j.spi.LoggingEvent

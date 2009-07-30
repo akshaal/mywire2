@@ -5,7 +5,9 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.test.integration
+package info.akshaal.mywire2
+package test
+package integration
 
 import org.testng.annotations.Test
 import org.testng.Assert._
@@ -13,7 +15,7 @@ import org.testng.Assert._
 import java.lang.management.ManagementFactory
 import javax.management.ObjectName
 
-import mywire2.Predefs._
+import Predefs._
 import system.module.Module
 import common.BaseTest
 

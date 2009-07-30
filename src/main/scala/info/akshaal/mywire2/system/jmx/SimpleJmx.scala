@@ -150,12 +150,12 @@ sealed case class JmxAttr[-T, +R] (name   : String,
                                    setter : Option[Function1[T, Unit]])
                                extends NotNull
 {
-    def getAsObject () : Object = getter match {
+    private[jmx] def getAsObject () : Object = getter match {
         case Some(f) => f ().asInstanceOf[Object]
         case None => null
     }
 
-    def setAsObject (v : Object) : Unit = setter match {
+    private[jmx] def setAsObject (v : Object) : Unit = setter match {
         case Some(f) => f (v.asInstanceOf[T])
         case None => ()
     }

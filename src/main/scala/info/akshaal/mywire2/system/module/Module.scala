@@ -5,15 +5,18 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system.module
+package info.akshaal.mywire2
+package system
+package module
 
-import mywire2.Predefs._
+import Predefs._
 import logger.{LogActor, LogServiceAppender}
 import utils.{LowPriorityPool, NormalPriorityPool, HiPriorityPool, TimeUnit}
 import scheduler.Scheduler
 import actor.{Monitoring, MonitoringActor, ActorManager, Actor}
 import daemon.DaemonStatus
 import fs.FileActor
+import dao.LogDao
 
 trait Module {
     val monitoringInterval : TimeUnit
@@ -95,12 +98,16 @@ trait Module {
         override val monitoring = MonitoringImpl
     } with ActorManager
 
+    // - -- -  - - - - - - - - - - - - - - - - - -- - - -
+    private object LogDaoImpl extends LogDao
+
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Actors
 
     private object LogActorImpl extends {
         override val scheduler = SchedulerImpl
         override val pool = LowPriorityPoolImpl
+        override val logDao = LogDaoImpl
     } with LogActor
 
     private object FileActorImpl extends {

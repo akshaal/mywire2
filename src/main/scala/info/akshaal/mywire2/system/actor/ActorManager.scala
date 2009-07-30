@@ -5,9 +5,11 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system.actor
+package info.akshaal.mywire2
+package system
+package actor
 
-import system.logger.Logging
+import logger.Logging
 
 private[system] trait ActorManager extends Logging {
     private[system] val monitoring : Monitoring

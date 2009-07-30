@@ -5,16 +5,17 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system.test.unit.fs
+package info.akshaal.mywire2
+package system.test.unit.fs
 
 import collection.immutable.List
 import org.testng.annotations.Test
 import org.testng.Assert._
 import java.io.{File, FileReader, BufferedReader}
 
-import mywire2.system.test.unit.{BaseUnitTest, UnitTestModule, HiPriorityActor}
+import system.test.unit.{BaseUnitTest, UnitTestModule, HiPriorityActor}
 
-import mywire2.system.fs.{WriteFile, WriteFileDone, WriteFileFailed}
+import system.fs.{WriteFile, WriteFileDone, WriteFileFailed}
 
 class FileActorTest extends BaseUnitTest {
     @Test (groups=Array("unit"))

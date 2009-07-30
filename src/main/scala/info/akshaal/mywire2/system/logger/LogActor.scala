@@ -1,4 +1,6 @@
-package info.akshaal.mywire2.system.logger
+package info.akshaal.mywire2
+package system
+package logger
 
 import org.apache.log4j.spi.LoggingEvent
 import org.apache.log4j.Level
@@ -17,6 +19,7 @@ import utils.LowPriorityPool
 private[system] abstract class LogActor extends Actor with DummyLogging
 {
     protected override val pool : LowPriorityPool
+    protected val logDao : LogDao
 
     // ///////////////////////////////////////////////////////////////////
 
@@ -34,7 +37,7 @@ private[system] abstract class LogActor extends Actor with DummyLogging
                                        thread    = event.getThreadName,
                                        throwable = stackStr)
 
-            LogDao.insertRecord (logRecord)
+            logDao.insertRecord (logRecord)
         }
     }
 

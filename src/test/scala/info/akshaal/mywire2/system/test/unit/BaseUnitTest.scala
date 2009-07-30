@@ -5,18 +5,19 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system.test.unit
+package info.akshaal.mywire2
+package system.test.unit
 
 import java.lang.reflect.Method
 
+import org.testng.Assert._
 import org.testng.annotations.{AfterMethod,
                                BeforeMethod,
                                AfterSuite,
                                BeforeSuite}
 
-import mywire2.system.logger.Logging
-import mywire2.test.common.BaseTest
-import org.testng.Assert._
+import system.logger.Logging
+import test.common.BaseTest
 
 /**
  * Basic initialization.
