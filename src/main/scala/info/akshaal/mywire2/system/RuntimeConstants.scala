@@ -6,6 +6,8 @@ import java.util.Properties
 
 import info.akshaal.mywire2.Predefs._
 
+// TODO: Shrink it. Get ridd of it. Make it smaller. Whatever!!!
+
 private[system] object RuntimeConstants {
     /**
      * For each thread pool number of threads created is equal to
