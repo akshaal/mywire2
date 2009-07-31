@@ -13,7 +13,7 @@ import system.logger.{LogActor, LogServiceAppender}
 import system.utils.{LowPriorityPool, NormalPriorityPool, HiPriorityPool}
 import system.scheduler.Scheduler
 import system.actor.{Monitoring, MonitoringActor, ActorManager, Actor}
-import system.daemon.DaemonStatus
+import system.daemon.{DaemonStatus, DeamonStatusActor}
 import system.fs.FileActor
 import system.dao.LogDao
 
@@ -25,6 +25,8 @@ abstract class HiPriorityActor extends {
 object UnitTestModule {
     val monitoringInterval = 2.seconds
     val daemonStatusJmxName = "mywire:name=unitTestDaemonStatus"
+    val daemonStatusUpdateInterval = 5.seconds
+    val daemonStatusFile = "/tmp/mywire2-unitTest.status"
 
     // - - - - - - -  - - - - - - - - - - - - - - - - - -
     // Pools
@@ -67,6 +69,14 @@ object UnitTestModule {
     object ActorManagerImpl extends {
         val monitoring = MonitoringImpl
     } with ActorManager
+
+    object DeamonStatusActorImpl extends {
+        protected override val scheduler = SchedulerImpl
+        protected override val pool = NormalPriorityPoolImpl
+        protected override val interval = daemonStatusUpdateInterval
+        protected override val daemonStatus = DaemonStatusImpl
+        protected override val statusFile = daemonStatusFile
+    } with DeamonStatusActor
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Daos
@@ -116,6 +126,7 @@ object UnitTestModule {
     // Run actors
     val actors = MonitoringImpl.monitoringActors ++
                  List(LogActorImpl,
+                      DeamonStatusActorImpl,
                       FileActorImpl)
 
     actors.foreach (ActorManagerImpl.startActor (_))

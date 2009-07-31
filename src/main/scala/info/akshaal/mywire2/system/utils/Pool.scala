@@ -36,11 +36,11 @@ private[system] trait Pool
 
     private[utils] val priority : ThreadPriorityChanger.Priority
 
-    val threads : Int
+    protected val threads : Int
 
-    val latencyLimit : TimeUnit
+    protected val latencyLimit : TimeUnit
 
-    val executionLimit : TimeUnit
+    protected val executionLimit : TimeUnit
 
     // -- - - - - -  - -- -- - -  - - - - - - --  - -- - - -
     // Concrete

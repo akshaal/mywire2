@@ -25,7 +25,7 @@ private[system] trait UnfixedScheduling
  */
 private[system] trait Scheduler extends Logging
 {
-    val latencyLimit : TimeUnit
+    protected val latencyLimit : TimeUnit
 
     // ///////////////////////////////////////////////////////////////////
     // Concrete

@@ -14,7 +14,7 @@ import logger.{LogActor, LogServiceAppender}
 import utils.{LowPriorityPool, NormalPriorityPool, HiPriorityPool, TimeUnit}
 import scheduler.Scheduler
 import actor.{Monitoring, MonitoringActor, ActorManager, Actor}
-import daemon.DaemonStatus
+import daemon.{DaemonStatus, DeamonStatusActor}
 import fs.FileActor
 import dao.LogDao
 
@@ -37,65 +37,72 @@ trait Module {
     val schedulerLatencyLimit : TimeUnit
 
     val daemonStatusJmxName = "mywire:name=status"
+    val daemonStatusUpdateInterval : TimeUnit
+    val daemonStatusFile : String
+
+    require (daemonStatusUpdateInterval > monitoringInterval * 2,
+             "daemonStatusUpdateInterval must greater than 2*monitoringInterval")
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Daemon
 
     private object DaemonStatusImpl extends DaemonStatus {
-        override lazy val jmxObjectName = daemonStatusJmxName
+        protected override lazy val jmxObjectName = daemonStatusJmxName
     }
 
     // - - - - - - -  - - - - - - - - - - - - - - - - - -
     // Pools
 
     private object LowPriorityPoolImpl extends {
-        override val threads = lowPriorityPoolThreads
-        override val latencyLimit = lowPriorityPoolLatencyLimit
-        override val executionLimit = lowPriorityPoolExecutionLimit
+        protected override val threads = lowPriorityPoolThreads
+        protected override val latencyLimit = lowPriorityPoolLatencyLimit
+        protected override val executionLimit = lowPriorityPoolExecutionLimit
     } with LowPriorityPool
 
     private object NormalPriorityPoolImpl extends {
-        override val threads = normalPriorityPoolThreads
-        override val latencyLimit = normalPriorityPoolLatencyLimit
-        override val executionLimit = normalPriorityPoolExecutionLimit
+        protected override val threads = normalPriorityPoolThreads
+        protected override val latencyLimit = normalPriorityPoolLatencyLimit
+        protected override val executionLimit = normalPriorityPoolExecutionLimit
     } with NormalPriorityPool
 
     private object HiPriorityPoolImpl extends {
-        override val threads = hiPriorityPoolThreads
-        override val latencyLimit = hiPriorityPoolLatencyLimit
-        override val executionLimit = hiPriorityPoolExecutionLimit
+        protected override val threads = hiPriorityPoolThreads
+        protected override val latencyLimit = hiPriorityPoolLatencyLimit
+        protected override val executionLimit = hiPriorityPoolExecutionLimit
     } with HiPriorityPool
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Scheduler
 
     private object SchedulerImpl extends {
-        override val latencyLimit = schedulerLatencyLimit
+        protected override val latencyLimit = schedulerLatencyLimit
     } with Scheduler
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Monitoring Actors
 
     private class MonitoringActorImpl extends {
-        override val scheduler = SchedulerImpl
-        override val pool = NormalPriorityPoolImpl
-        override val interval = monitoringInterval
-        override val daemonStatus = DaemonStatusImpl
+        protected override val scheduler = SchedulerImpl
+        protected override val pool = NormalPriorityPoolImpl
+        protected override val interval = monitoringInterval
+        protected override val daemonStatus = DaemonStatusImpl
     } with MonitoringActor
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Monitoring
 
+    private val monitoringActorsList =
+        repeatToList (monitoringActorsCount) {new MonitoringActorImpl}
+
     private object MonitoringImpl extends {
-        override val monitoringActors =
-            repeatToList (monitoringActorsCount) {new MonitoringActorImpl}
+        protected override val monitoringActors = monitoringActorsList
     } with Monitoring
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Actor manager
 
     private object ActorManagerImpl extends {
-        override val monitoring = MonitoringImpl
+        protected override val monitoring = MonitoringImpl
     } with ActorManager
 
     // - -- -  - - - - - - - - - - - - - - - - - -- - - -
@@ -105,15 +112,23 @@ trait Module {
     // Actors
 
     private object LogActorImpl extends {
-        override val scheduler = SchedulerImpl
-        override val pool = LowPriorityPoolImpl
-        override val logDao = LogDaoImpl
+        protected override val scheduler = SchedulerImpl
+        protected override val pool = LowPriorityPoolImpl
+        protected override val logDao = LogDaoImpl
     } with LogActor
 
     private object FileActorImpl extends {
-        override val scheduler = SchedulerImpl
-        override val pool = NormalPriorityPoolImpl
+        protected override val scheduler = SchedulerImpl
+        protected override val pool = NormalPriorityPoolImpl
     } with FileActor
+
+    private object DeamonStatusActorImpl extends {
+        protected override val scheduler = SchedulerImpl
+        protected override val pool = NormalPriorityPoolImpl
+        protected override val interval = daemonStatusUpdateInterval
+        protected override val daemonStatus = DaemonStatusImpl
+        protected override val statusFile = daemonStatusFile
+    } with DeamonStatusActor
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Useful addons
@@ -137,7 +152,8 @@ trait Module {
         val actors =
             (LogActorImpl
              :: FileActorImpl
-             :: MonitoringImpl.monitoringActors)
+             :: DeamonStatusActorImpl
+             :: monitoringActorsList)
 
         startActors (actors)
 

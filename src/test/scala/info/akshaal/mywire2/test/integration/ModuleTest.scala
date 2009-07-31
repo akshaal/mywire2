@@ -51,4 +51,7 @@ object TestModule extends {
     override val hiPriorityPoolExecutionLimit = 500.microseconds
 
     override val schedulerLatencyLimit = 4.milliseconds
+
+    override val daemonStatusUpdateInterval = 5.seconds
+    override val daemonStatusFile = "/tmp/mywire2-test.status"
 } with Module

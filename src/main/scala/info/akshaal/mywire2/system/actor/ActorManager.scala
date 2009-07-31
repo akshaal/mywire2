@@ -12,7 +12,7 @@ package actor
 import logger.Logging
 
 private[system] trait ActorManager extends Logging {
-    private[system] val monitoring : Monitoring
+    protected val monitoring : Monitoring
 
     final def startActor (actor : Actor) = {
         actor.start

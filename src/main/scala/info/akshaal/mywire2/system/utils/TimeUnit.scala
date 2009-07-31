@@ -7,7 +7,8 @@
 
 package info.akshaal.mywire2.system.utils
 
-final class TimeUnit (nano : Long) extends NotNull {
+final class TimeUnit (nano : Long) extends NotNull
+{
     @inline
     def asNanoseconds       = nano
 
@@ -47,7 +48,16 @@ final class TimeUnit (nano : Long) extends NotNull {
         case thatTimeUnit : TimeUnit => nano == thatTimeUnit.asNanoseconds
     }
 
-    override def hashCode = nano.asInstanceOf[Int]
+    override def hashCode : Int = nano.asInstanceOf[Int]
+
+    def compare (that: TimeUnit) : Int =
+        this.asNanoseconds compare that.asNanoseconds
+
+    def equals (that: TimeUnit) : Boolean = compare(that) == 0
+    def <= (that: TimeUnit)     : Boolean = compare(that) <= 0
+    def >= (that: TimeUnit)     : Boolean = compare(that) >= 0
+    def <  (that: TimeUnit)     : Boolean = compare(that) < 0
+    def >  (that: TimeUnit)     : Boolean = compare(that) > 0
 }
 
 private[utils] object TimeUnit {

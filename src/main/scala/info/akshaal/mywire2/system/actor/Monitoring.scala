@@ -12,7 +12,7 @@ import utils.{TimeUnit, NormalPriorityPool}
 
 private[system] trait Monitoring
 {
-    val monitoringActors : List[MonitoringActor]
+    protected val monitoringActors : List[MonitoringActor]
 
     // -- - - - - -  - -- -- - -  - - - - - - --  - -- - - -
     // Concrete
