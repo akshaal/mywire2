@@ -9,33 +9,28 @@ package info.akshaal.mywire2
 package system
 package utils
 
-import system.RuntimeConstants
+import Predefs._
 import logger.Logging
 
 import ru.toril.daemonhelper.{DaemonHelper, OSException}
 
-private[system] object ThreadPriorityChanger extends Logging {
-    abstract sealed class Priority
-    case object LowPriority extends Priority
-    case object NormalPriority extends Priority
-    case object HiPriority extends Priority
+private[system] final class ThreadPriorityChanger (prefs : Prefs)
+                                                    extends Logging
+{
+    import ThreadPriorityChanger._
+
+    def toOsPriority (priority : Priority) = priority match {
+        case LowPriority    => prefs.getInt ("mywire.os.priority.low")
+        case NormalPriority => prefs.getInt ("mywire.os.priority.normal")
+        case HiPriority     => prefs.getInt ("mywire.os.priority.high")
+    }
 
     def change (priority : Priority) = {
         val pid = DaemonHelper.getPid
         val tid = DaemonHelper.getTid
         val name = Thread.currentThread.getName
         val identifier = name + " (pid=" + pid + ", tid=" + tid + ")"
-        val osPriority =
-            priority match {
-                case LowPriority =>
-                    RuntimeConstants.lowPriorityThreadOSPriority
-
-                case NormalPriority =>
-                    RuntimeConstants.normalPriorityThreadOSPriority
-
-                case HiPriority =>
-                    RuntimeConstants.hiPriorityThreadOSPriority
-            }
+        val osPriority = toOsPriority (priority)
 
         try {
             val curPrio = DaemonHelper.getPriority (tid)
@@ -59,4 +54,11 @@ private[system] object ThreadPriorityChanger extends Logging {
                       + ": " + e.getMessage, e)
         }
     }
+}
+
+private[system] object ThreadPriorityChanger {
+    abstract sealed class Priority
+    case object LowPriority extends Priority
+    case object NormalPriority extends Priority
+    case object HiPriority extends Priority
 }

@@ -11,7 +11,8 @@ package module
 
 import Predefs._
 import logger.{LogActor, LogServiceAppender}
-import utils.{LowPriorityPool, NormalPriorityPool, HiPriorityPool, TimeUnit}
+import utils.{LowPriorityPool, NormalPriorityPool, HiPriorityPool, TimeUnit,
+              ThreadPriorityChanger}
 import scheduler.Scheduler
 import actor.{Monitoring, MonitoringActor, ActorManager, Actor}
 import daemon.{DaemonStatus, DeamonStatusActor}
@@ -19,6 +20,8 @@ import fs.FileActor
 import dao.LogDao
 
 trait Module {
+    val prefsResource = "/mywire.properties"
+
     val monitoringInterval : TimeUnit
     val monitoringActorsCount : Int
 
@@ -44,11 +47,21 @@ trait Module {
              "daemonStatusUpdateInterval must greater than 2*monitoringInterval")
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
+    // Preferences
+
+    private val prefsX = new Prefs (prefsResource)
+
+    // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Daemon
 
     private object DaemonStatusImpl extends DaemonStatus {
         protected override lazy val jmxObjectName = daemonStatusJmxName
     }
+
+    // - - - - - - - -  - - - - - - - - - --  - - - - -
+    // Thread priority changer
+
+    private val threadPriorityChangerX = new ThreadPriorityChanger (prefsX)
 
     // - - - - - - -  - - - - - - - - - - - - - - - - - -
     // Pools
@@ -57,18 +70,21 @@ trait Module {
         protected override val threads = lowPriorityPoolThreads
         protected override val latencyLimit = lowPriorityPoolLatencyLimit
         protected override val executionLimit = lowPriorityPoolExecutionLimit
+        protected override val threadPriorityChanger = threadPriorityChangerX
     } with LowPriorityPool
 
     private object NormalPriorityPoolImpl extends {
         protected override val threads = normalPriorityPoolThreads
         protected override val latencyLimit = normalPriorityPoolLatencyLimit
         protected override val executionLimit = normalPriorityPoolExecutionLimit
+        protected override val threadPriorityChanger = threadPriorityChangerX
     } with NormalPriorityPool
 
     private object HiPriorityPoolImpl extends {
         protected override val threads = hiPriorityPoolThreads
         protected override val latencyLimit = hiPriorityPoolLatencyLimit
         protected override val executionLimit = hiPriorityPoolExecutionLimit
+        protected override val threadPriorityChanger = threadPriorityChangerX
     } with HiPriorityPool
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
@@ -76,6 +92,8 @@ trait Module {
 
     private object SchedulerImpl extends {
         protected override val latencyLimit = schedulerLatencyLimit
+        protected override val prefs = prefsX
+        protected override val threadPriorityChanger = threadPriorityChangerX
     } with Scheduler
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
@@ -120,6 +138,7 @@ trait Module {
     private object FileActorImpl extends {
         protected override val scheduler = SchedulerImpl
         protected override val pool = NormalPriorityPoolImpl
+        protected override val prefs = prefsX
     } with FileActor
 
     private object DeamonStatusActorImpl extends {

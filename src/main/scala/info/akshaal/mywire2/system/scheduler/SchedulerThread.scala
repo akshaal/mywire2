@@ -16,14 +16,18 @@ import Predefs._
 import logger.Logging
 import utils.{Timing, TimeUnit, ThreadPriorityChanger}
 
-private[scheduler] final class SchedulerThread (latencyLimit : TimeUnit)
-                       extends Thread with Logging
+private[scheduler] final class SchedulerThread
+                             (latencyLimit : TimeUnit,
+                              threadPriorityChanger : ThreadPriorityChanger,
+                              prefs : Prefs)
+                         extends Thread with Logging
 {
     @volatile
     private var shutdownFlag = false
     private val lock = new ReentrantLock
     private val condition = lock.newCondition
     private val queue = new PriorityQueue[Schedule]
+    private val schedulerDrift = 1.microseconds.asNanoseconds // TODO: Use prefs
     
     val latencyTiming = new Timing (latencyLimit)
 
@@ -48,7 +52,7 @@ private[scheduler] final class SchedulerThread (latencyLimit : TimeUnit)
         info ("Starting scheduler")
         this.setName("Scheduler")
 
-        ThreadPriorityChanger.change (ThreadPriorityChanger.HiPriority)
+        threadPriorityChanger.change (ThreadPriorityChanger.HiPriority)
 
         // Main loop
         while (!shutdownFlag) {
@@ -70,7 +74,7 @@ private[scheduler] final class SchedulerThread (latencyLimit : TimeUnit)
         } else {
             val delay = item.nanoTime - System.nanoTime
 
-            if (delay < RuntimeConstants.schedulerDrift.asNanoseconds) {
+            if (delay < schedulerDrift) {
                 locked { processFromHead }
             } else {
                 locked { condition.awaitNanos (delay) }

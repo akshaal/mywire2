@@ -14,7 +14,6 @@ import org.testng.annotations.{AfterMethod,
                                AfterSuite,
                                BeforeSuite}
 
-import system.RuntimeConstants
 import system.logger.Logging
 
 /**

@@ -8,7 +8,6 @@ import org.jetlang.core.BatchExecutor
 import Predefs._
 import logger.Logging
 import utils.{Pool, TimeUnit}
-import system.RuntimeConstants
 import scheduler.Scheduler
 
 /**

@@ -10,7 +10,8 @@ package system.test.unit
 
 import Predefs._
 import system.logger.{LogActor, LogServiceAppender}
-import system.utils.{LowPriorityPool, NormalPriorityPool, HiPriorityPool}
+import system.utils.{LowPriorityPool, NormalPriorityPool, HiPriorityPool,
+                     ThreadPriorityChanger}
 import system.scheduler.Scheduler
 import system.actor.{Monitoring, MonitoringActor, ActorManager, Actor}
 import system.daemon.{DaemonStatus, DeamonStatusActor}
@@ -23,10 +24,21 @@ abstract class HiPriorityActor extends {
 } with Actor
 
 object UnitTestModule {
+    val prefsResource = "/mywire.properties"
     val monitoringInterval = 2.seconds
     val daemonStatusJmxName = "mywire:name=unitTestDaemonStatus"
     val daemonStatusUpdateInterval = 5.seconds
     val daemonStatusFile = "/tmp/mywire2-unitTest.status"
+
+    // - - - - -- - - - - - - - - - - - - - - - - - - - --
+    // Preferences
+
+    val prefsX = new Prefs (prefsResource)
+
+    // - - - - - - - -  - - - - - - - - - --  - - - - -
+    // Thread priority changer
+
+    val threadPriorityChangerX = new ThreadPriorityChanger (prefsX)
 
     // - - - - - - -  - - - - - - - - - - - - - - - - - -
     // Pools
@@ -35,18 +47,21 @@ object UnitTestModule {
         override val threads = 2
         override val latencyLimit = 1.seconds
         override val executionLimit = 400.milliseconds
-    } with LowPriorityPool
+        override val threadPriorityChanger = threadPriorityChangerX
+     } with LowPriorityPool
 
     object NormalPriorityPoolImpl extends {
         override val threads = 2
         override val latencyLimit = 800.milliseconds
         override val executionLimit = 200.milliseconds
+        override val threadPriorityChanger = threadPriorityChangerX
     } with NormalPriorityPool
 
     object HiPriorityPoolImpl extends {
         override val threads = 2
         override val latencyLimit = 10.milliseconds
         override val executionLimit = 800.microseconds
+        override val threadPriorityChanger = threadPriorityChangerX
     } with HiPriorityPool
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
@@ -54,6 +69,8 @@ object UnitTestModule {
 
     object SchedulerImpl extends {
         override val latencyLimit = 8.milliseconds
+        override val prefs = prefsX
+        override val threadPriorityChanger = threadPriorityChangerX
     } with Scheduler
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
@@ -95,6 +112,7 @@ object UnitTestModule {
     object FileActorImpl extends {
         override val scheduler = SchedulerImpl
         override val pool = NormalPriorityPoolImpl
+        override val prefs = prefsX
     } with FileActor
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --

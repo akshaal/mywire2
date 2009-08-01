@@ -9,8 +9,8 @@ import logger.Logger
  * Help measure time.
  */
 private[system] final class Timing (limit : TimeUnit) extends NotNull {
-    private[this] val frame =
-        new LongValueFrame (RuntimeConstants.timingFrameSize)
+    private[this] val valuesNumber = 100
+    private[this] val frame = new LongValueFrame (valuesNumber)
 
     private[this] def measure (startNano : Long,
                                logger : Logger) (message : => String) =
@@ -60,6 +60,5 @@ private[system] final class Timing (limit : TimeUnit) extends NotNull {
 }
 
 private[utils] object Timing {
-    private[utils] val allowedAfter =
-        System.nanoTime + RuntimeConstants.ignoreTimingsFor.asNanoseconds
+    private[utils] val allowedAfter = System.nanoTime + 5.seconds.asNanoseconds
 }

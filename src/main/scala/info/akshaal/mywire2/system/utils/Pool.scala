@@ -42,6 +42,8 @@ private[system] trait Pool
 
     protected val executionLimit : TimeUnit
 
+    protected val threadPriorityChanger : ThreadPriorityChanger
+
     // -- - - - - -  - -- -- - -  - - - - - - --  - -- - - -
     // Concrete
 
@@ -55,7 +57,7 @@ private[system] trait Pool
             val threadNumber = counter.incrementAndGet
 
             val proxy = mkRunnable {
-                ThreadPriorityChanger.change (priority)
+                threadPriorityChanger.change (priority)
                 r.run
             }
 

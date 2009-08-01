@@ -23,6 +23,7 @@ object MonitoringTestModule {
         override val threads = 2
         override val latencyLimit = 2.milliseconds
         override val executionLimit = 800.microseconds
+        override val threadPriorityChanger = UnitTestModule.threadPriorityChangerX
     } with HiPriorityPool
 
     object MonitoringImpl extends {

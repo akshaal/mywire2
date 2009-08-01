@@ -19,7 +19,6 @@ import java.nio.charset.Charset
 
 import Predefs._
 import actor.Actor
-import system.RuntimeConstants
 import logger.Logging
 import utils.NormalPriorityPool
 
@@ -28,12 +27,14 @@ import utils.NormalPriorityPool
  */
 private[system] trait FileActor extends Actor {
     protected val pool : NormalPriorityPool
+    protected val prefs : Prefs
 
     // - - - - - - - - - - - - - - -- - - - -- -  - -
     // Concrete
 
     private val encoder =
-        Charset.forName(RuntimeConstants.fileEncoding).newEncoder()
+        Charset.forName(prefs.getString("mywire.os.file.encoding"))
+               .newEncoder()
 
     /**
      * Process actor message.

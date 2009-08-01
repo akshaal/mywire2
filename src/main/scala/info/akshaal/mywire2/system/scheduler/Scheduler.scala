@@ -10,7 +10,7 @@ package system
 package scheduler
 
 import Predefs._
-import utils.TimeUnit
+import utils.{TimeUnit, ThreadPriorityChanger}
 import logger.Logging
 import actor.Actor
 
@@ -26,11 +26,16 @@ private[system] trait UnfixedScheduling
 private[system] trait Scheduler extends Logging
 {
     protected val latencyLimit : TimeUnit
+    protected val threadPriorityChanger : ThreadPriorityChanger
+    protected val prefs : Prefs
 
     // ///////////////////////////////////////////////////////////////////
     // Concrete
 
-    private[this] val schedulerThread = new SchedulerThread (latencyLimit)
+    private[this] val schedulerThread =
+            new SchedulerThread (latencyLimit          = latencyLimit,
+                                 threadPriorityChanger = threadPriorityChanger,
+                                 prefs                 = prefs)
 
     /**
      * Get average latency of the scheduler.
