@@ -36,7 +36,8 @@ object MonitoringTestModule {
     object MonitoringActor1Impl extends MonitoringActorImpl
     object MonitoringActor2Impl extends MonitoringActorImpl
 
-    val monitoring = new Monitoring (List(MonitoringActor1Impl, MonitoringActor2Impl))
+    val monitoring = new Monitoring (List(MonitoringActor1Impl,
+                                          MonitoringActor2Impl))
     val actorManager = new ActorManager (monitoring)
 
     abstract class HiPriorityActor extends Actor (

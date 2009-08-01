@@ -108,6 +108,9 @@ object Predefs {
     implicit def int2TimeUnitFromNumberCreator (x : Int) =
         new TimeUnitFromNumberCreator (x)
 
+    @inline
+    implicit def string2TimeUnit (x : String) = TimeUnit.parse (x)
+
     /**
      * Wrapper for Long that makes it possible to convert
      * it to TimeUnit object.

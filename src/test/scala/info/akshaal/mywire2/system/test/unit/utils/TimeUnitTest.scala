@@ -44,18 +44,45 @@ class TimeUnitTest extends BaseUnitTest {
         assertEquals (60.seconds + 1.minutes, 120.seconds)
     }
 
+    @Test (groups = Array("unit"))
     def testToString () = {
-        assertEquals (48.hours + 23.hours + 1.minutes + 45.seconds
-                      + 15.milliseconds + 10.microseconds + 100.nanoseconds,
+        assertEquals ((48.hours + 23.hours + 1.minutes + 45.seconds
+                      + 15.milliseconds + 10.microseconds + 100.nanoseconds).toString,
                       "2days 23hours 1mins 45secs 15ms 10us 100ns")
 
-        assertEquals (2.hours + 5.seconds + 7.microseconds, "2hours 5secs 7us")
+        assertEquals ((2.hours + 5.seconds + 7.microseconds).toString,
+                      "2hours 5secs 7us")
 
-        assertEquals (11.minutes + 33.milliseconds + 55.nanoseconds,
-                      "11mins 33ms 35ns")
+        assertEquals ((11.minutes + 33.milliseconds + 55.nanoseconds).toString,
+                      "11mins 33ms 55ns")
 
-        assertEquals (60.seconds, "1mins")
+        assertEquals (60.seconds.toString, "1mins")
         
-        assertEquals (0.seconds, "0ns")
+        assertEquals (0.seconds.toString, "0ns")
+    }
+
+    @Test (groups = Array("unit"))
+    def testStringParser () = {
+        assertEquals ("123 nanoseconds".asNanoseconds, 123.nanoseconds.asNanoseconds)
+        assertEquals ("99 microseconds".asNanoseconds, 99.microseconds.asNanoseconds)
+        assertEquals ("1 milliseconds".asNanoseconds, 1.milliseconds.asNanoseconds)
+        assertEquals ("30 seconds".asNanoseconds, 30.seconds.asNanoseconds)
+        assertEquals ("10 minutes".asNanoseconds, 10.minutes.asNanoseconds)
+        assertEquals ("5 hours".asNanoseconds, 5.hours.asNanoseconds)
+
+        assertEquals ("123 nanoseconds 1 hours".asNanoseconds,
+                      (123.nanoseconds + 1.hours).asNanoseconds)
+
+        assertEquals ("99 microseconds 45 seconds".asNanoseconds,
+                      (99.microseconds + 45.seconds).asNanoseconds)
+
+        assertEquals ("2 minutes 1 milliseconds 4 seconds".asNanoseconds,
+                      (2.minutes + 1.milliseconds + 4.seconds).asNanoseconds)
+
+        assertEquals ("30 seconds 1 milliseconds".asNanoseconds,
+                      (30.seconds + 1.milliseconds).asNanoseconds)
+
+        assertEquals ("10 minutes 11 hours".asNanoseconds,
+                      (10.minutes + 11.hours).asNanoseconds)
     }
 }

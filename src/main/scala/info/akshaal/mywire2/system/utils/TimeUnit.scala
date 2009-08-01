@@ -5,7 +5,10 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system.utils
+package info.akshaal.mywire2
+package system.utils
+
+import Predefs._
 
 final class TimeUnit (nano : Long) extends NotNull
 {
@@ -60,15 +63,15 @@ final class TimeUnit (nano : Long) extends NotNull
     def >  (that: TimeUnit)     : Boolean = compare(that) > 0
 }
 
-private[utils] object TimeUnit {
-    val nsInUs   = 1000L
-    val nsInMs   = 1000000L
-    val nsInSec  = 1000000000L
-    val nsInMin  = 60000000000L
-    val nsInHour = 3600000000000L
-    val nsInDay  = 86400000000000L
+private[mywire2] object TimeUnit {
+    private[utils] val nsInUs   = 1000L
+    private[utils] val nsInMs   = 1000000L
+    private[utils] val nsInSec  = 1000000000L
+    private[utils] val nsInMin  = 60000000000L
+    private[utils] val nsInHour = 3600000000000L
+    private[utils] val nsInDay  = 86400000000000L
 
-    val units : List[(String, Long)] =
+    private[utils] val units : List[(String, Long)] =
             List (("days", nsInDay),
                   ("hours", nsInHour),
                   ("mins", nsInMin),
@@ -76,4 +79,43 @@ private[utils] object TimeUnit {
                   ("ms", nsInMs),
                   ("us", nsInUs),
                   ("ns", 1L))
+
+    /**
+     * Parse string ot time unit.
+     */
+    def parse (str : String) : TimeUnit = TimeUnitParser.parse (str)
+
+    import scala.util.parsing.combinator._
+
+    /**
+     * Parser
+     */
+    private object TimeUnitParser extends JavaTokenParsers {
+        def parse (str : String) : TimeUnit =
+            parseAll (expr, str) match {
+               case Success (l, _) => l
+
+               case Failure (m, _) =>
+                   throw new IllegalArgumentException (
+                              "Failed to parse time: " + str + ": " + m)
+
+               case Error (m, _)   => throw new IllegalArgumentException (m)
+                   throw new IllegalArgumentException (
+                              "Error while parsing time: " + str + ": " + m)
+            }
+
+        def expr : Parser[TimeUnit] =
+            timeUnit ~ rep(timeUnit) ^^ {
+                case u1 ~ l => l.foldLeft (u1) {_ + _}
+            }
+
+        def timeUnit : Parser[TimeUnit] = (
+              decimalNumber <~ "seconds"      ^^ (_.toLong.seconds)
+            | decimalNumber <~ "milliseconds" ^^ (_.toLong.milliseconds)
+            | decimalNumber <~ "nanoseconds"  ^^ (_.toLong.nanoseconds)
+            | decimalNumber <~ "microseconds" ^^ (_.toLong.microseconds)
+            | decimalNumber <~ "hours"        ^^ (_.toLong.hours)
+            | decimalNumber <~ "minutes"      ^^ (_.toLong.minutes)
+        )
+    }
 }
