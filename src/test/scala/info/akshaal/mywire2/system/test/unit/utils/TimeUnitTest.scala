@@ -10,7 +10,7 @@ import system.utils.TimeUnit
 import system.test.unit.BaseUnitTest
 
 import org.testng.annotations.Test
-import org.testng.Assert.{assertEquals, assertTrue}
+import org.testng.Assert.{assertEquals, assertTrue, assertFalse}
 
 class TimeUnitTest extends BaseUnitTest {
     @Test (groups = Array("unit"))
@@ -84,5 +84,12 @@ class TimeUnitTest extends BaseUnitTest {
 
         assertEquals ("10 minutes 11 hours".asNanoseconds,
                       (10.minutes + 11.hours).asNanoseconds)
+    }
+
+    @Test (expectedExceptions = Array(classOf[IllegalArgumentException]))
+    def failedParsing () = {
+        "30 secons 1 milliseconds".asNanoseconds
+
+        assertFalse (true, "Exception should have been thrown")
     }
 }
