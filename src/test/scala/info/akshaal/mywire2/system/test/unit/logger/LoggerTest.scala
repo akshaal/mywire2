@@ -9,8 +9,6 @@ import system.test.unit.BaseUnitTest
 
 import org.testng.annotations.Test
 
-// TODO: Test appender
-
 class LoggerTest extends BaseUnitTest {
     @Test (groups=Array("unit"))
     def testLoggerLevels () = {
