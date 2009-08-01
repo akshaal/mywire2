@@ -27,7 +27,8 @@ private[scheduler] final class SchedulerThread
     private val lock = new ReentrantLock
     private val condition = lock.newCondition
     private val queue = new PriorityQueue[Schedule]
-    private val schedulerDrift = 1.microseconds.asNanoseconds // TODO: Use prefs
+    private val schedulerDrift =
+            prefs.getTimeUnit("mywire.scheduler.drift").asNanoseconds
     
     val latencyTiming = new Timing (latencyLimit)
 

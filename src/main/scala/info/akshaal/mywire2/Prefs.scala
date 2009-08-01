@@ -10,6 +10,7 @@ package info.akshaal.mywire2
 import java.util.Properties
 
 import Predefs._
+import system.utils.TimeUnit
 
 final class Prefs (file : String) {
     private[this] val properties = new Properties ()
@@ -23,15 +24,16 @@ final class Prefs (file : String) {
         properties.load (_)
     }
 
-    final def getString (name : String) : String = {
+    final def getString (name : String) : String =
         convertNull (properties.getProperty (name)) {
             throw new IllegalArgumentException ("Property "
                                                 + name
                                                 + " is required")
         }
-    }
 
-    final def getInt (name : String) : Int = {
+    final def getTimeUnit (name : String) : TimeUnit =
+        TimeUnit.parse (getString(name))
+
+    final def getInt (name : String) : Int =
         Integer.valueOf(getString (name)).intValue
-    }
 }

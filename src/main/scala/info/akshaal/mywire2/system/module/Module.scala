@@ -21,35 +21,36 @@ import dao.LogDao
 
 trait Module {
     val prefsResource = "/mywire.properties"
+    
+    val prefs = new Prefs (prefsResource)
 
-    val monitoringInterval : TimeUnit
-    val monitoringActorsCount : Int
+    val monitoringInterval = prefs.getTimeUnit("mywire.monitoring.interval")
+    val monitoringActorsCount = prefs.getInt("mywire.monitring.actors")
 
-    val lowPriorityPoolThreads : Int
-    val lowPriorityPoolLatencyLimit : TimeUnit
-    val lowPriorityPoolExecutionLimit : TimeUnit
+    val lowPriorityPoolThreads = prefs.getInt("mywire.pool.low.threads")
+    val lowPriorityPoolLatencyLimit = prefs.getTimeUnit("mywire.pool.low.latency")
+    val lowPriorityPoolExecutionLimit = prefs.getTimeUnit("mywire.pool.low.execution")
 
-    val normalPriorityPoolThreads : Int
-    val normalPriorityPoolLatencyLimit : TimeUnit
-    val normalPriorityPoolExecutionLimit : TimeUnit
+    val normalPriorityPoolThreads = prefs.getInt("mywire.pool.normal.threads")
+    val normalPriorityPoolLatencyLimit = prefs.getTimeUnit("mywire.pool.normal.latency")
+    val normalPriorityPoolExecutionLimit = prefs.getTimeUnit("mywire.pool.normal.execution")
 
-    val hiPriorityPoolThreads : Int
-    val hiPriorityPoolLatencyLimit : TimeUnit
-    val hiPriorityPoolExecutionLimit : TimeUnit
+    val hiPriorityPoolThreads = prefs.getInt("mywire.pool.hi.threads")
+    val hiPriorityPoolLatencyLimit = prefs.getTimeUnit("mywire.pool.hi.latency")
+    val hiPriorityPoolExecutionLimit = prefs.getTimeUnit("mywire.pool.hi.execution")
 
-    val schedulerLatencyLimit : TimeUnit
+    val schedulerLatencyLimit = prefs.getTimeUnit("mywire.scheduler.latency")
 
     val daemonStatusJmxName = "mywire:name=status"
-    val daemonStatusUpdateInterval : TimeUnit
-    val daemonStatusFile : String
+    val daemonStatusUpdateInterval = prefs.getTimeUnit("mywire.status.update.interval")
+    val daemonStatusFile = prefs.getString("mywire.status.file")
+
+    // -- tests
 
     require (daemonStatusUpdateInterval > monitoringInterval * 2,
              "daemonStatusUpdateInterval must greater than 2*monitoringInterval")
 
-    // - - - - -- - - - - - - - - - - - - - - - - - - - --
-    // Preferences
-
-    private[system] val prefs = new Prefs (prefsResource)
+    require (monitoringActorsCount > 0)
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Daemon
