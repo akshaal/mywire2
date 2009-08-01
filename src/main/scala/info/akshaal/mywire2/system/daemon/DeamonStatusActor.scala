@@ -5,18 +5,19 @@ package daemon
 
 import Predefs._
 import actor.Actor
+import scheduler.Scheduler
 import utils.{TimeUnit, NormalPriorityPool}
 
-private[system] abstract class DeamonStatusActor extends Actor {
+private[system] final class DeamonStatusActor
+                                (pool : NormalPriorityPool,
+                                 scheduler : Scheduler,
+                                 interval : TimeUnit,
+                                 daemonStatus : DaemonStatus,
+                                 statusFile : String)
+                    extends Actor (pool = pool,
+                                   scheduler = scheduler)
+{
     schedule payload UpdateStatus every interval
-
-    protected val pool : NormalPriorityPool
-
-    protected val interval : TimeUnit
-
-    protected val daemonStatus : DaemonStatus
-
-    protected val statusFile : String
 
     /**
      * Process messages

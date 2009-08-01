@@ -3,7 +3,7 @@ package info.akshaal.mywire2.system.dao
 import com.ibatis.common.resources.Resources
 import com.ibatis.sqlmap.client.SqlMapClientBuilder
 
-private[dao] class BaseDao {
+private[dao] abstract class BaseDao {
     protected val sqlmap = BaseDao.sqlmap
 }
 

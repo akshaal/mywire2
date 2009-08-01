@@ -21,17 +21,17 @@ import Predefs._
 import actor.Actor
 import logger.Logging
 import utils.NormalPriorityPool
+import scheduler.Scheduler
 
 /**
  * Fast async file reader/writer. Can read only limited number of bytes.
  */
-private[system] trait FileActor extends Actor {
-    protected val pool : NormalPriorityPool
-    protected val prefs : Prefs
-
-    // - - - - - - - - - - - - - - -- - - - -- -  - -
-    // Concrete
-
+private[system] final class FileActor (pool : NormalPriorityPool,
+                                       scheduler : Scheduler,
+                                       prefs : Prefs)
+                            extends Actor (pool = pool,
+                                           scheduler = scheduler)
+{
     private val encoder =
         Charset.forName(prefs.getString("mywire.os.file.encoding"))
                .newEncoder()

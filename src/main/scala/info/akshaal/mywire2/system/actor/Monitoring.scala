@@ -10,13 +10,9 @@ import daemon.DaemonStatus
 import scheduler.{TimeOut, Scheduler, UnfixedScheduling}
 import utils.{TimeUnit, NormalPriorityPool}
 
-private[system] trait Monitoring
+private[system] final class Monitoring
+                    (monitoringActors : List[MonitoringActor])
 {
-    protected val monitoringActors : List[MonitoringActor]
-
-    // -- - - - - -  - -- -- - -  - - - - - - --  - -- - - -
-    // Concrete
-
     private[actor] final def add (actor : Actor) = {
         val cmd = Add (actor)
 
@@ -37,18 +33,16 @@ private[actor] case object Ping extends MonitoringCommand
 private[actor] case object Pong extends MonitoringCommand
 private[actor] case object Monitor extends MonitoringCommand
 
-private[system] trait MonitoringActor extends Actor with UnfixedScheduling
+private[system] class MonitoringActor
+                            (pool : NormalPriorityPool,
+                             scheduler : Scheduler,
+                             interval : TimeUnit,
+                             daemonStatus : DaemonStatus)
+                        extends Actor (pool = pool,
+                                       scheduler = scheduler)
+                        with UnfixedScheduling
 {
     schedule payload Monitor every interval
-
-    protected val pool : NormalPriorityPool
-
-    protected val interval : TimeUnit
-
-    protected val daemonStatus : DaemonStatus
-
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // Concrete
 
     private val currentActors : Set[Actor] = new HashSet[Actor]
     private var monitoringActors : Set[Actor] = new HashSet[Actor]

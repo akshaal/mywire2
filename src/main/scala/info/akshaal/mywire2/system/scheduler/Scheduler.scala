@@ -23,19 +23,16 @@ private[system] trait UnfixedScheduling
 /**
  * Scheduler class.
  */
-private[system] trait Scheduler extends Logging
+private[system] class Scheduler
+                        (latencyLimit : TimeUnit,
+                        threadPriorityChanger : ThreadPriorityChanger,
+                        prefs : Prefs)
+            extends Logging
 {
-    protected val latencyLimit : TimeUnit
-    protected val threadPriorityChanger : ThreadPriorityChanger
-    protected val prefs : Prefs
-
-    // ///////////////////////////////////////////////////////////////////
-    // Concrete
-
     private[this] val schedulerThread =
-            new SchedulerThread (latencyLimit          = latencyLimit,
+            new SchedulerThread (latencyLimit = latencyLimit,
                                  threadPriorityChanger = threadPriorityChanger,
-                                 prefs                 = prefs)
+                                 prefs = prefs)
 
     /**
      * Get average latency of the scheduler.

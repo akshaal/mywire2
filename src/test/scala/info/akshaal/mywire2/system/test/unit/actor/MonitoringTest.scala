@@ -19,42 +19,33 @@ import javax.management.ObjectName
 object MonitoringTestModule {
     val daemonStatusJmxName = "mywire:name=monitoringTestDaemonStatus"
 
-    object HiPriorityPoolImpl extends {
-        override val threads = 2
-        override val latencyLimit = 2.milliseconds
-        override val executionLimit = 800.microseconds
-        override val threadPriorityChanger = UnitTestModule.threadPriorityChangerX
-    } with HiPriorityPool
+    val hiPriorityPool =
+        new HiPriorityPool (threads = 2,
+                            latencyLimit = 2.milliseconds,
+                            executionLimit = 800.microseconds,
+                            threadPriorityChanger = UnitTestModule.threadPriorityChanger)
 
-    object MonitoringImpl extends {
-        val monitoringActors = List(MonitoringActor1Impl, MonitoringActor2Impl)
-    } with Monitoring
+    val daemonStatus = new DaemonStatus (daemonStatusJmxName)
 
-    object ActorManagerImpl extends {
-        val monitoring = MonitoringImpl
-    } with ActorManager
-
-    object DaemonStatusImpl extends DaemonStatus {
-        override lazy val jmxObjectName = daemonStatusJmxName
-    }
-
-    class MonitoringActorImpl extends {
-        override val scheduler = UnitTestModule.SchedulerImpl
-        override val pool = UnitTestModule.NormalPriorityPoolImpl
-        override val interval = UnitTestModule.monitoringInterval
-        override val daemonStatus = DaemonStatusImpl
-    } with MonitoringActor
+    class MonitoringActorImpl extends MonitoringActor (
+                                 scheduler = UnitTestModule.scheduler,
+                                 pool = UnitTestModule.normalPriorityPool,
+                                 interval = UnitTestModule.monitoringInterval,
+                                 daemonStatus = daemonStatus)
 
     object MonitoringActor1Impl extends MonitoringActorImpl
     object MonitoringActor2Impl extends MonitoringActorImpl
 
-    abstract class HiPriorityActor extends {
-        override val scheduler = UnitTestModule.SchedulerImpl
-        override val pool = HiPriorityPoolImpl
-    } with Actor
+    val monitoring = new Monitoring (List(MonitoringActor1Impl, MonitoringActor2Impl))
+    val actorManager = new ActorManager (monitoring)
+
+    abstract class HiPriorityActor extends Actor (
+                        scheduler = UnitTestModule.scheduler,
+                        pool = hiPriorityPool)
 
     // Run actors
-    MonitoringImpl.monitoringActors.foreach (ActorManagerImpl.startActor (_))
+    actorManager.startActor (MonitoringActor1Impl)
+    actorManager.startActor (MonitoringActor2Impl)
 }
 
 class MonitoringTest extends BaseUnitTest {
@@ -65,26 +56,26 @@ class MonitoringTest extends BaseUnitTest {
         val srv = ManagementFactory.getPlatformMBeanServer()
         val statusObj = new ObjectName (MonitoringTestModule.daemonStatusJmxName)
 
-        MonitoringTestModule.ActorManagerImpl.startActor (BadActor)
+        MonitoringTestModule.actorManager.startActor (BadActor)
         BadActor ! "Hi"
         
-        assertFalse (MonitoringTestModule.DaemonStatusImpl.isDying,
+        assertFalse (MonitoringTestModule.daemonStatus.isDying,
                      "The application must not be dying at this moment!")
-        assertFalse (MonitoringTestModule.DaemonStatusImpl.isShuttingDown,
+        assertFalse (MonitoringTestModule.daemonStatus.isShuttingDown,
                      "The application must not be shutting down at this moment!")
         assertEquals (srv.getAttribute (statusObj, "dying"), false)
         assertEquals (srv.getAttribute (statusObj, "shuttingDown"), false)
 
         Thread.sleep (UnitTestModule.monitoringInterval.asMilliseconds * 4)
 
-        assertTrue (MonitoringTestModule.DaemonStatusImpl.isDying,
+        assertTrue (MonitoringTestModule.daemonStatus.isDying,
                     "The application must be dying at this moment!")
-        assertTrue (MonitoringTestModule.DaemonStatusImpl.isShuttingDown,
+        assertTrue (MonitoringTestModule.daemonStatus.isShuttingDown,
                      "The application must be shutting down at this moment!")
         assertEquals (srv.getAttribute (statusObj, "dying"), true)
         assertEquals (srv.getAttribute (statusObj, "shuttingDown"), true)
 
-        MonitoringTestModule.ActorManagerImpl.stopActor (BadActor)
+        MonitoringTestModule.actorManager.stopActor (BadActor)
     }
 }
 

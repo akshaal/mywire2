@@ -20,7 +20,7 @@ import system.fs.{WriteFile, WriteFileDone, WriteFileFailed}
 class FileActorTest extends BaseUnitTest {
     @Test (groups=Array("unit"))
     def testWrite () = {
-        UnitTestModule.ActorManagerImpl.startActor (WriteTestActor)
+        UnitTestModule.actorManager.startActor (WriteTestActor)
 
         val file = File.createTempFile ("mywire2", "test")
         file.deleteOnExit
@@ -43,7 +43,7 @@ class FileActorTest extends BaseUnitTest {
         assertEquals (WriteTestActor.done, 2)
         assertEquals (WriteTestActor.excs, 1)
 
-        UnitTestModule.ActorManagerImpl.stopActor (WriteTestActor)
+        UnitTestModule.actorManager.stopActor (WriteTestActor)
     }
 
     private def sleep () = Thread.sleep (1000)
@@ -65,7 +65,7 @@ object WriteTestActor extends HiPriorityActor {
     def act () = {
         case msg @ (file : File, content : String) => {
             debug ("Received message: " + msg)
-            UnitTestModule.FileActorImpl ! (WriteFile (file, content))
+            UnitTestModule.fileActor ! (WriteFile (file, content))
         }
 
         case msg @ WriteFileDone (file) => {

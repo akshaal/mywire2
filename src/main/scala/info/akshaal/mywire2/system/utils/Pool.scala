@@ -9,44 +9,59 @@ import java.util.concurrent.{Executors, ThreadFactory}
 
 import ThreadPriorityChanger.{HiPriority, NormalPriority, LowPriority}
 
-private[system] trait HiPriorityPool extends {
-    private[utils] override final val name = "HiPriorityPool"
+/**
+ * Hi priority pool.
+ */
+private[system] final class HiPriorityPool
+                           (threads : Int,
+                            latencyLimit : TimeUnit,
+                            executionLimit : TimeUnit,
+                            threadPriorityChanger : ThreadPriorityChanger)
+          extends Pool (name = "HiPriorityPool",
+                        priority = HiPriority,
+                        threads = threads,
+                        latencyLimit = latencyLimit,
+                        executionLimit = executionLimit,
+                        threadPriorityChanger = threadPriorityChanger)
 
-    private[utils] override final val priority = HiPriority
-} with Pool
+/**
+ * Normal priority pool.
+ */
+private[system] final class NormalPriorityPool
+                           (threads : Int,
+                            latencyLimit : TimeUnit,
+                            executionLimit : TimeUnit,
+                            threadPriorityChanger : ThreadPriorityChanger)
+          extends Pool (name = "NormalPriorityPool",
+                        priority = NormalPriority,
+                        threads = threads,
+                        latencyLimit = latencyLimit,
+                        executionLimit = executionLimit,
+                        threadPriorityChanger = threadPriorityChanger)
 
-private[system] trait NormalPriorityPool extends {
-    private[utils] override final val name = "NormalPriorityPool"
-
-    private[utils] override final val priority = NormalPriority
-} with Pool
-
-private[system] trait LowPriorityPool extends {
-    private[utils] override final val name = "LowPriorityPool"
-
-    private[utils] override final val priority = LowPriority
-} with Pool
+private[system] final class LowPriorityPool
+                           (threads : Int,
+                            latencyLimit : TimeUnit,
+                            executionLimit : TimeUnit,
+                            threadPriorityChanger : ThreadPriorityChanger)
+          extends Pool (name = "LowPriorityPool",
+                        priority = LowPriority,
+                        threads = threads,
+                        latencyLimit = latencyLimit,
+                        executionLimit = executionLimit,
+                        threadPriorityChanger = threadPriorityChanger)
 
 /**
  * Pool class to be used by actors.
  */
-private[system] trait Pool
+private[system] abstract sealed class Pool
+                            (name : String,
+                             priority : ThreadPriorityChanger.Priority,
+                             threads : Int,
+                             latencyLimit : TimeUnit,
+                             executionLimit : TimeUnit,
+                             threadPriorityChanger : ThreadPriorityChanger)
 {
-    private[utils] val name : String
-
-    private[utils] val priority : ThreadPriorityChanger.Priority
-
-    protected val threads : Int
-
-    protected val latencyLimit : TimeUnit
-
-    protected val executionLimit : TimeUnit
-
-    protected val threadPriorityChanger : ThreadPriorityChanger
-
-    // -- - - - - -  - -- -- - -  - - - - - - --  - -- - - -
-    // Concrete
-
     final val latencyTiming = new Timing (latencyLimit)
     final val executionTiming = new Timing (latencyLimit)
 

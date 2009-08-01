@@ -13,13 +13,10 @@ import scheduler.Scheduler
 /**
  * Very simple and hopefully fast implementation of actors
  */
-trait Actor extends Logging with NotNull {
-    /** Pool to be used by actor. */
-    protected val pool : Pool
-
-    /** Scheduler to be used by actor */
-    protected val scheduler : Scheduler
-
+abstract class Actor (pool : Pool,
+                      scheduler : Scheduler)
+                extends Logging with NotNull
+{
     /**
      * Implementing class is supposed to provide a body of the actor.
      */

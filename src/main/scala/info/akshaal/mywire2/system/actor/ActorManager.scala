@@ -11,9 +11,9 @@ package actor
 
 import logger.Logging
 
-private[system] trait ActorManager extends Logging {
-    protected val monitoring : Monitoring
-
+private[system] final class ActorManager (monitoring : Monitoring)
+                    extends Logging
+{
     final def startActor (actor : Actor) = {
         actor.start
         monitoring.add (actor)

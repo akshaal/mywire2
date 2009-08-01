@@ -18,13 +18,13 @@ class ActorTest extends BaseUnitTest {
     @Test (groups=Array("unit"))
     def testPingPong () = {
         SampleActor ! 1
-        UnitTestModule.ActorManagerImpl.startActor (SampleActor)
-        UnitTestModule.ActorManagerImpl.startActor (ToStringActor)
+        UnitTestModule.actorManager.startActor (SampleActor)
+        UnitTestModule.actorManager.startActor (ToStringActor)
         SampleActor ! 3
         SampleActor ! 7
         sleep ()
-        UnitTestModule.ActorManagerImpl.stopActor (SampleActor)
-        UnitTestModule.ActorManagerImpl.stopActor (ToStringActor)
+        UnitTestModule.actorManager.stopActor (SampleActor)
+        UnitTestModule.actorManager.stopActor (ToStringActor)
 
         assertEquals (SampleActor.accuInt, List(7, 3, 1))
         assertEquals (SampleActor.accuString, List("x7", "x3", "x1"))
@@ -32,14 +32,14 @@ class ActorTest extends BaseUnitTest {
 
     @Test (groups=Array("unit"))
     def testExceptionResistance () = {
-        UnitTestModule.ActorManagerImpl.startActor (UnstableActor)
+        UnitTestModule.actorManager.startActor (UnstableActor)
 
         for (i <- 1 to 10) {
             UnstableActor ! i
         }
 
         sleep
-        UnitTestModule.ActorManagerImpl.stopActor (UnstableActor)
+        UnitTestModule.actorManager.stopActor (UnstableActor)
 
         assertEquals (UnstableActor.sum, 1+3+5+7+9)
     }

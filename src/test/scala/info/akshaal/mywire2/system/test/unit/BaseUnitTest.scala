@@ -47,7 +47,7 @@ private[unit] object UnitTestState extends Logging {
 class BaseUnitTest extends BaseTest {
     @AfterMethod
     def checkDaemonStatus () = {
-        assertFalse (UnitTestModule.DaemonStatusImpl.isDying,
+        assertFalse (UnitTestModule.daemonStatus.isDying,
                      "The application must not be dying at this moment!")
     }
 

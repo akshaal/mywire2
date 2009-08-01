@@ -60,5 +60,6 @@ private[system] final class Timing (limit : TimeUnit) extends NotNull {
 }
 
 private[utils] object Timing {
+    // TODO: Move to daemon status
     private[utils] val allowedAfter = System.nanoTime + 5.seconds.asNanoseconds
 }

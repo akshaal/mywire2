@@ -17,8 +17,8 @@ import Predefs._
 import logger.DummyLogging
 import jmx.{SimpleJmx, JmxAttr, JmxOper}
 
-private[system] abstract class DaemonStatus
-                extends DummyLogging with SimpleJmx
+private[system] final class DaemonStatus (val jmxObjectName : String)
+                     extends DummyLogging with SimpleJmx
 {
     @volatile
     private var shuttingDown = false

@@ -4,7 +4,7 @@ package dao
 
 import domain.LogRecord
 
-private[system] class LogDao extends BaseDao {
+private[system] final class LogDao extends BaseDao {
     final def insertRecord (logRecord : LogRecord) = {
         sqlmap.insert ("insertLogRecord", logRecord)
     }
