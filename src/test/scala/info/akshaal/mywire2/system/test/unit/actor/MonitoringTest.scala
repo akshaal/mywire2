@@ -19,13 +19,15 @@ import javax.management.ObjectName
 object MonitoringTestModule {
     val daemonStatusJmxName = "mywire:name=monitoringTestDaemonStatus"
 
+    val daemonStatus = new DaemonStatus (daemonStatusJmxName)
+
     val hiPriorityPool =
         new HiPriorityPool (threads = 2,
                             latencyLimit = 2.milliseconds,
                             executionLimit = 800.microseconds,
+                            prefs = UnitTestModule.prefs,
+                            daemonStatus = daemonStatus,
                             threadPriorityChanger = UnitTestModule.threadPriorityChanger)
-
-    val daemonStatus = new DaemonStatus (daemonStatusJmxName)
 
     class MonitoringActorImpl extends MonitoringActor (
                                  scheduler = UnitTestModule.scheduler,

@@ -13,6 +13,7 @@ import Predefs._
 import utils.{TimeUnit, ThreadPriorityChanger}
 import logger.Logging
 import actor.Actor
+import daemon.DaemonStatus
 
 /**
  * Marks an actor for which scheduling shift can be selected at random
@@ -26,12 +27,14 @@ private[system] trait UnfixedScheduling
 private[system] class Scheduler
                         (latencyLimit : TimeUnit,
                         threadPriorityChanger : ThreadPriorityChanger,
+                        daemonStatus : DaemonStatus,
                         prefs : Prefs)
             extends Logging
 {
     private[this] val schedulerThread =
             new SchedulerThread (latencyLimit = latencyLimit,
                                  threadPriorityChanger = threadPriorityChanger,
+                                 daemonStatus = daemonStatus,
                                  prefs = prefs)
 
     /**

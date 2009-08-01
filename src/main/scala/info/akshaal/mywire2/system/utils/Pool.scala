@@ -1,13 +1,16 @@
 /** Akshaal (C) 2009. GNU GPL. http://akshaal.info */
 
-package info.akshaal.mywire2.system.utils
+package info.akshaal.mywire2
+package system
+package utils
 
-import info.akshaal.mywire2.Predefs._
+import Predefs._
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
 
 import ThreadPriorityChanger.{HiPriority, NormalPriority, LowPriority}
+import daemon.DaemonStatus
 
 /**
  * Hi priority pool.
@@ -16,8 +19,12 @@ private[system] final class HiPriorityPool
                            (threads : Int,
                             latencyLimit : TimeUnit,
                             executionLimit : TimeUnit,
+                            prefs : Prefs,
+                            daemonStatus : DaemonStatus,
                             threadPriorityChanger : ThreadPriorityChanger)
           extends Pool (name = "HiPriorityPool",
+                        prefs = prefs,
+                        daemonStatus = daemonStatus,
                         priority = HiPriority,
                         threads = threads,
                         latencyLimit = latencyLimit,
@@ -29,10 +36,14 @@ private[system] final class HiPriorityPool
  */
 private[system] final class NormalPriorityPool
                            (threads : Int,
+                            prefs : Prefs,
+                            daemonStatus : DaemonStatus,
                             latencyLimit : TimeUnit,
                             executionLimit : TimeUnit,
                             threadPriorityChanger : ThreadPriorityChanger)
           extends Pool (name = "NormalPriorityPool",
+                        prefs = prefs,
+                        daemonStatus = daemonStatus,
                         priority = NormalPriority,
                         threads = threads,
                         latencyLimit = latencyLimit,
@@ -41,10 +52,14 @@ private[system] final class NormalPriorityPool
 
 private[system] final class LowPriorityPool
                            (threads : Int,
+                            prefs : Prefs,
+                            daemonStatus : DaemonStatus,
                             latencyLimit : TimeUnit,
                             executionLimit : TimeUnit,
                             threadPriorityChanger : ThreadPriorityChanger)
           extends Pool (name = "LowPriorityPool",
+                        prefs = prefs,
+                        daemonStatus = daemonStatus,
                         priority = LowPriority,
                         threads = threads,
                         latencyLimit = latencyLimit,
@@ -60,10 +75,16 @@ private[system] abstract sealed class Pool
                              threads : Int,
                              latencyLimit : TimeUnit,
                              executionLimit : TimeUnit,
+                             prefs : Prefs,
+                             daemonStatus : DaemonStatus,
                              threadPriorityChanger : ThreadPriorityChanger)
 {
-    final val latencyTiming = new Timing (latencyLimit)
-    final val executionTiming = new Timing (latencyLimit)
+    final val latencyTiming = new Timing (limit = latencyLimit,
+                                          prefs = prefs,
+                                          daemonStatus = daemonStatus)
+    final val executionTiming = new Timing (limit = latencyLimit,
+                                            prefs = prefs,
+                                            daemonStatus = daemonStatus)
 
     private val threadFactory = new ThreadFactory {
         val counter = new AtomicInteger (0)

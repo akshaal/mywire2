@@ -4,18 +4,26 @@ package utils
 
 import Predefs._
 import logger.Logger
+import daemon.DaemonStatus
 
 /**
  * Help measure time.
  */
-private[system] final class Timing (limit : TimeUnit) extends NotNull {
+private[system] final class Timing (limit : TimeUnit,
+                                    daemonStatus : DaemonStatus,
+                                    prefs : Prefs)
+                        extends NotNull
+{
     private[this] val valuesNumber = 100
     private[this] val frame = new LongValueFrame (valuesNumber)
+    private[this] val allowedAfter =
+        (daemonStatus.startedAt + prefs.getTimeUnit ("mywire.timing.skip.first"))
+            .asNanoseconds
 
     private[this] def measure (startNano : Long,
                                logger : Logger) (message : => String) =
     {
-        if (startNano > Timing.allowedAfter) {
+        if (startNano > allowedAfter) {
             val stopNano = System.nanoTime
             val time = stopNano - startNano
             frame.put (time)
@@ -57,9 +65,4 @@ private[system] final class Timing (limit : TimeUnit) extends NotNull {
      */
     @inline
     def average : TimeUnit = frame.average().nanoseconds
-}
-
-private[utils] object Timing {
-    // TODO: Move to daemon status
-    private[utils] val allowedAfter = System.nanoTime + 5.seconds.asNanoseconds
 }

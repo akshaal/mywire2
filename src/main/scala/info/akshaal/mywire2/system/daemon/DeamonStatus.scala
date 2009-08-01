@@ -45,6 +45,11 @@ private[system] final class DaemonStatus (val jmxObjectName : String)
     )
 
     /**
+     * Holds information about a time when daemon was started
+     */
+    final val startedAt = System.nanoTime.nanoseconds
+
+    /**
      * Returns true if application is dying (feels bad).
      */
     final def isDying = dying

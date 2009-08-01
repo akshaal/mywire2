@@ -70,19 +70,25 @@ trait Module {
         new LowPriorityPool (threads = lowPriorityPoolThreads,
                              latencyLimit = lowPriorityPoolLatencyLimit,
                              executionLimit = lowPriorityPoolExecutionLimit,
-                             threadPriorityChanger = threadPriorityChanger)
+                             threadPriorityChanger = threadPriorityChanger,
+                             prefs = prefs,
+                             daemonStatus = daemonStatus)
 
     private[system] val normalPriorityPool =
         new NormalPriorityPool (threads = normalPriorityPoolThreads,
                                 latencyLimit = normalPriorityPoolLatencyLimit,
                                 executionLimit = normalPriorityPoolExecutionLimit,
-                                threadPriorityChanger = threadPriorityChanger)
+                                threadPriorityChanger = threadPriorityChanger,
+                                prefs = prefs,
+                                daemonStatus = daemonStatus)
 
     private[system] val hiPriorityPool =
         new HiPriorityPool (threads = hiPriorityPoolThreads,
                             latencyLimit = hiPriorityPoolLatencyLimit,
                             executionLimit = hiPriorityPoolExecutionLimit,
-                            threadPriorityChanger = threadPriorityChanger)
+                            threadPriorityChanger = threadPriorityChanger,
+                            prefs = prefs,
+                            daemonStatus = daemonStatus)
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Scheduler
@@ -90,12 +96,14 @@ trait Module {
     private[system] val scheduler =
         new Scheduler (latencyLimit = schedulerLatencyLimit,
                        prefs = prefs,
+                       daemonStatus = daemonStatus,
                        threadPriorityChanger = threadPriorityChanger)
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Monitoring Actors
 
-    private[system] final class MonitoringActorImpl extends MonitoringActor (
+    private[system] final class MonitoringActorImpl
+                            extends MonitoringActor (
                                      scheduler = scheduler,
                                      pool = normalPriorityPool,
                                      interval = monitoringInterval,
@@ -122,20 +130,22 @@ trait Module {
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Actors
 
-    private[system] val logActor = new LogActor (scheduler = scheduler,
-                                                 pool = lowPriorityPool,
-                                                 logDao = logDao)
+    private[system] val logActor =
+        new LogActor (scheduler = scheduler,
+                      pool = lowPriorityPool,
+                      logDao = logDao)
 
-    private[system] val fileActor = new FileActor (scheduler = scheduler,
-                                                   pool = normalPriorityPool,
-                                                   prefs = prefs)
+    private[system] val fileActor =
+        new FileActor (scheduler = scheduler,
+                       pool = normalPriorityPool,
+                       prefs = prefs)
 
-    private[system] val deamonStatusActor = new DeamonStatusActor (
-                                       scheduler = scheduler,
-                                       pool = normalPriorityPool,
-                                       interval = daemonStatusUpdateInterval,
-                                       daemonStatus = daemonStatus,
-                                       statusFile = daemonStatusFile)
+    private[system] val deamonStatusActor =
+        new DeamonStatusActor (scheduler = scheduler,
+                               pool = normalPriorityPool,
+                               interval = daemonStatusUpdateInterval,
+                               daemonStatus = daemonStatus,
+                               statusFile = daemonStatusFile)
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Useful addons

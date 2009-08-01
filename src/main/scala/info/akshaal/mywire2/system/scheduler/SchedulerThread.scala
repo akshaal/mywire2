@@ -14,12 +14,14 @@ import java.util.PriorityQueue
 
 import Predefs._
 import logger.Logging
+import daemon.DaemonStatus
 import utils.{Timing, TimeUnit, ThreadPriorityChanger}
 
 private[scheduler] final class SchedulerThread
                              (latencyLimit : TimeUnit,
                               threadPriorityChanger : ThreadPriorityChanger,
-                              prefs : Prefs)
+                              prefs : Prefs,
+                              daemonStatus : DaemonStatus)
                          extends Thread with Logging
 {
     @volatile
@@ -30,7 +32,9 @@ private[scheduler] final class SchedulerThread
     private val schedulerDrift =
             prefs.getTimeUnit("mywire.scheduler.drift").asNanoseconds
     
-    val latencyTiming = new Timing (latencyLimit)
+    val latencyTiming = new Timing (limit = latencyLimit,
+                                    daemonStatus = daemonStatus,
+                                    prefs = prefs)
 
     def schedule (item : Schedule) = {
         synchronized {
