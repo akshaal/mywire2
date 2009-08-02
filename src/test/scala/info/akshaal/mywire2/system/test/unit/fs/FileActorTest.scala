@@ -11,7 +11,7 @@ package system.test.unit.fs
 import collection.immutable.List
 import org.testng.annotations.Test
 import org.testng.Assert._
-import java.io.{File, FileReader, BufferedReader}
+import java.io.{File, FileReader, BufferedReader, BufferedWriter, FileWriter}
 
 import system.test.unit.{BaseUnitTest, UnitTestModule, HiPriorityActor}
 
@@ -50,6 +50,8 @@ class FileActorTest extends BaseUnitTest {
         UnitTestModule.actorManager.stopActor (WriteTestActor)
     }
 
+    // TODO: Write reading test
+
     private def sleep () = Thread.sleep (1000)
 
     private def readLine (file : File) : String = {
@@ -58,6 +60,15 @@ class FileActorTest extends BaseUnitTest {
             reader.readLine()
         } finally {
             reader.close ()
+        }
+    }
+
+    private def writeLine (file : File, s : String) : Unit = {
+        val writer = new BufferedWriter (new FileWriter (file))
+        try {
+            writer.write(s, 0, s.length)
+        } finally {
+            writer.close ()
         }
     }
 }
