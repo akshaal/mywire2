@@ -39,16 +39,19 @@ private[system] final class FileActor (pool : NormalPriorityPool,
     /**
      * Process actor message.
      */
-    override final def act () = {
-        case WriteFile(file, content) => writeFile (file, content)
+    protected override final def act () = {
+        case WriteFile(file, content, payload) => writeFile (file,
+                                                             content,
+                                                             payload)
     }
 
     /**
      * Open file and initiate writing to the file.
      */
-    private def writeFile (file : File, content : String) = {
+    private def writeFile (file : File, content : String, payload : Any) =
+    {
         val buf = encoder.encode(CharBuffer.wrap (content))
-        val handler = new WriteCompletionHandler (buf, file, sender)
+        val handler = new WriteCompletionHandler (buf, file, sender, payload)
 
         try {
             val ch = AsynchronousFileChannel.open (file.toPath,
@@ -69,7 +72,8 @@ private[system] final class FileActor (pool : NormalPriorityPool,
  */
 private [fs] final class WriteCompletionHandler (buf : ByteBuffer,
                                                  file : File,
-                                                 sender : Option[Actor])
+                                                 sender : Option[Actor],
+                                                 payload : Any)
                        extends CompletionHandler [Integer, Object]
                        with Logging
 {
@@ -91,10 +95,10 @@ private [fs] final class WriteCompletionHandler (buf : ByteBuffer,
             failed (new IOException ("Only " + bytes
                                      + " number of bytes out of "
                                      + bufLen + " has been written for file"
-                                     + file),
+                                     + file + " with payload " + payload),
                     null)
         } else {
-            sender.foreach (_ ! (WriteFileDone (file)))
+            sender.foreach (_ ! (WriteFileDone (file, payload)))
 
             closeChannel ()
         }
@@ -109,7 +113,7 @@ private [fs] final class WriteCompletionHandler (buf : ByteBuffer,
                 error ("Failed to write to file: " + file, exc)
 
             case Some (actor) =>
-                actor ! (WriteFileFailed (file, exc))
+                actor ! (WriteFileFailed (file, exc, payload))
         }
 
         closeChannel ()
@@ -131,22 +135,31 @@ private [fs] final class WriteCompletionHandler (buf : ByteBuffer,
     }
 }
 
-private[system] abstract sealed class FileMessage
+abstract sealed class FileMessage extends NotNull
 
-private[system] final case class WriteFile (file : File, content : String)
+final case class WriteFile (file : File,
+                            content : String,
+                            payload : Any)
                            extends FileMessage
 
-private[system] final case class ReadFile (name : String)
+final case class ReadFile (name : String,
+                           payload : Any)
                             extends FileMessage
 
-private[system] final case class WriteFileDone (file : File)
+final case class WriteFileDone (file : File,
+                                payload : Any)
                             extends FileMessage
 
-private[system] final case class WriteFileFailed (file : File, exc : Throwable)
+final case class WriteFileFailed (file : File,
+                                  exc : Throwable,
+                                  payload : Any)
                             extends FileMessage
 
-private[system] final case class ReadFileDone (file : File)
+final case class ReadFileDone (file : File,
+                               payload : Any)
                             extends FileMessage
 
-private[system] final case class ReadFileFailed (file : File, exc : Throwable)
+final case class ReadFileFailed (file : File,
+                                 exc : Throwable,
+                                 payload : Any)
                             extends FileMessage
