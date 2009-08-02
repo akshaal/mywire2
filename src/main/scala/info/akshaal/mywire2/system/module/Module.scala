@@ -45,6 +45,8 @@ trait Module {
     val daemonStatusUpdateInterval = prefs.getTimeUnit("mywire.status.update.interval")
     val daemonStatusFile = prefs.getString("mywire.status.file")
 
+    val fileReadBytesLimit = 1024*1024
+
     // -- tests
 
     require (daemonStatusUpdateInterval > monitoringInterval * 2,
@@ -138,6 +140,7 @@ trait Module {
     private[system] val fileActor =
         new FileActor (scheduler = scheduler,
                        pool = normalPriorityPool,
+                       readBytesLimit = fileReadBytesLimit,
                        prefs = prefs)
 
     private[system] val deamonStatusActor =
