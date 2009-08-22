@@ -17,7 +17,7 @@ private[system] final class Timing (limit : TimeUnit,
     private[this] val valuesNumber = 100
     private[this] val frame = new LongValueFrame (valuesNumber)
     private[this] val allowedAfter =
-        (daemonStatus.startedAt + prefs.getTimeUnit ("mywire.timing.skip.first"))
+        (daemonStatus.startedAt + prefs.getTimeUnit ("jacore.timing.skip.first"))
             .asNanoseconds
 
     private[this] def measure (startNano : Long,

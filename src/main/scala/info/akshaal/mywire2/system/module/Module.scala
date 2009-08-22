@@ -9,175 +9,120 @@ package info.akshaal.mywire2
 package system
 package module
 
-import Predefs._
-import logger.{LogActor, LogServiceAppender}
-import utils.{LowPriorityPool, NormalPriorityPool, HiPriorityPool, TimeUnit,
-              ThreadPriorityChanger}
-import scheduler.Scheduler
-import actor.{Monitoring, MonitoringActor, ActorManager, Actor}
-import daemon.{DaemonStatus, DeamonStatusActor}
-import fs.FileActor
-import dao.LogDao
+import com.google.inject.{Module => GuiceModule, Binder,
+                          Singleton, Inject}
+import com.google.inject.name.Names
 
-trait Module {
+import Predefs._
+import utils.TimeUnit
+
+class Module extends GuiceModule {
     val prefsResource = "/mywire.properties"
-    
+
     val prefs = new Prefs (prefsResource)
 
-    val monitoringInterval = prefs.getTimeUnit("mywire.monitoring.interval")
-    val monitoringActorsCount = prefs.getInt("mywire.monitring.actors")
+    val monitoringInterval = prefs.getTimeUnit("jacore.monitoring.interval")
 
-    val lowPriorityPoolThreads = prefs.getInt("mywire.pool.low.threads")
-    val lowPriorityPoolLatencyLimit = prefs.getTimeUnit("mywire.pool.low.latency")
-    val lowPriorityPoolExecutionLimit = prefs.getTimeUnit("mywire.pool.low.execution")
+    val lowPriorityPoolThreads = prefs.getInt("jacore.pool.low.threads")
+    val lowPriorityPoolLatencyLimit = prefs.getTimeUnit("jacore.pool.low.latency")
+    val lowPriorityPoolExecutionLimit = prefs.getTimeUnit("jacore.pool.low.execution")
 
-    val normalPriorityPoolThreads = prefs.getInt("mywire.pool.normal.threads")
-    val normalPriorityPoolLatencyLimit = prefs.getTimeUnit("mywire.pool.normal.latency")
-    val normalPriorityPoolExecutionLimit = prefs.getTimeUnit("mywire.pool.normal.execution")
+    val normalPriorityPoolThreads = prefs.getInt("jacore.pool.normal.threads")
+    val normalPriorityPoolLatencyLimit = prefs.getTimeUnit("jacore.pool.normal.latency")
+    val normalPriorityPoolExecutionLimit = prefs.getTimeUnit("jacore.pool.normal.execution")
 
-    val hiPriorityPoolThreads = prefs.getInt("mywire.pool.hi.threads")
-    val hiPriorityPoolLatencyLimit = prefs.getTimeUnit("mywire.pool.hi.latency")
-    val hiPriorityPoolExecutionLimit = prefs.getTimeUnit("mywire.pool.hi.execution")
+    val hiPriorityPoolThreads = prefs.getInt("jacore.pool.hi.threads")
+    val hiPriorityPoolLatencyLimit = prefs.getTimeUnit("jacore.pool.hi.latency")
+    val hiPriorityPoolExecutionLimit = prefs.getTimeUnit("jacore.pool.hi.execution")
 
-    val schedulerLatencyLimit = prefs.getTimeUnit("mywire.scheduler.latency")
+    val schedulerLatencyLimit = prefs.getTimeUnit("jacore.scheduler.latency")
 
-    val daemonStatusJmxName = "mywire:name=status"
-    val daemonStatusUpdateInterval = prefs.getTimeUnit("mywire.status.update.interval")
-    val daemonStatusFile = prefs.getString("mywire.status.file")
+    val daemonStatusJmxName = prefs.getString("jacore.status.jmx.name")
+    val daemonStatusUpdateInterval = prefs.getTimeUnit("jacore.status.update.interval")
+    val daemonStatusFile = prefs.getString("jacore.status.file")
 
     val fileReadBytesLimit = 1024*1024
 
     // -- tests
 
     require (daemonStatusUpdateInterval > monitoringInterval * 2,
-             "daemonStatusUpdateInterval must greater than 2*monitoringInterval")
+             "daemonStatusUpdateInterval must be greater than 2*monitoringInterval")
 
-    require (monitoringActorsCount > 0)
+    // - - - - - - - - - - - - Bindings - - - - - - - - - -
 
-    // - - - - -- - - - - - - - - - - - - - - - - - - - --
-    // Daemon
+    override def configure (binder : Binder) = {
+        binder.bind (classOf[Prefs])
+              .toInstance (prefs)
 
-    private[system] val daemonStatus = new DaemonStatus (daemonStatusJmxName)
+        binder.bind (classOf[Int])
+              .annotatedWith (Names.named ("jacore.file.buffer.limit"))
+              .toInstance (fileReadBytesLimit)
 
-    // - - - - - - - -  - - - - - - - - - --  - - - - -
-    // Thread priority changer
+        binder.bind (classOf[TimeUnit])
+              .annotatedWith (Names.named ("jacore.scheduler.latency"))
+              .toInstance (schedulerLatencyLimit)
 
-    private[system] val threadPriorityChanger =
-        new ThreadPriorityChanger (prefs)
+        binder.bind (classOf[TimeUnit])
+              .annotatedWith (Names.named ("jacore.monitoring.interval"))
+              .toInstance (monitoringInterval)
 
-    // - - - - - - -  - - - - - - - - - - - - - - - - - -
-    // Pools
+        binder.bind (classOf[TimeUnit])
+              .annotatedWith (Names.named ("jacore.status.update.interval"))
+              .toInstance (daemonStatusUpdateInterval)
 
-    private[system] val lowPriorityPool =
-        new LowPriorityPool (threads = lowPriorityPoolThreads,
-                             latencyLimit = lowPriorityPoolLatencyLimit,
-                             executionLimit = lowPriorityPoolExecutionLimit,
-                             threadPriorityChanger = threadPriorityChanger,
-                             prefs = prefs,
-                             daemonStatus = daemonStatus)
+        binder.bind (classOf[String])
+              .annotatedWith (Names.named ("jacore.status.file"))
+              .toInstance (daemonStatusFile)
 
-    private[system] val normalPriorityPool =
-        new NormalPriorityPool (threads = normalPriorityPoolThreads,
-                                latencyLimit = normalPriorityPoolLatencyLimit,
-                                executionLimit = normalPriorityPoolExecutionLimit,
-                                threadPriorityChanger = threadPriorityChanger,
-                                prefs = prefs,
-                                daemonStatus = daemonStatus)
 
-    private[system] val hiPriorityPool =
-        new HiPriorityPool (threads = hiPriorityPoolThreads,
-                            latencyLimit = hiPriorityPoolLatencyLimit,
-                            executionLimit = hiPriorityPoolExecutionLimit,
-                            threadPriorityChanger = threadPriorityChanger,
-                            prefs = prefs,
-                            daemonStatus = daemonStatus)
+        // Hi priority pool parameters
 
-    // - - - - -- - - - - - - - - - - - - - - - - - - - --
-    // Scheduler
+        binder.bind (classOf[Int])
+              .annotatedWith (Names.named ("jacore.pool.hi.threads"))
+              .toInstance (hiPriorityPoolThreads)
 
-    private[system] val scheduler =
-        new Scheduler (latencyLimit = schedulerLatencyLimit,
-                       prefs = prefs,
-                       daemonStatus = daemonStatus,
-                       threadPriorityChanger = threadPriorityChanger)
+        binder.bind (classOf[TimeUnit])
+              .annotatedWith (Names.named ("jacore.pool.hi.latency"))
+              .toInstance (hiPriorityPoolLatencyLimit)
 
-    // - - - - -- - - - - - - - - - - - - - - - - - - - --
-    // Monitoring Actors
+        binder.bind (classOf[TimeUnit])
+              .annotatedWith (Names.named ("jacore.pool.hi.execution"))
+              .toInstance (hiPriorityPoolExecutionLimit)
 
-    private[system] final class MonitoringActorImpl
-                            extends MonitoringActor (
-                                     scheduler = scheduler,
-                                     pool = normalPriorityPool,
-                                     interval = monitoringInterval,
-                                     daemonStatus = daemonStatus)
 
-    // - - - - -- - - - - - - - - - - - - - - - - - - - --
-    // Monitoring
+        // Normal priority pool parameters
 
-    private[system] val monitoringActorsList =
-        repeatToList (monitoringActorsCount) {new MonitoringActorImpl}
+        binder.bind (classOf[Int])
+              .annotatedWith (Names.named ("jacore.pool.normal.threads"))
+              .toInstance (normalPriorityPoolThreads)
 
-    private[system] val monitoring = new Monitoring (monitoringActorsList)
+        binder.bind (classOf[TimeUnit])
+              .annotatedWith (Names.named ("jacore.pool.normal.latency"))
+              .toInstance (normalPriorityPoolLatencyLimit)
 
-    // - - - - -- - - - - - - - - - - - - - - - - - - - --
-    // Actor manager
+        binder.bind (classOf[TimeUnit])
+              .annotatedWith (Names.named ("jacore.pool.normal.execution"))
+              .toInstance (normalPriorityPoolExecutionLimit)
 
-    private[system] val actorManager = new ActorManager (monitoring)
+        
+        // Low priority pool parameters
+        binder.bind (classOf[Int])
+              .annotatedWith (Names.named ("jacore.pool.low.threads"))
+              .toInstance (lowPriorityPoolThreads)
 
-    // - -- -  - - - - - - - - - - - - - - - - - -- - - -
-    // DAO
+        binder.bind (classOf[TimeUnit])
+              .annotatedWith (Names.named ("jacore.pool.low.latency"))
+              .toInstance (lowPriorityPoolLatencyLimit)
 
-    private[system] val logDao = new LogDao
+        binder.bind (classOf[TimeUnit])
+              .annotatedWith (Names.named ("jacore.pool.low.execution"))
+              .toInstance (lowPriorityPoolExecutionLimit)
 
-    // - - - - -- - - - - - - - - - - - - - - - - - - - --
-    // Actors
 
-    private[system] val logActor =
-        new LogActor (scheduler = scheduler,
-                      pool = lowPriorityPool,
-                      logDao = logDao)
+        // Daemon
 
-    private[system] val fileActor =
-        new FileActor (scheduler = scheduler,
-                       pool = normalPriorityPool,
-                       readBytesLimit = fileReadBytesLimit,
-                       prefs = prefs)
-
-    private[system] val deamonStatusActor =
-        new DeamonStatusActor (scheduler = scheduler,
-                               pool = normalPriorityPool,
-                               interval = daemonStatusUpdateInterval,
-                               daemonStatus = daemonStatus,
-                               statusFile = daemonStatusFile)
-
-    // - - - - -- - - - - - - - - - - - - - - - - - - - --
-    // Useful addons
-
-    final def startActors (it : Iterable[Actor]) = {
-        it.foreach (actorManager.startActor (_))
-    }
-
-    final def stopActors (it : Iterable[Actor]) = {
-        it.foreach (actorManager.stopActor (_))
-    }
-
-    // - - - - -- - - - - - - - - - - - - - - - - - - - --
-    // Init code
-
-    final lazy val start : Unit = {
-        // Init logger
-        LogServiceAppender.logActor = Some(logActor)
-
-        // Run actors
-        val actors =
-            (logActor
-             :: fileActor
-             :: deamonStatusActor
-             :: monitoringActorsList)
-
-        startActors (actors)
-
-        // Start scheduling
-        scheduler.start ()
+        binder.bind (classOf[String])
+              .annotatedWith (Names.named("jacore.status.jmx.name"))
+              .toInstance (prefs.getString ("jacore.status.jmx.name"))
     }
 }

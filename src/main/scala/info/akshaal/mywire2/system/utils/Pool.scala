@@ -4,10 +4,13 @@ package info.akshaal.mywire2
 package system
 package utils
 
-import Predefs._
+import com.google.inject.{Inject, Singleton}
+import com.google.inject.name.Named
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
+
+import Predefs._
 
 import ThreadPriorityChanger.{HiPriority, NormalPriority, LowPriority}
 import daemon.DaemonStatus
@@ -15,32 +18,34 @@ import daemon.DaemonStatus
 /**
  * Hi priority pool.
  */
-private[system] final class HiPriorityPool
-                           (threads : Int,
-                            latencyLimit : TimeUnit,
-                            executionLimit : TimeUnit,
-                            prefs : Prefs,
-                            daemonStatus : DaemonStatus,
-                            threadPriorityChanger : ThreadPriorityChanger)
-          extends Pool (name = "HiPriorityPool",
-                        prefs = prefs,
-                        daemonStatus = daemonStatus,
-                        priority = HiPriority,
-                        threads = threads,
-                        latencyLimit = latencyLimit,
-                        executionLimit = executionLimit,
-                        threadPriorityChanger = threadPriorityChanger)
+@Singleton
+private[system] final class HiPriorityPool @Inject()
+               (@Named("jacore.pool.hi.threads") threads : Int,
+                @Named("jacore.pool.hi.latency") latencyLimit : TimeUnit,
+                @Named("jacore.pool.hi.execution") executionLimit : TimeUnit,
+                prefs : Prefs,
+                daemonStatus : DaemonStatus,
+                threadPriorityChanger : ThreadPriorityChanger)
+      extends Pool (name = "HiPriorityPool",
+                    prefs = prefs,
+                    daemonStatus = daemonStatus,
+                    priority = HiPriority,
+                    threads = threads,
+                    latencyLimit = latencyLimit,
+                    executionLimit = executionLimit,
+                    threadPriorityChanger = threadPriorityChanger)
 
 /**
  * Normal priority pool.
  */
-private[system] final class NormalPriorityPool
-                           (threads : Int,
-                            prefs : Prefs,
-                            daemonStatus : DaemonStatus,
-                            latencyLimit : TimeUnit,
-                            executionLimit : TimeUnit,
-                            threadPriorityChanger : ThreadPriorityChanger)
+@Singleton
+private[system] final class NormalPriorityPool @Inject()
+               (@Named("jacore.pool.normal.threads") threads : Int,
+                @Named("jacore.pool.normal.latency") latencyLimit : TimeUnit,
+                @Named("jacore.pool.normal.execution") executionLimit : TimeUnit,
+                prefs : Prefs,
+                daemonStatus : DaemonStatus,
+                threadPriorityChanger : ThreadPriorityChanger)
           extends Pool (name = "NormalPriorityPool",
                         prefs = prefs,
                         daemonStatus = daemonStatus,
@@ -50,13 +55,17 @@ private[system] final class NormalPriorityPool
                         executionLimit = executionLimit,
                         threadPriorityChanger = threadPriorityChanger)
 
-private[system] final class LowPriorityPool
-                           (threads : Int,
-                            prefs : Prefs,
-                            daemonStatus : DaemonStatus,
-                            latencyLimit : TimeUnit,
-                            executionLimit : TimeUnit,
-                            threadPriorityChanger : ThreadPriorityChanger)
+/**
+ * Low priority pool.
+ */
+@Singleton
+private[system] final class LowPriorityPool @Inject()
+               (@Named("jacore.pool.low.threads") threads : Int,
+                @Named("jacore.pool.low.latency") latencyLimit : TimeUnit,
+                @Named("jacore.pool.low.execution") executionLimit : TimeUnit,
+                prefs : Prefs,
+                daemonStatus : DaemonStatus,
+                threadPriorityChanger : ThreadPriorityChanger)
           extends Pool (name = "LowPriorityPool",
                         prefs = prefs,
                         daemonStatus = daemonStatus,

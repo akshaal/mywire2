@@ -9,6 +9,8 @@ package info.akshaal.mywire2
 package test
 package integration
 
+import com.google.inject.{Guice, Injector}
+
 import org.testng.annotations.Test
 import org.testng.Assert._
 
@@ -17,10 +19,11 @@ import javax.management.ObjectName
 
 import Predefs._
 import system.module.Module
+import system.MywireManager
 import common.BaseTest
 
 class ModuleTest extends BaseTest {
-    TestModule.start
+    TestModule // We use it here
 
     @Test (groups=Array("integration"), dependsOnGroups=Array("unit"))
     def basic () = {
@@ -34,9 +37,8 @@ class ModuleTest extends BaseTest {
     }
 }
 
-object TestModule extends {
+object TestModule extends Module {
     override val monitoringInterval = 2.seconds
-    override val monitoringActorsCount = 3
 
     override val lowPriorityPoolThreads = 2
     override val lowPriorityPoolLatencyLimit = 1.seconds
@@ -54,4 +56,9 @@ object TestModule extends {
 
     override val daemonStatusUpdateInterval = 5.seconds
     override val daemonStatusFile = "/tmp/mywire2-test.status"
-} with Module
+
+    val injector = Guice.createInjector (this)
+    val mywireManager = injector.getInstance (classOf[MywireManager])
+
+    mywireManager.start
+}

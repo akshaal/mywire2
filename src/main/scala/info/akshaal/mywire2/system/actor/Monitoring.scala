@@ -3,6 +3,9 @@
 package info.akshaal.mywire2.system
 package actor
 
+import com.google.inject.{Inject, Singleton}
+import com.google.inject.name.Named
+
 import scala.collection.mutable.HashSet
 import scala.collection.mutable.Set
 
@@ -10,21 +13,29 @@ import daemon.DaemonStatus
 import scheduler.{TimeOut, Scheduler, UnfixedScheduling}
 import utils.{TimeUnit, NormalPriorityPool}
 
-private[system] final class Monitoring
-                    (monitoringActors : List[MonitoringActor])
+@Singleton
+private[system] final class Monitoring @Inject()
+                    (monitoringActors : MonitoringActors)
 {
     private[actor] final def add (actor : Actor) = {
         val cmd = Add (actor)
 
-        monitoringActors.foreach (_ ! cmd)
+        monitoringActors.monitoringActor1 ! cmd
+        monitoringActors.monitoringActor2 ! cmd
     }
 
     private[actor] final def remove (actor : Actor) = {
         val cmd = Remove (actor)
-        
-        monitoringActors.foreach (_ ! cmd)
+
+        monitoringActors.monitoringActor1 ! cmd
+        monitoringActors.monitoringActor2 ! cmd
     }
 }
+
+@Singleton
+private[system] final class MonitoringActors @Inject() (
+                        val monitoringActor1 : MonitoringActor,
+                        val monitoringActor2 : MonitoringActor)
 
 private[actor] abstract sealed class MonitoringCommand extends NotNull
 private[actor] final case class Add (actor : Actor) extends MonitoringCommand
@@ -33,14 +44,14 @@ private[actor] case object Ping extends MonitoringCommand
 private[actor] case object Pong extends MonitoringCommand
 private[actor] case object Monitor extends MonitoringCommand
 
-private[system] class MonitoringActor
-                            (pool : NormalPriorityPool,
-                             scheduler : Scheduler,
-                             interval : TimeUnit,
-                             daemonStatus : DaemonStatus)
-                        extends Actor (pool = pool,
-                                       scheduler = scheduler)
-                        with UnfixedScheduling
+private[system] final class MonitoringActor @Inject() (
+                     pool : NormalPriorityPool,
+                     scheduler : Scheduler,
+                     @Named("jacore.monitoring.interval") interval : TimeUnit,
+                     daemonStatus : DaemonStatus)
+            extends Actor (pool = pool,
+                           scheduler = scheduler)
+            with UnfixedScheduling
 {
     schedule payload Monitor every interval
 

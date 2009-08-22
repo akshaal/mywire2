@@ -17,6 +17,9 @@ import java.nio.{ByteBuffer, CharBuffer}
 import java.nio.channels.CompletionHandler
 import java.nio.charset.Charset
 
+import com.google.inject.{Inject, Singleton}
+import com.google.inject.name.Named
+
 import Predefs._
 import actor.Actor
 import logger.Logging
@@ -59,14 +62,16 @@ final case class ReadFileFailed (file : File,
 /**
  * Fast async file reader/writer. Can read only limited number of bytes.
  */
-private[system] final class FileActor (pool : NormalPriorityPool,
-                                       scheduler : Scheduler,
-                                       readBytesLimit : Int,
-                                       prefs : Prefs)
-                            extends Actor (pool = pool,
-                                           scheduler = scheduler)
+@Singleton
+private[system] final class FileActor @Inject() (
+                       pool : NormalPriorityPool,
+                       scheduler : Scheduler,
+                       @Named("jacore.file.buffer.limit") readBytesLimit : Int,
+                       prefs : Prefs)
+                    extends Actor (pool = pool,
+                                   scheduler = scheduler)
 {
-    private val encoding = prefs.getString("mywire.os.file.encoding")
+    private val encoding = prefs.getString("jacore.os.file.encoding")
     private val encoder = Charset.forName(encoding).newEncoder()
     private val decoder = Charset.forName(encoding).newDecoder()
 
@@ -130,8 +135,8 @@ private[system] final class FileActor (pool : NormalPriorityPool,
                                                      file : File,
                                                      sender : Option[Actor],
                                                      payload : Any)
-                           extends CompletionHandler [Integer, Object]
-                           with Logging
+                      extends CompletionHandler [java.lang.Integer, Object]
+                      with Logging
     {
         private val bufLen = buf.remaining
         private var channel : AsynchronousFileChannel = null
@@ -203,8 +208,8 @@ private[system] final class FileActor (pool : NormalPriorityPool,
                                                     file : File,
                                                     sender : Option[Actor],
                                                     payload : Any)
-                           extends CompletionHandler [Integer, Object]
-                           with Logging
+                        extends CompletionHandler [java.lang.Integer, Object]
+                        with Logging
     {
         private var channel : AsynchronousFileChannel = null
 

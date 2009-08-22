@@ -9,9 +9,13 @@ package info.akshaal.mywire2
 package system
 package actor
 
+import com.google.inject.{Inject, Singleton}
+
 import logger.Logging
 
-private[system] final class ActorManager (monitoring : Monitoring)
+@Singleton
+private[system] final class ActorManager @Inject()
+                        (monitoring : Monitoring)
                     extends Logging
 {
     final def startActor (actor : Actor) = {

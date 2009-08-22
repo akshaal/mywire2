@@ -30,7 +30,7 @@ private[scheduler] final class SchedulerThread
     private val condition = lock.newCondition
     private val queue = new PriorityQueue[Schedule]
     private val schedulerDrift =
-            prefs.getTimeUnit("mywire.scheduler.drift").asNanoseconds
+            prefs.getTimeUnit("jacore.scheduler.drift").asNanoseconds
     
     val latencyTiming = new Timing (limit = latencyLimit,
                                     daemonStatus = daemonStatus,

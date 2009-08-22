@@ -9,6 +9,9 @@ package info.akshaal.mywire2
 package system
 package daemon
 
+import com.google.inject.{Inject, Singleton}
+import com.google.inject.name.Named
+
 import collection.immutable.{List, Nil}
 import scala.collection.JavaConversions._
 import scala.collection.mutable.Map
@@ -17,8 +20,10 @@ import Predefs._
 import logger.DummyLogging
 import jmx.{SimpleJmx, JmxAttr, JmxOper}
 
-private[system] final class DaemonStatus (val jmxObjectName : String)
-                     extends DummyLogging with SimpleJmx
+@Singleton
+private[system] final class DaemonStatus @Inject() (
+                 @Named("jacore.status.jmx.name") val jmxObjectName : String)
+              extends DummyLogging with SimpleJmx
 {
     @volatile
     private var shuttingDown = false
@@ -96,14 +101,16 @@ private[system] final class DaemonStatus (val jmxObjectName : String)
      * Dump threads stack.
      */
     private def dumpThreads () = {
-        val traces : Map[Thread, Array[StackTraceElement]] = Thread.getAllStackTraces ()
+        val traces : Map[Thread, Array[StackTraceElement]] =
+                        Thread.getAllStackTraces ()
 
         var threadDumpList : List[String] = Nil
         for ((thread, stackTraceElements) <- traces) {
             val name = thread.getName
             val stack = stackTraceElements.mkString (",\n    ")
 
-            threadDumpList = (name + ":\n    " + stack + "\n") :: threadDumpList
+            threadDumpList =
+                (name + ":\n    " + stack + "\n") :: threadDumpList
         }
 
         error ("Dumping threads:\n" + threadDumpList.mkString ("\n"))

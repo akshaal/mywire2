@@ -9,20 +9,24 @@ package info.akshaal.mywire2
 package system
 package utils
 
+import com.google.inject.{Inject, Singleton}
+
 import Predefs._
 import logger.Logging
 
 import ru.toril.daemonhelper.{DaemonHelper, OSException}
 
-private[system] final class ThreadPriorityChanger (prefs : Prefs)
-                                                    extends Logging
+@Singleton
+private[system] final class ThreadPriorityChanger @Inject()
+                                (prefs : Prefs)
+                       extends Logging
 {
     import ThreadPriorityChanger._
 
     def toOsPriority (priority : Priority) = priority match {
-        case LowPriority    => prefs.getInt ("mywire.os.priority.low")
-        case NormalPriority => prefs.getInt ("mywire.os.priority.normal")
-        case HiPriority     => prefs.getInt ("mywire.os.priority.high")
+        case LowPriority    => prefs.getInt ("jacore.os.priority.low")
+        case NormalPriority => prefs.getInt ("jacore.os.priority.normal")
+        case HiPriority     => prefs.getInt ("jacore.os.priority.high")
     }
 
     def change (priority : Priority) = {

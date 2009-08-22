@@ -9,6 +9,9 @@ package info.akshaal.mywire2
 package system
 package scheduler
 
+import com.google.inject.{Inject, Singleton}
+import com.google.inject.name.Named
+
 import Predefs._
 import utils.{TimeUnit, ThreadPriorityChanger}
 import logger.Logging
@@ -24,11 +27,12 @@ private[system] trait UnfixedScheduling
 /**
  * Scheduler class.
  */
-private[system] class Scheduler
-                        (latencyLimit : TimeUnit,
-                        threadPriorityChanger : ThreadPriorityChanger,
-                        daemonStatus : DaemonStatus,
-                        prefs : Prefs)
+@Singleton
+private[system] class Scheduler @Inject() (
+                  @Named("jacore.scheduler.latency") latencyLimit : TimeUnit,
+                  threadPriorityChanger : ThreadPriorityChanger,
+                  daemonStatus : DaemonStatus,
+                  prefs : Prefs)
             extends Logging
 {
     private[this] val schedulerThread =

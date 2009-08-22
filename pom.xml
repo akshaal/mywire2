@@ -24,6 +24,7 @@
         <log4j.version>1.2.15</log4j.version>
         <ibatis.version>2.3.4.726</ibatis.version>
         <mysql-connector.version>5.1.6</mysql-connector.version>
+        <guice.version>2.0</guice.version>
 
         <!-- Plugin versions -->
         <maven-scala-plugin.version>2.11</maven-scala-plugin.version>
@@ -90,6 +91,12 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql-connector.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>${guice.version}</version>
+        </dependency>
     </dependencies>
 
     <!-- = = = = = = = = = = = = = Repositories = = = = = = = = = = = = -->
@@ -105,6 +112,12 @@
 		    <name>Scala-tools Maven2 Repository</name>
 		    <url>http://scala-tools.org/repo-releases</url>
 	    </repository>
+
+        <repository>
+            <id>google-maven-repository</id>
+            <name>Google Maven Repository</name>
+            <url>http://google-maven-repository.googlecode.com/svn/repository/</url>
+        </repository>
     </repositories>
 
     <pluginRepositories>

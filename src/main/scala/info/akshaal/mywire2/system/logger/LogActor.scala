@@ -2,6 +2,8 @@ package info.akshaal.mywire2
 package system
 package logger
 
+import com.google.inject.{Singleton, Inject}
+
 import org.apache.log4j.spi.LoggingEvent
 import org.apache.log4j.Level
 
@@ -16,7 +18,9 @@ import utils.LowPriorityPool
 /**
  * Logs message.
  */
-private[system] final class LogActor (pool : LowPriorityPool,
+@Singleton
+private[system] final class LogActor @Inject() (
+                                      pool : LowPriorityPool,
                                       scheduler : Scheduler,
                                       logDao : LogDao)
                         extends Actor (pool = pool,
