@@ -10,32 +10,25 @@ package system
 
 import com.google.inject.{Singleton, Inject}
 
-import fs.FileActor
-import daemon.DaemonStatusActor
-import actor.{ActorManager, MonitoringActors, Actor}
-import scheduler.Scheduler
+import info.akshaal.jacore.system.JacoreManager
+import info.akshaal.jacore.system.actor.Actor
+
 import logger.{LogActor, LogServiceAppender}
 
 @Singleton
-class MywireManager @Inject() (
-                    logActor : LogActor,
-                    fileActor : FileActor,
-                    daemonStatusActor : DaemonStatusActor,
-                    monitoringActors : MonitoringActors,
-                    actorManager : ActorManager,
-                    scheduler : Scheduler
+final class MywireManager @Inject() (
+                    jacoreManager : JacoreManager,
+                    logActor : LogActor
                 )
 {
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Useful addons
 
-    final def startActors (it : Iterable[Actor]) = {
-        it.foreach (actorManager.startActor (_))
-    }
+    final def startActors (it : Iterable[Actor]) = 
+                    jacoreManager.startActors (it)
 
-    final def stopActors (it : Iterable[Actor]) = {
-        it.foreach (actorManager.stopActor (_))
-    }
+    final def stopActors (it : Iterable[Actor]) =
+                    jacoreManager.stopActors (it)
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Init code
@@ -44,18 +37,14 @@ class MywireManager @Inject() (
         // Init logger
         LogServiceAppender.logActor = Some (logActor)
 
+        // Start jacore manager
+        jacoreManager.start
+
         // Run actors
         val actors =
             (logActor
-             :: fileActor
-             :: daemonStatusActor
-             :: monitoringActors.monitoringActor1
-             :: monitoringActors.monitoringActor2
              :: Nil)
 
         startActors (actors)
-
-        // Start scheduling
-        scheduler.start ()
     }
 }

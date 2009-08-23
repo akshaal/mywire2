@@ -5,7 +5,7 @@ package logger
 import org.apache.log4j.{AppenderSkeleton, Layout}
 import org.apache.log4j.spi.LoggingEvent
 
-import actor.Actor
+import info.akshaal.jacore.system.actor.Actor
 
 /**
  * Class used by log4j as a custom appender.

@@ -11,15 +11,17 @@ package utils
 
 import com.google.inject.{Inject, Singleton}
 
-import Predefs._
-import logger.Logging
+import info.akshaal.jacore.Predefs._
+import info.akshaal.jacore.Prefs
+import info.akshaal.jacore.system.logger.Logging
+import info.akshaal.jacore.system.utils.ThreadPriorityChanger
 
 import ru.toril.daemonhelper.{DaemonHelper, OSException}
 
 @Singleton
-private[system] final class ThreadPriorityChanger @Inject()
+private[system] final class NativeThreadPriorityChanger @Inject()
                                 (prefs : Prefs)
-                       extends Logging
+                       extends ThreadPriorityChanger with Logging
 {
     import ThreadPriorityChanger._
 
@@ -58,11 +60,4 @@ private[system] final class ThreadPriorityChanger @Inject()
                       + ": " + e.getMessage, e)
         }
     }
-}
-
-private[system] object ThreadPriorityChanger {
-    abstract sealed class Priority
-    case object LowPriority extends Priority
-    case object NormalPriority extends Priority
-    case object HiPriority extends Priority
 }

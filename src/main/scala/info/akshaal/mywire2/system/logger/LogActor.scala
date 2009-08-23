@@ -9,23 +9,21 @@ import org.apache.log4j.Level
 
 import java.util.Date
 
-import actor.Actor
+import info.akshaal.jacore.system.actor.{Actor, LowPriorityActorEnv}
+import info.akshaal.jacore.system.logger.DummyLogging
+
 import dao.LogDao
 import domain.LogRecord
-import scheduler.Scheduler
-import utils.LowPriorityPool
 
 /**
  * Logs message.
  */
 @Singleton
 private[system] final class LogActor @Inject() (
-                                      pool : LowPriorityPool,
-                                      scheduler : Scheduler,
-                                      logDao : LogDao)
-                        extends Actor (pool = pool,
-                                       scheduler = scheduler)
-                        with DummyLogging
+                                    lowPriorityActorEnv : LowPriorityActorEnv,
+                                    logDao : LogDao)
+                    extends Actor (lowPriorityActorEnv)
+                    with DummyLogging
 {
     final def act () = {
         case (event : LoggingEvent, nano : Long) => {
