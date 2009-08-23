@@ -16,37 +16,41 @@ import com.google.inject.name.Names
 import Predefs._
 import utils.TimeUnit
 
+/**
+ * This module is supposed to help instantiate all classes needed for mywire
+ * to work.
+ */
 class Module extends GuiceModule {
-    val prefsResource = "/mywire.properties"
+    lazy val prefsResource = "/mywire.properties"
+    lazy val prefs = new Prefs (prefsResource)
 
-    val prefs = new Prefs (prefsResource)
+    lazy val monitoringInterval = prefs.getTimeUnit("jacore.monitoring.interval")
 
-    val monitoringInterval = prefs.getTimeUnit("jacore.monitoring.interval")
+    lazy val lowPriorityPoolThreads = prefs.getInt("jacore.pool.low.threads")
+    lazy val lowPriorityPoolLatencyLimit = prefs.getTimeUnit("jacore.pool.low.latency")
+    lazy val lowPriorityPoolExecutionLimit = prefs.getTimeUnit("jacore.pool.low.execution")
 
-    val lowPriorityPoolThreads = prefs.getInt("jacore.pool.low.threads")
-    val lowPriorityPoolLatencyLimit = prefs.getTimeUnit("jacore.pool.low.latency")
-    val lowPriorityPoolExecutionLimit = prefs.getTimeUnit("jacore.pool.low.execution")
+    lazy val normalPriorityPoolThreads = prefs.getInt("jacore.pool.normal.threads")
+    lazy val normalPriorityPoolLatencyLimit = prefs.getTimeUnit("jacore.pool.normal.latency")
+    lazy val normalPriorityPoolExecutionLimit = prefs.getTimeUnit("jacore.pool.normal.execution")
 
-    val normalPriorityPoolThreads = prefs.getInt("jacore.pool.normal.threads")
-    val normalPriorityPoolLatencyLimit = prefs.getTimeUnit("jacore.pool.normal.latency")
-    val normalPriorityPoolExecutionLimit = prefs.getTimeUnit("jacore.pool.normal.execution")
+    lazy val hiPriorityPoolThreads = prefs.getInt("jacore.pool.hi.threads")
+    lazy val hiPriorityPoolLatencyLimit = prefs.getTimeUnit("jacore.pool.hi.latency")
+    lazy val hiPriorityPoolExecutionLimit = prefs.getTimeUnit("jacore.pool.hi.execution")
 
-    val hiPriorityPoolThreads = prefs.getInt("jacore.pool.hi.threads")
-    val hiPriorityPoolLatencyLimit = prefs.getTimeUnit("jacore.pool.hi.latency")
-    val hiPriorityPoolExecutionLimit = prefs.getTimeUnit("jacore.pool.hi.execution")
+    lazy val schedulerLatencyLimit = prefs.getTimeUnit("jacore.scheduler.latency")
 
-    val schedulerLatencyLimit = prefs.getTimeUnit("jacore.scheduler.latency")
+    lazy val daemonStatusJmxName = prefs.getString("jacore.status.jmx.name")
+    lazy val daemonStatusUpdateInterval = prefs.getTimeUnit("jacore.status.update.interval")
+    lazy val daemonStatusFile = prefs.getString("jacore.status.file")
 
-    val daemonStatusJmxName = prefs.getString("jacore.status.jmx.name")
-    val daemonStatusUpdateInterval = prefs.getTimeUnit("jacore.status.update.interval")
-    val daemonStatusFile = prefs.getString("jacore.status.file")
-
-    val fileReadBytesLimit = 1024*1024
+    lazy val fileReadBytesLimit = 1024*1024
 
     // -- tests
 
     require (daemonStatusUpdateInterval > monitoringInterval * 2,
-             "daemonStatusUpdateInterval must be greater than 2*monitoringInterval")
+        "daemonStatusUpdateInterval must at least be greater"
+        + " than 2*monitoringInterval")
 
     // - - - - - - - - - - - - Bindings - - - - - - - - - -
 
@@ -123,6 +127,6 @@ class Module extends GuiceModule {
 
         binder.bind (classOf[String])
               .annotatedWith (Names.named("jacore.status.jmx.name"))
-              .toInstance (prefs.getString ("jacore.status.jmx.name"))
+              .toInstance (daemonStatusJmxName)
     }
 }

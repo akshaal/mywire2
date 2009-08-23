@@ -22,9 +22,9 @@ import javax.management.ObjectName
 // it to dying state!, so we redefine some objects
 
 object MonitoringTestModule extends Module {
-    override val daemonStatusJmxName = "mywire:name=monitoringTestDaemonStatus"
+    override lazy val daemonStatusJmxName = "mywire:name=monitoringTestDaemonStatus"
 
-    val injector = Guice.createInjector (MonitoringTestModule)
+    val injector = Guice.createInjector (this)
     val mywireManager = injector.getInstance (classOf[MywireManager])
 
     mywireManager.start

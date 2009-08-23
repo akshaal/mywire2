@@ -38,24 +38,25 @@ class ModuleTest extends BaseTest {
 }
 
 object TestModule extends Module {
-    override val monitoringInterval = 2.seconds
+    override lazy val monitoringInterval = 2.seconds
 
-    override val lowPriorityPoolThreads = 2
-    override val lowPriorityPoolLatencyLimit = 1.seconds
-    override val lowPriorityPoolExecutionLimit = 500.milliseconds
+    override lazy val lowPriorityPoolThreads = 2
+    override lazy val lowPriorityPoolLatencyLimit = 1.seconds
+    override lazy val lowPriorityPoolExecutionLimit = 500.milliseconds
 
-    override val normalPriorityPoolThreads = 2
-    override val normalPriorityPoolLatencyLimit = 100.milliseconds
-    override val normalPriorityPoolExecutionLimit = 10.milliseconds
+    override lazy val normalPriorityPoolThreads = 2
+    override lazy val normalPriorityPoolLatencyLimit = 100.milliseconds
+    override lazy val normalPriorityPoolExecutionLimit = 10.milliseconds
 
-    override val hiPriorityPoolThreads = 1
-    override val hiPriorityPoolLatencyLimit = 1.milliseconds
-    override val hiPriorityPoolExecutionLimit = 500.microseconds
+    override lazy val hiPriorityPoolThreads = 1
+    override lazy val hiPriorityPoolLatencyLimit = 1.milliseconds
+    override lazy val hiPriorityPoolExecutionLimit = 500.microseconds
 
-    override val schedulerLatencyLimit = 4.milliseconds
+    override lazy val schedulerLatencyLimit = 4.milliseconds
 
-    override val daemonStatusUpdateInterval = 5.seconds
-    override val daemonStatusFile = "/tmp/mywire2-test.status"
+    override lazy val daemonStatusJmxName = "mywire:name=integrationTestStatus"
+    override lazy val daemonStatusUpdateInterval = 5.seconds
+    override lazy val daemonStatusFile = "/tmp/mywire2-test.status"
 
     val injector = Guice.createInjector (this)
     val mywireManager = injector.getInstance (classOf[MywireManager])

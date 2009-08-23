@@ -21,9 +21,9 @@ import system.utils.{HiPriorityPool, NormalPriorityPool, ThreadPriorityChanger}
 
 
 object UnitTestModule extends Module {
-    override val daemonStatusJmxName = "mywire:name=testStatus"
+    override lazy val daemonStatusJmxName = "mywire:name=testStatus"
 
-    val injector = Guice.createInjector (UnitTestModule)
+    val injector = Guice.createInjector (this)
     val mywireManager = injector.getInstance (classOf[MywireManager])
 
     mywireManager.start
