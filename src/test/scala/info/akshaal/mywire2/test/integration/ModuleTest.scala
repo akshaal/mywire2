@@ -17,7 +17,7 @@ import org.testng.Assert._
 import java.lang.management.ManagementFactory
 import javax.management.ObjectName
 
-import Predefs._
+import info.akshaal.jacore.Predefs._
 import system.module.Module
 import system.MywireManager
 import common.BaseTest

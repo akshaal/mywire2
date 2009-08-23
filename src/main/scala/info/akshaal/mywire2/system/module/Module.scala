@@ -14,7 +14,6 @@ import com.google.inject.{Module => GuiceModule, Binder,
 import com.google.inject.name.Names
 
 import info.akshaal.jacore.Predefs._
-import info.akshaal.jacore.system.utils.ThreadPriorityChanger
 import info.akshaal.jacore.system.module.{Module => JacoreModule}
 
 import utils.NativeThreadPriorityChanger
@@ -26,12 +25,12 @@ import utils.NativeThreadPriorityChanger
 class Module extends JacoreModule {
     override lazy val prefsResource = "/mywire.properties"
 
+    override lazy val threadPriorityChangerImplClass =
+                            classOf[NativeThreadPriorityChanger]
+
     // - - - - - - - - - - - - Bindings - - - - - - - - - -
 
     override def configure (binder : Binder) = {
         super.configure (binder)
-
-        binder.bind (classOf[ThreadPriorityChanger])
-              .to (classOf[NativeThreadPriorityChanger])
     }
 }

@@ -14,7 +14,7 @@ import org.testng.annotations.{AfterMethod,
                                AfterSuite,
                                BeforeSuite}
 
-import system.logger.Logging
+import info.akshaal.jacore.system.logger.Logging
 
 /**
  * Basic initialization.

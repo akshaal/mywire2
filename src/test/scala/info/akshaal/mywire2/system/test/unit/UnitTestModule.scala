@@ -10,15 +10,12 @@ package system.test.unit
 
 import com.google.inject.{Guice, Injector}
 
-import Predefs._
-import system.MywireManager
-import system.actor.{Actor, ActorManager}
-import system.module.Module
-import system.daemon.DaemonStatus
-import system.scheduler.Scheduler
-import system.fs.FileActor
-import system.utils.{HiPriorityPool, NormalPriorityPool, ThreadPriorityChanger}
+import info.akshaal.jacore.Predefs._
+import info.akshaal.jacore.system.actor.{Actor, HiPriorityActorEnv}
+import info.akshaal.jacore.system.daemon.DaemonStatus
 
+import system.MywireManager
+import system.module.Module
 
 object UnitTestModule extends Module {
     override lazy val daemonStatusJmxName = "mywire:name=testStatus"
@@ -29,14 +26,8 @@ object UnitTestModule extends Module {
     mywireManager.start
 
     val daemonStatus = injector.getInstance (classOf[DaemonStatus])
-    val scheduler = injector.getInstance (classOf[Scheduler])
-    val actorManager = injector.getInstance (classOf[ActorManager])
-    val fileActor = injector.getInstance (classOf[FileActor])
-    val hiPriorityPool = injector.getInstance (classOf[HiPriorityPool])
-    val normalPriorityPool = injector.getInstance (classOf[NormalPriorityPool])
-    val threadPriorityChanger = injector.getInstance (classOf[ThreadPriorityChanger])
+    val hiPriorityActorEnv = injector.getInstance (classOf[HiPriorityActorEnv])
 }
 
 abstract class HiPriorityActor extends Actor (
-                     scheduler = UnitTestModule.scheduler,
-                     pool = UnitTestModule.hiPriorityPool)
+                            UnitTestModule.hiPriorityActorEnv)
