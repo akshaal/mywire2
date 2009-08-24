@@ -24,16 +24,22 @@ final class MywireManager @Inject() (
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Useful addons
 
-    final def startActors (it : Iterable[Actor]) = 
+    def startActor (actor : Actor) =
+                    jacoreManager.startActor (actor)
+
+    def startActors (it : Iterable[Actor]) = 
                     jacoreManager.startActors (it)
 
-    final def stopActors (it : Iterable[Actor]) =
+    def stopActor (actor : Actor) =
+                    jacoreManager.stopActor (actor)
+
+    def stopActors (it : Iterable[Actor]) =
                     jacoreManager.stopActors (it)
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Init code
 
-    final lazy val start : Unit = {
+    lazy val start : Unit = {
         // Init logger
         LogServiceAppender.logActor = Some (logActor)
 
