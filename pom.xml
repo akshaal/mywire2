@@ -28,7 +28,7 @@
         <guice.version>2.0</guice.version>
 
         <!-- Plugin versions -->
-        <maven-scala-plugin.version>2.11</maven-scala-plugin.version>
+        <maven-scala-plugin.version>2.12</maven-scala-plugin.version>
 
         <!-- Mywire properties -->
         <mywire.jdbc-properties.type>resource</mywire.jdbc-properties.type>
