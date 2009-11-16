@@ -16,7 +16,7 @@ final class LogServiceAppender extends AppenderSkeleton {
             case None =>
                 println ("No log actor defined!")
 
-            case Some(actor) =>
+            case Some (actor) =>
                 actor ! (event, System.nanoTime)
         }
     }

@@ -11,7 +11,6 @@ package system
 import com.google.inject.{Singleton, Inject}
 
 import info.akshaal.jacore.system.JacoreManager
-import info.akshaal.jacore.system.actor.Actor
 
 import logger.{LogActor, LogServiceAppender}
 
@@ -25,21 +24,6 @@ final class MywireManager @Inject() (
     private[this] var started = false
 
     // - - - - -- - - - - - - - - - - - - - - - - - - - --
-    // Useful addons
-
-    def startActor (actor : Actor) =
-                    jacoreManager.startActor (actor)
-
-    def startActors (it : Iterable[Actor]) = 
-                    jacoreManager.startActors (it)
-
-    def stopActor (actor : Actor) =
-                    jacoreManager.stopActor (actor)
-
-    def stopActors (it : Iterable[Actor]) =
-                    jacoreManager.stopActors (it)
-
-    // - - - - -- - - - - - - - - - - - - - - - - - - - --
     // Init code
 
     // Run actors
@@ -48,8 +32,7 @@ final class MywireManager @Inject() (
              :: Nil)
 
     lazy val start : Unit = {
-        require (!stopped,
-            "Unable to start MywireManager. MywireManager has been stopped")
+        require (!stopped, "Unable to start MywireManager. MywireManager has been stopped")
 
         // Set flags
         started = true
@@ -61,23 +44,22 @@ final class MywireManager @Inject() (
         jacoreManager.start
 
         // Start actors
-        startActors (actors)
+        jacoreManager.startActors (actors)
     }
 
     lazy val stop : Unit = {
-        require (started,
-                 "Unable to stop MywireManager. MywireManager is not started")
+        require (started, "Unable to stop MywireManager. MywireManager is not started")
 
         // Set flags
         stopped = true
 
-        // Deinit logger
-        LogServiceAppender.logActor = None
+        // Stop actors
+        jacoreManager.stopActors (actors)
 
         // Stop jacore
         jacoreManager.stop
-
-        // Stop actors
-        stopActors (actors)
+        
+        // Deinit logger
+        LogServiceAppender.logActor = None
     }
 }

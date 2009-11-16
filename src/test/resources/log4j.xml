@@ -14,15 +14,6 @@
     </layout>
   </appender>
 
-  <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
-    <param name="Threshold" value="INFO"/>
-    <param name="Target" value="System.out"/>
-
-    <layout class="org.apache.log4j.PatternLayout">
-      <param name="ConversionPattern" value="%d %-5p [%c] (%t:%x) %m%n" />
-    </layout>
-  </appender>
-
   <!-- This log appender must not be used for classes involved
        in logging itself! So it must not be used to log database access!
     -->
@@ -47,6 +38,5 @@
   
   <root>
      <appender-ref ref="FILE" />
-     <appender-ref ref="CONSOLE" />
   </root>
 </log4j:configuration>

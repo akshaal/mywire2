@@ -16,9 +16,9 @@
         <test.threads>10</test.threads>
 
         <!-- Versions -->
-        <scala.version>2.8.0-SNAPSHOT</scala.version>
+        <scala.version>2.8.0-SNAP-20091113</scala.version>
         <jetlang.version>0.1.7</jetlang.version>
-        <testng.version>5.9</testng.version>
+        <junit.version>4.7</junit.version>
         <daemonhelper.version>1.0</daemonhelper.version>
         <jacore.version>1.0-SNAPSHOT</jacore.version>
         <slf4j.version>1.5.8</slf4j.version>
@@ -26,6 +26,8 @@
         <ibatis.version>2.3.4.726</ibatis.version>
         <mysql-connector.version>5.1.6</mysql-connector.version>
         <guice.version>2.0</guice.version>
+        <mockito.version>1.8.1-rc1</mockito.version>
+        <specs.version>1.6.2-SNAP-20091113</specs.version>
 
         <!-- Plugin versions -->
         <maven-scala-plugin.version>2.12</maven-scala-plugin.version>
@@ -44,17 +46,16 @@
         </dependency>
 
         <dependency>
-           <groupId>info.akshaal.jacore</groupId>
-           <artifactId>jacore</artifactId>
-           <version>${jacore.version}</version>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>${junit.version}</version>
+          <scope>test</scope>
         </dependency>
 
         <dependency>
-          <groupId>org.testng</groupId>
-          <artifactId>testng</artifactId>
-          <version>${testng.version}</version>
-          <scope>test</scope>
-          <classifier>jdk15</classifier>
+           <groupId>info.akshaal.jacore</groupId>
+           <artifactId>jacore</artifactId>
+           <version>${jacore.version}</version>
         </dependency>
 
     	<dependency>
@@ -104,6 +105,20 @@
             <artifactId>guice</artifactId>
             <version>${guice.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+    	<dependency>
+            <groupId>org.specs</groupId>
+            <artifactId>specs</artifactId>
+            <version>${specs.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <!-- = = = = = = = = = = = = = Repositories = = = = = = = = = = = = -->
@@ -150,9 +165,6 @@
     <!-- = = = = = = = = = = = = = = Build = = = = = = = = = = = = = = = -->
 
     <build>
-        <sourceDirectory>src/main/scala</sourceDirectory>
-        <testSourceDirectory>src/test/scala</testSourceDirectory> 
-
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -185,17 +197,6 @@
                     <argLine>
                         -Djava.library.path=${basedir}/src/main/native/${host.native.id}
                     </argLine>
-
-                    <suiteXmlFiles>
-                        <suiteXmlFile>
-                            src/test/resources/testng.xml
-                        </suiteXmlFile>
-                    </suiteXmlFiles>
-
-                    <failIfNoTests>true</failIfNoTests>
-                    <forkMode>once</forkMode>
-                    <parallel>methods</parallel>
-                    <threadCount>${test.threads}</threadCount>
                 </configuration>
             </plugin>
 
@@ -210,9 +211,12 @@
                         <arg>-target:jvm-1.5</arg>
                         <!-- <arg>-optimise</arg> -->
                         <!-- <arg>-Ydebug</arg> -->
+                        <!-- <arg>-Ytailrecommend</arg> -->
                         <arg>-deprecation</arg>
+                        <arg>-unchecked</arg>
                         <!-- <arg>-Xcheck-null</arg> -->
                         <!-- <arg>-Xwarninit</arg> -->
+                        <!-- <arg>-Xstrict-warnings</arg> -->
                     </args>
                 </configuration>                
                 <executions>

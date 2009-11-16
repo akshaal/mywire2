@@ -1,4 +1,4 @@
 #!/bin/sh
 
 export JAVA_HOME=/opt/jdk1.7.0
-mvn clean test
+mvn -o test
