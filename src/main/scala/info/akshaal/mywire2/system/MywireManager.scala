@@ -38,7 +38,7 @@ final class MywireManager @Inject() (
         started = true
 
         // Init logger
-        LogServiceAppender.logActor = Some (logActor)
+        LogServiceAppender.setActor (logActor)
 
         // Start jacore manager
         jacoreManager.start
@@ -60,6 +60,6 @@ final class MywireManager @Inject() (
         jacoreManager.stop
         
         // Deinit logger
-        LogServiceAppender.logActor = None
+        LogServiceAppender.unsetActor
     }
 }
