@@ -26,7 +26,7 @@ private[system] final class LogActor @Inject() (
                     extends Actor (lowPriorityActorEnv)
                     with QuickDebugLogging
 {
-    final override def act () = {
+    override def act () = {
         case (event : LoggingEvent, nano : Long) => {
             val stack = event.getThrowableStrRep
             val stackStr = if (stack == null) "" else stack.mkString("\n")
