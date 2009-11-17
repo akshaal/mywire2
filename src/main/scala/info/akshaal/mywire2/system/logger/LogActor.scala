@@ -11,6 +11,7 @@ import java.util.Date
 
 import info.akshaal.jacore.system.actor.{Actor, LowPriorityActorEnv}
 import info.akshaal.jacore.system.logger.DummyLogging
+import info.akshaal.jacore.system.logger.QuickDebugLogging
 
 import dao.LogDao
 import domain.LogRecord
@@ -23,7 +24,7 @@ private[system] final class LogActor @Inject() (
                                     lowPriorityActorEnv : LowPriorityActorEnv,
                                     logDao : LogDao)
                     extends Actor (lowPriorityActorEnv)
-                    with DummyLogging
+                    with QuickDebugLogging
 {
     final override def act () = {
         case (event : LoggingEvent, nano : Long) => {
