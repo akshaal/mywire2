@@ -7,13 +7,14 @@ import com.google.inject.{Singleton, Inject}
 import org.apache.log4j.spi.LoggingEvent
 import org.apache.log4j.Level
 
+import com.ibatis.sqlmap.client.SqlMapClient
+
 import java.util.Date
 
-import info.akshaal.jacore.system.actor.{Actor, LowPriorityActorEnv}
+import info.akshaal.jacore.system.actor.{Actor, LowPriorityActorEnv, NormalPriorityActorEnv}
+import info.akshaal.jacore.system.dao.ibatis.IbatisDataInserterActor
 import info.akshaal.jacore.system.logger.DummyLogging
-import info.akshaal.jacore.system.logger.QuickDebugLogging
 
-import dao.LogDao
 import domain.LogRecord
 
 /**
@@ -21,11 +22,13 @@ import domain.LogRecord
  */
 @Singleton
 private[system] final class LogActor @Inject() (
-                                    lowPriorityActorEnv : LowPriorityActorEnv,
-                                    logDao : LogDao)
-                    extends Actor (lowPriorityActorEnv)
-                    with QuickDebugLogging
+                                    normalPriorityActorEnv : NormalPriorityActorEnv,
+                                    logRecordInserted : LogRecordInserterActor)
+                    extends Actor (normalPriorityActorEnv)
+                    with DummyLogging
 {
+    manage (logRecordInserted)
+
     override def act () = {
         case (event : LoggingEvent, nano : Long) => {
             val stack = event.getThrowableStrRep
@@ -40,7 +43,7 @@ private[system] final class LogActor @Inject() (
                                        thread    = event.getThreadName,
                                        throwable = stackStr)
 
-            logDao.insertRecord (logRecord)
+            logRecordInserted.insert (logRecord)
         }
     }
 
@@ -52,4 +55,19 @@ private[system] final class LogActor @Inject() (
         case level =>
             throw new IllegalArgumentException ("Unsupported level: " + level)
     }
+}
+
+/**
+ * Data inserter for LogRecord object. This is a slave for LogActor.
+ */
+@Singleton
+private[logger] class LogRecordInserterActor @Inject() (
+                                            sqlMapClient : SqlMapClient,
+                                            lowPriorityActorEnv : LowPriorityActorEnv)
+                        extends IbatisDataInserterActor[LogRecord] (
+                                            sqlMapClient = sqlMapClient,
+                                            lowPriorityActorEnv = lowPriorityActorEnv)
+                        with DummyLogging
+{
+    protected override val insertStatementId = "insertLogRecord"
 }

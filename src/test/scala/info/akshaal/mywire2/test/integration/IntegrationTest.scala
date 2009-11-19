@@ -10,7 +10,9 @@ package test
 package integration
 
 import java.io.File
-import com.google.inject.Guice
+import com.google.inject.{Guice, Binder}
+import com.ibatis.sqlmap.client.{SqlMapClient, SqlMapClientBuilder}
+import com.ibatis.common.resources.Resources
 import org.specs.SpecificationWithJUnit
 
 import info.akshaal.jacore.Predefs._
@@ -68,5 +70,14 @@ object IntegrationTest {
         val injector = Guice.createInjector (this)
         val mywireManager = injector.getInstanceOf [MywireManager]
         val daemonStatus = injector.getInstanceOf [DaemonStatus]
+
+        override def configure (binder : Binder) = {
+            super.configure (binder)
+
+            val reader = Resources.getResourceAsReader ("sqlmap.xml")
+            val sqlmap = SqlMapClientBuilder.buildSqlMapClient(reader)
+
+            binder bind (classOf[SqlMapClient]) toInstance sqlmap
+        }
     }
 }
