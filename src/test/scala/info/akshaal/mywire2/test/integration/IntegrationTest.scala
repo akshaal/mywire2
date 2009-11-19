@@ -75,7 +75,7 @@ object IntegrationTest {
             super.configure (binder)
 
             val reader = Resources.getResourceAsReader ("sqlmap.xml")
-            val sqlmap = SqlMapClientBuilder.buildSqlMapClient(reader)
+            val sqlmap = SqlMapClientBuilder.buildSqlMapClient (reader)
 
             binder bind classOf[SqlMapClient] toInstance sqlmap
         }
