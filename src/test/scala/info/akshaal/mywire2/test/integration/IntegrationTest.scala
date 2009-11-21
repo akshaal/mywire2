@@ -17,6 +17,7 @@ import org.specs.SpecificationWithJUnit
 
 import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.system.daemon.DaemonStatus
+import info.akshaal.jacore.system.test.TestHelper
 
 import system.module.Module
 import system.MywireManager
@@ -24,6 +25,7 @@ import system.MywireManager
 class IntegrationTest extends SpecificationWithJUnit ("Integration specification") {
     import IntegrationTest._
 
+    IntegrationTest
     IntegrationModule
 
     "Mywire" should {
@@ -42,7 +44,13 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
     }
 }
 
-object IntegrationTest {
+object IntegrationTest extends TestHelper {
+    override val timeout = 2.seconds
+    override val injector = IntegrationModule.injector
+
+    createModuleGraphInDebugDir ("integration-module.dot")
+    val debugDir = System.getProperty ("jacore.module.debug.dir")
+
     object IntegrationModule extends Module {
         val daemonStatusFileFile = File.createTempFile ("Mywire2", "IntegrationTest")
         daemonStatusFileFile.deleteOnExit
