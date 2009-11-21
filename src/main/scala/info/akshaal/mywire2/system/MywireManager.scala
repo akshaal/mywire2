@@ -14,11 +14,17 @@ import info.akshaal.jacore.system.JacoreManager
 
 import logger.{LogActor, LogServiceAppender}
 
+trait MywireManager {
+    def start : Unit
+    
+    def stop : Unit
+}
+
 @Singleton
-final class MywireManager @Inject() (
+private[system] final class MywireManagerImpl @Inject() (
                     jacoreManager : JacoreManager,
                     logActor : LogActor
-                )
+                ) extends MywireManager
 {
     private[this] var stopped = false
     private[this] var started = false
@@ -31,7 +37,8 @@ final class MywireManager @Inject() (
             (logActor
              :: Nil)
 
-    lazy val start : Unit = {
+    /** {InheritDoc} */
+    override lazy val start : Unit = {
         require (!stopped, "Unable to start MywireManager. MywireManager has been stopped")
 
         // Set flags
@@ -47,7 +54,8 @@ final class MywireManager @Inject() (
         jacoreManager.startActors (actors)
     }
 
-    lazy val stop : Unit = {
+    /** {InheritDoc} */
+    override lazy val stop : Unit = {
         require (started, "Unable to stop MywireManager. MywireManager is not started")
 
         // Set flags

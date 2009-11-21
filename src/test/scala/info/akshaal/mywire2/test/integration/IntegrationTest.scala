@@ -25,9 +25,6 @@ import system.MywireManager
 class IntegrationTest extends SpecificationWithJUnit ("Integration specification") {
     import IntegrationTest._
 
-    IntegrationTest
-    IntegrationModule
-
     "Mywire" should {
         "survive for some time without problems" in {
             try {
@@ -40,6 +37,8 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
             } finally {
                 IntegrationModule.mywireManager.stop
             }
+
+            createModuleGraphInDebugDir ("integration-module.dot")
         }
     }
 }
@@ -47,9 +46,6 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
 object IntegrationTest extends TestHelper {
     override val timeout = 2.seconds
     override val injector = IntegrationModule.injector
-
-    createModuleGraphInDebugDir ("integration-module.dot")
-    val debugDir = System.getProperty ("jacore.module.debug.dir")
 
     object IntegrationModule extends Module {
         val daemonStatusFileFile = File.createTempFile ("Mywire2", "IntegrationTest")

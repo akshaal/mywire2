@@ -25,12 +25,13 @@ import utils.NativeThreadPriorityChanger
 class Module extends JacoreModule {
     override lazy val prefsResource = "/mywire.properties"
 
-    override lazy val threadPriorityChangerImplClass =
-                            classOf[NativeThreadPriorityChanger]
+    override lazy val threadPriorityChangerImplClass = classOf [NativeThreadPriorityChanger]
 
     // - - - - - - - - - - - - Bindings - - - - - - - - - -
 
     override def configure (binder : Binder) = {
         super.configure (binder)
+
+        binder.bind (classOf[MywireManager]).to (classOf[MywireManagerImpl])
     }
 }
