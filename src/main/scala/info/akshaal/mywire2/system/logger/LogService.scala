@@ -11,40 +11,55 @@ import com.ibatis.sqlmap.client.SqlMapClient
 
 import java.util.Date
 
+import info.akshaal.jacore.system.annotation.CallByMessage
 import info.akshaal.jacore.system.actor.{Actor, LowPriorityActorEnv, NormalPriorityActorEnv}
 import info.akshaal.jacore.system.dao.ibatis.IbatisDataInserterActor
 import info.akshaal.jacore.system.logger.DummyLogging
 
+import annotation.LogDB
 import domain.LogRecord
 
 /**
- * Logs message.
+ * Service that logs message to database.
+ */
+private[system] trait LogService {
+    /**
+     * Log event that happened at the given time.
+     * @param event event to log
+     * @param nano (relative) time of event in nanosecond
+     */
+    def log (event : LoggingEvent, nano : Long) : Unit
+}
+
+/**
+ * Log messages.
  */
 @Singleton
-private[system] final class LogActor @Inject() (
+private[system] class LogServiceActor @Inject() (
                                     normalPriorityActorEnv : NormalPriorityActorEnv,
                                     logRecordInserted : LogRecordInserterActor)
                     extends Actor (normalPriorityActorEnv)
                     with DummyLogging
+                    with LogService
 {
     manage (logRecordInserted)
 
-    override def act () = {
-        case (event : LoggingEvent, nano : Long) => {
-            val stack = event.getThrowableStrRep
-            val stackStr = if (stack == null) "" else stack.mkString("\n")
-            val levelId = levelToLevelId (event.getLevel)
+    /** {InheritDoc} */
+    @CallByMessage
+    override def log (event : LoggingEvent, nano : Long) : Unit = {
+        val stack = event.getThrowableStrRep
+        val stackStr = if (stack == null) "" else stack.mkString("\n")
+        val levelId = levelToLevelId (event.getLevel)
 
-            val logRecord = LogRecord (time      = new Date (event.getTimeStamp),
-                                       nano      = nano,
-                                       levelId   = levelId,
-                                       category  = event.getLoggerName,
-                                       msg       = event.getRenderedMessage,
-                                       thread    = event.getThreadName,
-                                       throwable = stackStr)
+        val logRecord = LogRecord (time      = new Date (event.getTimeStamp),
+                                   nano      = nano,
+                                   levelId   = levelId,
+                                   category  = event.getLoggerName,
+                                   msg       = event.getRenderedMessage,
+                                   thread    = event.getThreadName,
+                                   throwable = stackStr)
 
-            logRecordInserted.insert (logRecord)
-        }
+        logRecordInserted.insert (logRecord)
     }
 
     private def levelToLevelId (level : Level) = level match {
@@ -62,7 +77,7 @@ private[system] final class LogActor @Inject() (
  */
 @Singleton
 private[logger] class LogRecordInserterActor @Inject() (
-                                            sqlMapClient : SqlMapClient,
+                                            @LogDB sqlMapClient : SqlMapClient,
                                             lowPriorityActorEnv : LowPriorityActorEnv)
                         extends IbatisDataInserterActor[LogRecord] (
                                             sqlMapClient = sqlMapClient,

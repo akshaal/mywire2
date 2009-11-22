@@ -20,10 +20,13 @@ import info.akshaal.jacore.system.daemon.DaemonStatus
 import info.akshaal.jacore.system.test.TestHelper
 
 import system.module.Module
+import system.annotation.LogDB
 import system.MywireManager
 
 class IntegrationTest extends SpecificationWithJUnit ("Integration specification") {
     import IntegrationTest._
+
+    IntegrationTest
 
     "Mywire" should {
         "survive for some time without problems" in {
@@ -81,7 +84,7 @@ object IntegrationTest extends TestHelper {
             val reader = Resources.getResourceAsReader ("sqlmap.xml")
             val sqlmap = SqlMapClientBuilder.buildSqlMapClient (reader)
 
-            binder bind classOf[SqlMapClient] toInstance sqlmap
+            binder bind classOf[SqlMapClient] annotatedWith (classOf[LogDB]) toInstance sqlmap
         }
     }
 }

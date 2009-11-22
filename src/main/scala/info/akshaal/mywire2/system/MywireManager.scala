@@ -12,18 +12,27 @@ import com.google.inject.{Singleton, Inject}
 
 import info.akshaal.jacore.system.JacoreManager
 
-import logger.{LogActor, LogServiceAppender}
+import logger.{LogServiceActor, LogServiceAppender}
 
+/**
+ * Manager for one instance of mywire system.
+ */
 trait MywireManager {
+    /**
+     * Start mywire instance.
+     */
     def start : Unit
-    
+
+    /**
+     * Stop mywire instance.
+     */
     def stop : Unit
 }
 
 @Singleton
 private[system] final class MywireManagerImpl @Inject() (
                     jacoreManager : JacoreManager,
-                    logActor : LogActor
+                    logServiceActor : LogServiceActor
                 ) extends MywireManager
 {
     private[this] var stopped = false
@@ -34,7 +43,7 @@ private[system] final class MywireManagerImpl @Inject() (
 
     // Run actors
     private[this] val actors =
-            (logActor
+            (logServiceActor
              :: Nil)
 
     /** {InheritDoc} */
@@ -45,7 +54,7 @@ private[system] final class MywireManagerImpl @Inject() (
         started = true
 
         // Init logger
-        LogServiceAppender.setActor (logActor)
+        LogServiceAppender.setService (logServiceActor)
 
         // Start jacore manager
         jacoreManager.start
@@ -68,6 +77,6 @@ private[system] final class MywireManagerImpl @Inject() (
         jacoreManager.stop
         
         // Deinit logger
-        LogServiceAppender.unsetActor
+        LogServiceAppender.unsetService
     }
 }

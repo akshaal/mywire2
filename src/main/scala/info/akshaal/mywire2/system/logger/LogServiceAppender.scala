@@ -15,14 +15,12 @@ final class LogServiceAppender extends AppenderSkeleton {
     import LogServiceAppender._
 
     override def append (event : LoggingEvent) = {
-        val tuple = (event, System.nanoTime)
-
-        logActor match {
+        logService match {
             case None =>
-                addPending (tuple)
+                addPending (event, System.nanoTime)
 
-            case Some (actor) =>
-                actor ! tuple
+            case Some (service) =>
+                service.log (event, System.nanoTime)
         }
     }
     
@@ -37,42 +35,42 @@ private[system] object LogServiceAppender {
     // All operations on this list must be synchronized
     private val pending = new LinkedList[(LoggingEvent, Long)]
 
-    private var logActor : Option[LogActor] = None
+    private var logService : Option[LogService] = None
 
     /**
      * Add pending msg.
      */
     private def addPending (tuple : (LoggingEvent, Long)) : Unit = {
         pending synchronized {
-            logActor match {
+            logService match {
                 case None =>
                     pending.addLast (tuple)
                     if (pending.size > MAX_PENDING) {
                         pending.removeFirst ()
                     }
 
-                case Some (actor) =>
-                    actor ! tuple
+                case Some (service) =>
+                    service.log (tuple._1, tuple._2)
             }
         }
     }
 
     /**
-     * Set actor that will receive a tuples with event and time when message occured.
-     * @param actor actor
+     * Set service that will receive a tuples with event and time when message occured.
+     * @param service service
      */
-    def setActor (actor : LogActor) : Unit = {
+    def setService (service : LogService) : Unit = {
         synchronized {
-            pending.foreach (tuple => actor ! tuple)
+            pending.foreach (tuple => service.log (tuple._1, tuple._2))
 
-            logActor = Some (actor)
+            logService = Some (service)
         }
     }
 
     /**
-     * After calling this method, no actor will receive log events, until setActor is called.
+     * After calling this method, no service will receive log events, until setService is called.
      */
-    def unsetActor () : Unit = logActor = {
-        None
+    def unsetService () : Unit = {
+        logService = None
     }
 }
