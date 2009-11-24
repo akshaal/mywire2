@@ -14,13 +14,16 @@ import com.google.inject.{Guice, Binder}
 import com.ibatis.sqlmap.client.{SqlMapClient, SqlMapClientBuilder}
 import com.ibatis.common.resources.Resources
 import org.specs.SpecificationWithJUnit
+import org.apache.activemq.ActiveMQConnectionFactory
+import org.apache.activemq.command.ActiveMQTopic
+import javax.jms.{ConnectionFactory, Destination}
 
 import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.system.daemon.DaemonStatus
 import info.akshaal.jacore.system.test.TestHelper
 
 import system.module.Module
-import system.annotation.LogDB
+import system.annotation.{LogDB, JmsIntegrationExport}
 import system.MywireManager
 
 class IntegrationTest extends SpecificationWithJUnit ("Integration specification") {
@@ -81,10 +84,21 @@ object IntegrationTest extends TestHelper {
         override def configure (binder : Binder) = {
             super.configure (binder)
 
+            // sqlmap
             val reader = Resources.getResourceAsReader ("sqlmap.xml")
             val sqlmap = SqlMapClientBuilder.buildSqlMapClient (reader)
-
             binder bind classOf[SqlMapClient] annotatedWith (classOf[LogDB]) toInstance sqlmap
+
+            // JMS
+            val connectionFactory = new ActiveMQConnectionFactory ("vm://localhost")
+            binder.bind (classOf[ConnectionFactory])
+                  .annotatedWith (classOf[JmsIntegrationExport])
+                  .toInstance (connectionFactory)
+
+            val exportTopic = new ActiveMQTopic ("integration-test-export")
+            binder.bind (classOf[Destination])
+                  .annotatedWith (classOf[JmsIntegrationExport])
+                  .toInstance (exportTopic)
         }
     }
 }

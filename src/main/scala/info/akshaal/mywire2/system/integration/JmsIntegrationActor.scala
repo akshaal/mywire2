@@ -14,6 +14,7 @@ import info.akshaal.jacore.system.annotation.Act
 import info.akshaal.jacore.system.jms.AbstractJmsSenderActor
 import info.akshaal.jacore.system.actor.{LowPriorityActorEnv, NormalPriorityActorEnv, Actor}
 
+import annotation.JmsIntegrationExport
 import domain.ExportNotification
 
 /**
@@ -43,13 +44,13 @@ private[system] class JmsIntegrationActor @Inject() (
  */
 @Singleton
 private[integration] class JmsIntegrationSenderActor @Inject() (
-                                        lowPriorityActorEnv : LowPriorityActorEnv,
-                                        connectionFactory : ConnectionFactory,  // TODO
-                                        destination : Destination) // TODO
+                                    lowPriorityActorEnv : LowPriorityActorEnv,
+                                    @JmsIntegrationExport connectionFactory : ConnectionFactory,
+                                    @JmsIntegrationExport destination : Destination)
                      extends AbstractJmsSenderActor [Map[String, Any]] (
-                                        lowPriorityActorEnv : LowPriorityActorEnv,
-                                        connectionFactory : ConnectionFactory,
-                                        destination : Destination)
+                                    lowPriorityActorEnv : LowPriorityActorEnv,
+                                    connectionFactory : ConnectionFactory,
+                                    destination : Destination)
 {
     /** {InheritDoc} */
     override protected def createJmsMessage (session : Session,

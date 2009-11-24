@@ -13,6 +13,7 @@ import com.google.inject.{Singleton, Inject}
 import info.akshaal.jacore.system.JacoreManager
 
 import logger.{LogServiceActor, LogServiceAppender}
+import integration.JmsIntegrationActor
 
 /**
  * Manager for one instance of mywire system.
@@ -32,7 +33,8 @@ trait MywireManager {
 @Singleton
 private[system] final class MywireManagerImpl @Inject() (
                     jacoreManager : JacoreManager,
-                    logServiceActor : LogServiceActor
+                    logServiceActor : LogServiceActor,
+                    jmsIntegrationActor : JmsIntegrationActor
                 ) extends MywireManager
 {
     private[this] var stopped = false
@@ -43,8 +45,8 @@ private[system] final class MywireManagerImpl @Inject() (
 
     // Run actors
     private[this] val actors =
-            (logServiceActor
-             :: Nil)
+            List ( logServiceActor
+                 , jmsIntegrationActor)
 
     /** {InheritDoc} */
     override lazy val start : Unit = {
