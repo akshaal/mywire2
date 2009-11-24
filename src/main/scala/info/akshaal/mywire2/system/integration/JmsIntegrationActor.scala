@@ -32,7 +32,7 @@ private[system] class JmsIntegrationActor @Inject() (
      */
     @Act (subscribe = true)
     protected def handleNotifications (msg : ExportNotification) : Unit = {
-        val map = msg.toMap update ("time", System.currentTimeMillis)
+        val map = msg.toMap updated ("time", System.currentTimeMillis)
 
         sender.send (map)
     }
