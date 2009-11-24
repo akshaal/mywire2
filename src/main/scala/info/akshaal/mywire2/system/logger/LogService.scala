@@ -13,7 +13,7 @@ import java.util.Date
 
 import info.akshaal.jacore.system.annotation.CallByMessage
 import info.akshaal.jacore.system.actor.{Actor, LowPriorityActorEnv, NormalPriorityActorEnv}
-import info.akshaal.jacore.system.dao.ibatis.IbatisDataInserterActor
+import info.akshaal.jacore.system.dao.ibatis.AbstractIbatisDataInserterActor
 import info.akshaal.jacore.system.logger.DummyLogging
 
 import annotation.LogDB
@@ -79,7 +79,7 @@ private[system] class LogServiceActor @Inject() (
 private[logger] class LogRecordInserterActor @Inject() (
                                             @LogDB sqlMapClient : SqlMapClient,
                                             lowPriorityActorEnv : LowPriorityActorEnv)
-                        extends IbatisDataInserterActor[LogRecord] (
+                        extends AbstractIbatisDataInserterActor[LogRecord] (
                                             sqlMapClient = sqlMapClient,
                                             lowPriorityActorEnv = lowPriorityActorEnv)
                         with DummyLogging
