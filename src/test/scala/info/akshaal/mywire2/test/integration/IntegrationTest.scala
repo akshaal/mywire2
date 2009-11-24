@@ -77,6 +77,8 @@ object IntegrationTest extends TestHelper {
         override lazy val daemonStatusUpdateInterval = 5.seconds
         override lazy val daemonStatusFile = daemonStatusFileFile.getAbsolutePath
 
+        override lazy val qosInterval = 1 seconds
+
         val injector = Guice.createInjector (this)
         val mywireManager = injector.getInstanceOf [MywireManager]
         val daemonStatus = injector.getInstanceOf [DaemonStatus]

@@ -10,9 +10,11 @@ package system
 package module
 
 import com.google.inject.Binder
+import com.google.inject.name.Names
 
 import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.system.module.{Module => JacoreModule}
+import info.akshaal.jacore.system.utils.TimeUnit
 
 import utils.NativeThreadPriorityChanger
 
@@ -25,11 +27,19 @@ class Module extends JacoreModule {
 
     override lazy val threadPriorityChangerImplClass = classOf [NativeThreadPriorityChanger]
 
+    lazy val qosInterval = prefs.getTimeUnit ("mywire.qos.interval")
+
     // - - - - - - - - - - - - Bindings - - - - - - - - - -
 
     override def configure (binder : Binder) = {
         super.configure (binder)
 
         binder.bind (classOf[MywireManager]).to (classOf[MywireManagerImpl])
+
+        //  - - - - - - - - - - -  Named - - - - - - - - - -  - - - -
+
+        binder.bind (classOf[TimeUnit])
+              .annotatedWith (Names.named ("mywire.qos.interval"))
+              .toInstance (qosInterval)
     }
 }

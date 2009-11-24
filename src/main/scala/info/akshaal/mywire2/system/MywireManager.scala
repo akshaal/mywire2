@@ -14,6 +14,7 @@ import info.akshaal.jacore.system.JacoreManager
 
 import logger.{LogServiceActor, LogServiceAppender}
 import integration.JmsIntegrationActor
+import daemon.QosActor
 
 /**
  * Manager for one instance of mywire system.
@@ -34,7 +35,8 @@ trait MywireManager {
 private[system] final class MywireManagerImpl @Inject() (
                     jacoreManager : JacoreManager,
                     logServiceActor : LogServiceActor,
-                    jmsIntegrationActor : JmsIntegrationActor
+                    jmsIntegrationActor : JmsIntegrationActor,
+                    qosActor : QosActor
                 ) extends MywireManager
 {
     private[this] var stopped = false
@@ -46,7 +48,8 @@ private[system] final class MywireManagerImpl @Inject() (
     // Run actors
     private[this] val actors =
             List ( logServiceActor
-                 , jmsIntegrationActor)
+                 , jmsIntegrationActor
+                 , qosActor)
 
     /** {InheritDoc} */
     override lazy val start : Unit = {

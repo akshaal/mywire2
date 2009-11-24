@@ -28,6 +28,8 @@ private[system] class JmsIntegrationActor @Inject() (
                                     sender : JmsIntegrationSenderActor)
                     extends Actor (normalPriorityActorEnv)
 {
+    manage (sender)
+
     /**
      * Handle ExportNotification's.
      */
