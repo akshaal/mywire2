@@ -29,6 +29,10 @@ class Module extends JacoreModule {
 
     lazy val qosInterval = prefs.getTimeUnit ("mywire.qos.interval")
 
+    lazy val lowOsPriority = prefs.getInt ("mywire.os.priority.low")
+    lazy val normalOsPriority = prefs.getInt ("mywire.os.priority.normal")
+    lazy val hiOsPriority = prefs.getInt ("mywire.os.priority.hi")
+
     // - - - - - - - - - - - - Bindings - - - - - - - - - -
 
     override def configure (binder : Binder) = {
@@ -41,5 +45,17 @@ class Module extends JacoreModule {
         binder.bind (classOf[TimeUnit])
               .annotatedWith (Names.named ("mywire.qos.interval"))
               .toInstance (qosInterval)
+
+        binder.bind (classOf[Int])
+              .annotatedWith (Names.named ("mywire.os.priority.low"))
+              .toInstance (lowOsPriority)
+
+        binder.bind (classOf[Int])
+              .annotatedWith (Names.named ("mywire.os.priority.normal"))
+              .toInstance (normalOsPriority)
+
+        binder.bind (classOf[Int])
+              .annotatedWith (Names.named ("mywire.os.priority.hi"))
+              .toInstance (hiOsPriority)
     }
 }

@@ -10,27 +10,27 @@ package system
 package utils
 
 import com.google.inject.{Inject, Singleton}
-
-import info.akshaal.jacore.Predefs._
-import info.akshaal.jacore.Prefs
-import info.akshaal.jacore.system.logger.Logging
-import info.akshaal.jacore.system.utils.ThreadPriorityChanger
+import com.google.inject.name.Named
 
 import ru.toril.daemonhelper.{DaemonHelper, OSException}
 
+import info.akshaal.jacore.Predefs._
+import info.akshaal.jacore.system.logger.Logging
+import info.akshaal.jacore.system.utils.ThreadPriorityChanger
+
 @Singleton
-private[system] final class NativeThreadPriorityChanger @Inject()
-                                (prefs : Prefs)
+private[system] final class NativeThreadPriorityChanger @Inject() (
+                            @Named ("mywire.os.priority.low") lowOsPriority : Int,
+                            @Named ("mywire.os.priority.normal") normalOsPriority : Int,
+                            @Named ("mywire.os.priority.hi") hiOsPriority : Int)
                        extends ThreadPriorityChanger with Logging
 {
     import ThreadPriorityChanger._
 
-    // TODO: Must not use prefs, but args
-    // TODO: Must not start with jacore.os
     def toOsPriority (priority : Priority) = priority match {
-        case LowPriority    => prefs.getInt ("jacore.os.priority.low")
-        case NormalPriority => prefs.getInt ("jacore.os.priority.normal")
-        case HiPriority     => prefs.getInt ("jacore.os.priority.high")
+        case LowPriority    => lowOsPriority
+        case NormalPriority => normalOsPriority
+        case HiPriority     => hiOsPriority
     }
 
     def change (priority : Priority) = {
