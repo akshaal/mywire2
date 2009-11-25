@@ -13,6 +13,7 @@ import info.akshaal.jacore.system.utils.{TimeUnit, LowPriorityPool, HiPriorityPo
                                          NormalPriorityPool}
 import info.akshaal.jacore.system.actor.{NormalPriorityActorEnv, Actor}
 import info.akshaal.jacore.system.scheduler.{TimeOut, Scheduler}
+import info.akshaal.jacore.system.daemon.DaemonStatus
 import info.akshaal.jacore.system.annotation.Act
 
 import domain.Qos
@@ -27,6 +28,7 @@ private[system] class QosActor @Inject() (
                              hiPriorityPool : HiPriorityPool,
                              lowPriorityPool : LowPriorityPool,
                              normalPriorityPool : NormalPriorityPool,
+                             daemonStatus : DaemonStatus,
                              scheduler : Scheduler)
                          extends Actor (actorEnv = normalPriorityActorEnv)
 {
@@ -34,6 +36,10 @@ private[system] class QosActor @Inject() (
 
     @Act
     protected def onTimeout (msg : TimeOut) : Unit = {
+        if (!daemonStatus.isQosAllowed) {
+            return
+        }
+
         // Calculate memory used
         val runtime = Runtime.getRuntime ()
         val max = runtime.maxMemory ()

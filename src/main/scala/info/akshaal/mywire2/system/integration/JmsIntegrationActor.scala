@@ -15,7 +15,7 @@ import info.akshaal.jacore.system.jms.AbstractJmsSenderActor
 import info.akshaal.jacore.system.actor.{LowPriorityActorEnv, NormalPriorityActorEnv, Actor}
 
 import annotation.JmsIntegrationExport
-import domain.ExportNotification
+import domain.Export
 
 /**
  * This actor has no public interfaces and is not supposed to be used by other actors.
@@ -34,7 +34,7 @@ private[system] class JmsIntegrationActor @Inject() (
      * Handle ExportNotification's.
      */
     @Act (subscribe = true)
-    protected def handleNotifications (msg : ExportNotification) : Unit = {
+    protected def handleNotifications (msg : Export) : Unit = {
         val map = msg.toMap updated ("time", System.currentTimeMillis)
 
         sender.send (map)

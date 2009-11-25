@@ -16,7 +16,7 @@ case class Qos (memoryUsedPercent : Double,
                 normalPoolLatencyNs : Long,
                 lowPoolExecutionNs : Long,
                 lowPoolLatencyNs : Long)
-            extends ExportNotification
+            extends Export
 {
     override def toMap : Map[String, Any] = {
         super.toMap
