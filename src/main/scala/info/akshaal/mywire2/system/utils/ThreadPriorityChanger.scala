@@ -25,6 +25,8 @@ private[system] final class NativeThreadPriorityChanger @Inject()
 {
     import ThreadPriorityChanger._
 
+    // TODO: Must not use prefs, but args
+    // TODO: Must not start with jacore.os
     def toOsPriority (priority : Priority) = priority match {
         case LowPriority    => prefs.getInt ("jacore.os.priority.low")
         case NormalPriority => prefs.getInt ("jacore.os.priority.normal")
