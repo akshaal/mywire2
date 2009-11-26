@@ -1,4 +1,4 @@
-/*
+    /*
  * ModuleTest.scala
  *
  * To change this template, choose Tools | Template Manager
@@ -26,26 +26,26 @@ import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.system.daemon.DaemonStatus
 import info.akshaal.jacore.system.test.TestHelper
 
+import system.daemon.BaseDaemon
 import system.module.Module
 import system.annotation.{LogDB, JmsIntegrationExport}
-import system.MywireManager
 
 class IntegrationTest extends SpecificationWithJUnit ("Integration specification") {
     import IntegrationTest._
 
     IntegrationTest
 
-    "Mywire" should {
+    "A daemon" should {
         "survive for some time without problems" in {
             try {
-                IntegrationModule.mywireManager.start
+                IntegrationDaemon.start
 
                 Thread.sleep (15.seconds.asMilliseconds)
 
-                IntegrationModule.daemonStatus.isDying         must beFalse
-                IntegrationModule.daemonStatus.isShuttingDown  must beFalse
+                IntegrationDaemon.daemonStatus.isDying         must beFalse
+                IntegrationDaemon.daemonStatus.isShuttingDown  must beFalse
             } finally {
-                IntegrationModule.mywireManager.stop
+                IntegrationDaemon.stop
             }
 
             createModuleGraphInDebugDir ("integration-module.dot")
@@ -54,9 +54,6 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
 }
 
 object IntegrationTest extends TestHelper {
-    override val timeout = 2.seconds
-    override val injector = IntegrationModule.injector
-
     // Prepare AMQ broker
     val mywireTestAmqDir = System.getProperty ("mywire.test.amq.dir")
     val amqDir =
@@ -72,12 +69,22 @@ object IntegrationTest extends TestHelper {
     broker.setDataDirectory (amqDir)
     broker.start
 
+    val amqConnectionFactory = new ActiveMQConnectionFactory ("vm://localhost")
+
+    override val timeout = 2.seconds
+    override val injector = IntegrationDaemon.publicInjector
+
+    object IntegrationDaemon extends BaseDaemon (IntegrationModule) {
+        val daemonStatus = injector.getInstanceOf [DaemonStatus]
+        val publicInjector = injector
+    }
+
     object IntegrationModule extends Module {
         val daemonStatusFileFile = File.createTempFile ("Mywire2", "IntegrationTest")
         daemonStatusFileFile.deleteOnExit
 
         override lazy val monitoringInterval = 2.seconds
-
+        
         override lazy val lowPriorityPoolThreads = 2
         override lazy val lowPriorityPoolLatencyLimit = 1.seconds
         override lazy val lowPriorityPoolExecutionLimit = 500.milliseconds
@@ -98,10 +105,6 @@ object IntegrationTest extends TestHelper {
 
         override lazy val qosInterval = 1 seconds
 
-        val injector = Guice.createInjector (this)
-        val mywireManager = injector.getInstanceOf [MywireManager]
-        val daemonStatus = injector.getInstanceOf [DaemonStatus]
-
         override def configure (binder : Binder) = {
             super.configure (binder)
 
@@ -111,7 +114,6 @@ object IntegrationTest extends TestHelper {
             binder bind classOf[SqlMapClient] annotatedWith (classOf[LogDB]) toInstance sqlmap
 
             // JMS
-            val amqConnectionFactory = new ActiveMQConnectionFactory ("vm://localhost")
             val connectionFactory = new PooledConnectionFactory (amqConnectionFactory)
             binder.bind (classOf[ConnectionFactory])
                   .annotatedWith (classOf[JmsIntegrationExport])
