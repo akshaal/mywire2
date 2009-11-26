@@ -212,7 +212,8 @@
                     <argLine>
                         -Djava.library.path=${basedir}/src/main/native/${host.native.id} \
                         -Dcglib.debugLocation=${basedir}/target/cglib \
-                        -Djacore.module.debug.dir=${basedir}/target/jacore
+                        -Djacore.module.debug.dir=${basedir}/target/jacore \
+                        -Dmywire.test.amq.dir=${basedir}/target/activemq
                     </argLine>
                 </configuration>
             </plugin>

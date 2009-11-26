@@ -15,6 +15,8 @@ import com.ibatis.sqlmap.client.{SqlMapClient, SqlMapClientBuilder}
 import com.ibatis.common.resources.Resources
 import org.specs.SpecificationWithJUnit
 
+import org.apache.activemq.broker.BrokerService
+import org.apache.activemq.ActiveMQConnectionFactory
 import org.apache.activemq.pool.PooledConnectionFactory
 import org.apache.activemq.command.ActiveMQTopic
 
@@ -55,6 +57,21 @@ object IntegrationTest extends TestHelper {
     override val timeout = 2.seconds
     override val injector = IntegrationModule.injector
 
+    // Prepare AMQ broker
+    val mywireTestAmqDir = System.getProperty ("mywire.test.amq.dir")
+    val amqDir =
+            if (mywireTestAmqDir == null)
+                (  System.getProperty ("java.io.tmpdir")
+                 + "/mywireIntegrationTestDir-"
+                 + System.getProperty ("user.name"))
+            else
+                mywireTestAmqDir
+
+    val broker = new BrokerService
+    broker.addConnector ("vm://localhost")
+    broker.setDataDirectory (amqDir)
+    broker.start
+
     object IntegrationModule extends Module {
         val daemonStatusFileFile = File.createTempFile ("Mywire2", "IntegrationTest")
         daemonStatusFileFile.deleteOnExit
@@ -94,7 +111,8 @@ object IntegrationTest extends TestHelper {
             binder bind classOf[SqlMapClient] annotatedWith (classOf[LogDB]) toInstance sqlmap
 
             // JMS
-            val connectionFactory = new PooledConnectionFactory ("vm://localhost")
+            val amqConnectionFactory = new ActiveMQConnectionFactory ("vm://localhost")
+            val connectionFactory = new PooledConnectionFactory (amqConnectionFactory)
             binder.bind (classOf[ConnectionFactory])
                   .annotatedWith (classOf[JmsIntegrationExport])
                   .toInstance (connectionFactory)
