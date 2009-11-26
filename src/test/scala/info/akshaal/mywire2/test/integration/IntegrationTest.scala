@@ -14,8 +14,10 @@ import com.google.inject.{Guice, Binder}
 import com.ibatis.sqlmap.client.{SqlMapClient, SqlMapClientBuilder}
 import com.ibatis.common.resources.Resources
 import org.specs.SpecificationWithJUnit
-import org.apache.activemq.ActiveMQConnectionFactory
+
+import org.apache.activemq.pool.PooledConnectionFactory
 import org.apache.activemq.command.ActiveMQTopic
+
 import javax.jms.{ConnectionFactory, Destination}
 
 import info.akshaal.jacore.Predefs._
@@ -92,7 +94,7 @@ object IntegrationTest extends TestHelper {
             binder bind classOf[SqlMapClient] annotatedWith (classOf[LogDB]) toInstance sqlmap
 
             // JMS
-            val connectionFactory = new ActiveMQConnectionFactory ("vm://localhost")
+            val connectionFactory = new PooledConnectionFactory ("vm://localhost")
             binder.bind (classOf[ConnectionFactory])
                   .annotatedWith (classOf[JmsIntegrationExport])
                   .toInstance (connectionFactory)
