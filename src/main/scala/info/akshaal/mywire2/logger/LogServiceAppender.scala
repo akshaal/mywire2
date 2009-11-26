@@ -1,5 +1,4 @@
 package info.akshaal.mywire2
-package system
 package logger
 
 import java.util.LinkedList
@@ -29,7 +28,7 @@ final class LogServiceAppender extends AppenderSkeleton {
     override def requiresLayout = false
 }
 
-private[system] object LogServiceAppender {
+private[mywire2] object LogServiceAppender {
     private val MAX_PENDING = 1000
 
     // All operations on this list must be synchronized

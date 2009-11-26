@@ -1,5 +1,4 @@
 package info.akshaal.mywire2
-package system
 package logger
 
 import com.google.inject.{Singleton, Inject}
@@ -11,10 +10,10 @@ import com.ibatis.sqlmap.client.SqlMapClient
 
 import java.util.Date
 
-import info.akshaal.jacore.system.annotation.CallByMessage
-import info.akshaal.jacore.system.actor.{Actor, LowPriorityActorEnv, NormalPriorityActorEnv}
-import info.akshaal.jacore.system.dao.ibatis.AbstractIbatisDataInserterActor
-import info.akshaal.jacore.system.logger.DummyLogging
+import info.akshaal.jacore.annotation.CallByMessage
+import info.akshaal.jacore.actor.{Actor, LowPriorityActorEnv, NormalPriorityActorEnv}
+import info.akshaal.jacore.dao.ibatis.AbstractIbatisDataInserterActor
+import info.akshaal.jacore.logger.DummyLogging
 
 import annotation.LogDB
 import domain.LogRecord
@@ -22,7 +21,7 @@ import domain.LogRecord
 /**
  * Service that logs message to database.
  */
-private[system] trait LogService {
+private[mywire2] trait LogService {
     /**
      * Log event that happened at the given time.
      * @param event event to log
@@ -35,7 +34,7 @@ private[system] trait LogService {
  * Log messages.
  */
 @Singleton
-private[system] class LogServiceActor @Inject() (
+private[mywire2] class LogServiceActor @Inject() (
                                     normalPriorityActorEnv : NormalPriorityActorEnv,
                                     logRecordInserted : LogRecordInserterActor)
                     extends Actor (normalPriorityActorEnv)

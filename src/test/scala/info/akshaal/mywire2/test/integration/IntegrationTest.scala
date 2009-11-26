@@ -23,12 +23,12 @@ import org.apache.activemq.command.ActiveMQTopic
 import javax.jms.{ConnectionFactory, Destination}
 
 import info.akshaal.jacore.Predefs._
-import info.akshaal.jacore.system.daemon.DaemonStatus
-import info.akshaal.jacore.system.test.TestHelper
+import info.akshaal.jacore.daemon.DaemonStatus
+import info.akshaal.jacore.test.TestHelper
 
-import system.daemon.BaseDaemon
-import system.module.Module
-import system.annotation.{LogDB, JmsIntegrationExport}
+import daemon.BaseDaemon
+import module.Module
+import annotation.{LogDB, JmsIntegrationExport}
 
 class IntegrationTest extends SpecificationWithJUnit ("Integration specification") {
     import IntegrationTest._

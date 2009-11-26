@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system.domain
+package info.akshaal.mywire2.domain
 
 /**
  * An object extending this trait is supposed to be exported outside of this application

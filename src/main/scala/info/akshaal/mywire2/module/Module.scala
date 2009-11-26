@@ -6,15 +6,13 @@
  */
 
 package info.akshaal.mywire2
-package system
 package module
 
 import com.google.inject.Binder
 import com.google.inject.name.Names
 
 import info.akshaal.jacore.Predefs._
-import info.akshaal.jacore.system.module.{Module => JacoreModule}
-import info.akshaal.jacore.system.utils.TimeUnit
+import info.akshaal.jacore.module.{Module => JacoreModule}
 
 import utils.NativeThreadPriorityChanger
 

@@ -1,13 +1,12 @@
 /** Akshaal (C) 2009. GNU GPL. http://akshaal.info */
 
 package info.akshaal.mywire2
-package system
 package daemon
 
 import com.google.inject.Guice
 
 import info.akshaal.jacore.Predefs._
-import info.akshaal.jacore.system.module.Module
+import info.akshaal.jacore.module.Module
 
 /**
  * Abstract daemon.

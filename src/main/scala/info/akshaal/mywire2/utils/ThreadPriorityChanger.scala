@@ -6,7 +6,6 @@
  */
 
 package info.akshaal.mywire2
-package system
 package utils
 
 import com.google.inject.{Inject, Singleton}
@@ -15,11 +14,11 @@ import com.google.inject.name.Named
 import ru.toril.daemonhelper.{DaemonHelper, OSException}
 
 import info.akshaal.jacore.Predefs._
-import info.akshaal.jacore.system.logger.Logging
-import info.akshaal.jacore.system.utils.ThreadPriorityChanger
+import info.akshaal.jacore.logger.Logging
+import info.akshaal.jacore.utils.ThreadPriorityChanger
 
 @Singleton
-private[system] final class NativeThreadPriorityChanger @Inject() (
+private[mywire2] final class NativeThreadPriorityChanger @Inject() (
                             @Named ("mywire.os.priority.low") lowOsPriority : Int,
                             @Named ("mywire.os.priority.normal") normalOsPriority : Int,
                             @Named ("mywire.os.priority.hi") hiOsPriority : Int)

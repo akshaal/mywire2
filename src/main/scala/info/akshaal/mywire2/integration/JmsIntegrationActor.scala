@@ -3,16 +3,16 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system
+package info.akshaal.mywire2
 package integration
 
 import com.google.inject.{Singleton, Inject}
 import javax.jms.{ConnectionFactory, Destination, Message, Session}
 import java.util.HashMap
 
-import info.akshaal.jacore.system.annotation.Act
-import info.akshaal.jacore.system.jms.AbstractJmsSenderActor
-import info.akshaal.jacore.system.actor.{LowPriorityActorEnv, NormalPriorityActorEnv, Actor}
+import info.akshaal.jacore.annotation.Act
+import info.akshaal.jacore.jms.AbstractJmsSenderActor
+import info.akshaal.jacore.actor.{LowPriorityActorEnv, NormalPriorityActorEnv, Actor}
 
 import annotation.JmsIntegrationExport
 import domain.Export
@@ -23,7 +23,7 @@ import domain.Export
  * type.
  */
 @Singleton
-private[system] class JmsIntegrationActor @Inject() (
+private[mywire2] class JmsIntegrationActor @Inject() (
                                     normalPriorityActorEnv : NormalPriorityActorEnv,
                                     sender : JmsIntegrationSenderActor)
                     extends Actor (normalPriorityActorEnv)

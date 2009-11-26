@@ -6,11 +6,10 @@
  */
 
 package info.akshaal.mywire2
-package system
 
 import com.google.inject.{Singleton, Inject}
 
-import info.akshaal.jacore.system.JacoreManager
+import info.akshaal.jacore.JacoreManager
 
 import logger.{LogServiceActor, LogServiceAppender}
 import integration.JmsIntegrationActor
@@ -32,7 +31,7 @@ trait MywireManager {
 }
 
 @Singleton
-private[system] final class MywireManagerImpl @Inject() (
+private[mywire2] final class MywireManagerImpl @Inject() (
                     jacoreManager : JacoreManager,
                     logServiceActor : LogServiceActor,
                     jmsIntegrationActor : JmsIntegrationActor,
