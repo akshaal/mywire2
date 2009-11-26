@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.system.annotation;
+package info.akshaal.mywire2.annotation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -17,5 +17,5 @@ import com.google.inject.BindingAnnotation;
 @Target ({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
 @Inherited
 @BindingAnnotation
-public @interface JmsIntegrationExport {
+public @interface LogDB {
 }
