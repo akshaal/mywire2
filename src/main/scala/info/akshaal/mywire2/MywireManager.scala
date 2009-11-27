@@ -20,6 +20,11 @@ import daemon.QosActor
  */
 trait MywireManager {
     /**
+     * Jacore manager used by mywire manager.
+     */
+    val jacoreManager : JacoreManager
+
+    /**
      * Start mywire instance.
      */
     def start : Unit
@@ -32,7 +37,7 @@ trait MywireManager {
 
 @Singleton
 private[mywire2] final class MywireManagerImpl @Inject() (
-                    jacoreManager : JacoreManager,
+                    val jacoreManager : JacoreManager,
                     logServiceActor : LogServiceActor,
                     jmsIntegrationActor : JmsIntegrationActor,
                     qosActor : QosActor
