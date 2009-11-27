@@ -36,7 +36,7 @@ class BaseDaemon (module : Module) {
     /**
      * Called by native executable to initialize the application before starting it.
      */
-    def init () = {
+    def init () : Unit = {
         // Actor classes
         val allAdditionalActorClasses : Set [Class [Actor]] = new HashSet
         
@@ -58,7 +58,7 @@ class BaseDaemon (module : Module) {
      * Called by native executable to start the application after the application
      * has been initialized.
      */
-    def start () = {
+    def start () : Unit = {
         mywireManager.start
 
         mywireManager.jacoreManager.startActors (allAdditionalActors)
@@ -67,7 +67,7 @@ class BaseDaemon (module : Module) {
     /**
      * Called by native executable to stop the application before destroying it.
      */
-    def stop () = {
+    def stop () : Unit = {
         mywireManager.jacoreManager.stopActors (allAdditionalActors)
 
         mywireManager.stop
@@ -76,7 +76,7 @@ class BaseDaemon (module : Module) {
     /**
      * Called by native executable to destroy the application.
      */
-    def destroy () = ()
+    def destroy () : Unit = ()
 
     /**
      * Actors start automatically.
