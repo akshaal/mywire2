@@ -41,9 +41,10 @@ class BaseDaemon (module : Module) {
         val allAdditionalActorClasses : Set [Class [Actor]] = new HashSet
         
         for (pkg <- additionalAutostartActorPackages) {
-            val classes = ClassUtils.findClasses (pkg,
-                                                  Thread.currentThread.getContextClassLoader,
-                                                  classOf [Autostart].isAssignableFrom (_))
+            val classes =
+                    ClassUtils.findClasses (pkg,
+                                            Thread.currentThread.getContextClassLoader,
+                                            classOf [Autostart].isAssignableFrom (_))
 
             allAdditionalActorClasses ++= classes.asInstanceOf [List [Class [Actor]]]
         }
