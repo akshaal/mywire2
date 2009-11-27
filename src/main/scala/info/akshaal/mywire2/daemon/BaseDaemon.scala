@@ -11,13 +11,14 @@ import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.module.Module
 import info.akshaal.jacore.actor.Actor
 import info.akshaal.jacore.utils.ClassUtils
+import info.akshaal.jacore.logger.Logging
 
 /**
  * Abstract daemon.
  *
  * @param Instantance of module that will is used for injector.
  */
-class BaseDaemon (module : Module) {
+class BaseDaemon (module : Module) extends Logging {
     /**
      * Injector that is supposed to be used to instantiate all IoC classes of the app.
      */
@@ -53,6 +54,9 @@ class BaseDaemon (module : Module) {
         // Actors
         allAdditionalActors ++= additionalActors
         allAdditionalActors ++= allAdditionalActorClasses.map (injector.getInstance (_))
+
+        // Debug
+        debugLazy ("All additional actors: " + allAdditionalActors)
     }
 
     /**
