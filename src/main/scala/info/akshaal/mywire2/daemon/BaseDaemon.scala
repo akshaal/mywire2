@@ -38,7 +38,8 @@ class BaseDaemon (module : Module) {
      */
     def init () : Unit = {
         // Actor classes
-        val allAdditionalActorClasses : Set [Class [Actor]] = new HashSet
+        val allAdditionalActorClasses : Set [Class [_ <: Actor]] = new HashSet
+        allAdditionalActorClasses ++= additionalActorClasses
         
         for (pkg <- additionalAutostartActorPackages) {
             val classes =

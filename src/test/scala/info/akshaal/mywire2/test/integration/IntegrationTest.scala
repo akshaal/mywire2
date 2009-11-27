@@ -10,7 +10,7 @@ package test
 package integration
 
 import java.io.File
-import com.google.inject.{Guice, Binder}
+import com.google.inject.{Guice, Binder, Inject, Singleton}
 import com.ibatis.sqlmap.client.{SqlMapClient, SqlMapClientBuilder}
 import com.ibatis.common.resources.Resources
 import org.specs.SpecificationWithJUnit
@@ -24,9 +24,10 @@ import javax.jms.{ConnectionFactory, Destination}
 
 import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.daemon.DaemonStatus
+import info.akshaal.jacore.actor.{Actor, LowPriorityActorEnv}
 import info.akshaal.jacore.test.TestHelper
 
-import daemon.BaseDaemon
+import daemon.{BaseDaemon, Autostart}
 import module.Module
 import annotation.{LogDB, JmsIntegrationExport}
 
@@ -37,16 +38,71 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
 
     "A daemon" should {
         "survive for some time without problems" in {
+            val actor1 = injector.getInstanceOf [autostart.Actor1]
+            val actor2 = injector.getInstanceOf [autostart.Actor2]
+            val actor3 = injector.getInstanceOf [autostart.Actor3]
+            val actor4 = injector.getInstanceOf [autostart.Actor4]
+            val actor5 = injector.getInstanceOf [autostart.Actor5]
+
             try {
+                actor1.started  must_==  0
+                actor1.stopped  must_==  0
+
+                actor2.started  must_==  0
+                actor2.stopped  must_==  0
+
+                actor3.started  must_==  0
+                actor3.stopped  must_==  0
+
+                actor4.started  must_==  0
+                actor4.stopped  must_==  0
+
+                actor5.started  must_==  0
+                actor5.stopped  must_==  0
+
+                IntegrationDaemon.init
                 IntegrationDaemon.start
 
-                Thread.sleep (15.seconds.asMilliseconds)
+                Thread.sleep (5.seconds.asMilliseconds)
+
+                actor1.started  must_==  1
+                actor1.stopped  must_==  0
+
+                actor2.started  must_==  1
+                actor2.stopped  must_==  0
+
+                actor3.started  must_==  1
+                actor3.stopped  must_==  0
+
+                actor4.started  must_==  1
+                actor4.stopped  must_==  0
+
+                actor5.started  must_==  0
+                actor5.stopped  must_==  0
+
+                Thread.sleep (10.seconds.asMilliseconds)
 
                 IntegrationDaemon.daemonStatus.isDying         must beFalse
                 IntegrationDaemon.daemonStatus.isShuttingDown  must beFalse
             } finally {
                 IntegrationDaemon.stop
+                IntegrationDaemon.destroy
             }
+
+            actor1.started  must_==  1
+            actor1.stopped  must_==  1
+
+            actor2.started  must_==  1
+            actor2.stopped  must_==  1
+
+            actor3.started  must_==  1
+            actor3.stopped  must_==  1
+
+            actor4.started  must_==  1
+            actor4.stopped  must_==  1
+
+            actor5.started  must_==  0
+            actor5.stopped  must_==  0
 
             createModuleGraphInDebugDir ("integration-module.dot")
         }
@@ -77,6 +133,15 @@ object IntegrationTest extends TestHelper {
     object IntegrationDaemon extends BaseDaemon (IntegrationModule) {
         val daemonStatus = injector.getInstanceOf [DaemonStatus]
         val publicInjector = injector
+
+        override protected val additionalActors : Seq [Actor] =
+                    List (injector.getInstanceOf[autostart.Actor3])
+
+        override protected val additionalActorClasses : Seq [Class [_ <: Actor]] =
+                    List (classOf [autostart.Actor4])
+
+        override protected def additionalAutostartActorPackages : Seq [String] =
+                    List ("info.akshaal.mywire2.test.integration.autostart")
     }
 
     object IntegrationModule extends Module {
@@ -125,4 +190,41 @@ object IntegrationTest extends TestHelper {
                   .toInstance (exportTopic)
         }
     }
+}
+
+package autostart {
+    class ActorBase (actorEnv : LowPriorityActorEnv) extends Actor (actorEnv = actorEnv)
+    {
+        var started = 0
+        var stopped = 0
+
+        override def start () = {
+            super.start ()
+
+            started += 1
+        }
+
+        override def stop () = {
+            super.stop ()
+
+            stopped += 1
+        }
+    }
+
+    @Singleton
+    class Actor1 @Inject() (actorEnv : LowPriorityActorEnv) extends ActorBase (actorEnv = actorEnv)
+                                                            with Autostart
+
+    @Singleton
+    class Actor2 @Inject() (actorEnv : LowPriorityActorEnv) extends ActorBase (actorEnv = actorEnv)
+                                                            with Autostart
+
+    @Singleton
+    class Actor3 @Inject() (actorEnv : LowPriorityActorEnv) extends ActorBase (actorEnv = actorEnv)
+
+    @Singleton
+    class Actor4 @Inject() (actorEnv : LowPriorityActorEnv) extends ActorBase (actorEnv = actorEnv)
+
+    @Singleton
+    class Actor5 @Inject() (actorEnv : LowPriorityActorEnv) extends ActorBase (actorEnv = actorEnv)
 }
