@@ -10,15 +10,16 @@ import scala.collection.mutable.{Set, HashSet}
 import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.module.Module
 import info.akshaal.jacore.actor.Actor
-import info.akshaal.jacore.utils.ClassUtils
+import info.akshaal.jacore.utils.{ClassUtils, GuiceUtils}
 import info.akshaal.jacore.logger.Logging
+import info.akshaal.jacore.jmx.{SimpleJmx, JmxOper}
 
 /**
  * Abstract daemon.
  *
  * @param Instantance of module that will is used for injector.
  */
-class BaseDaemon (module : Module) extends Logging {
+abstract class BaseDaemon (module : Module) extends Logging with SimpleJmx {
     /**
      * Injector that is supposed to be used to instantiate all IoC classes of the app.
      */
@@ -33,6 +34,11 @@ class BaseDaemon (module : Module) extends Logging {
      * All actors that are to be started/stopped automaticcaly.
      */
     private[this] final val allAdditionalActors : Set[Actor] = new HashSet
+
+    /**
+     * Operations exposed through jmx.
+     */
+    override lazy val jmxOperations = List (JmxOper ("graph", createGraph))
     
     /**
      * Called by native executable to initialize the application before starting it.
@@ -82,6 +88,15 @@ class BaseDaemon (module : Module) extends Logging {
      * Called by native executable to destroy the application.
      */
     def destroy () : Unit = ()
+
+    /**
+     * Creates graphviz graph definition.
+     */
+    private[this] def createGraph () : String = {
+        val allAdditionalActorsClasses = allAdditionalActors.map (_.getClass)
+
+        GuiceUtils.createModuleGraphAsString (injector, allAdditionalActorsClasses.toSeq : _*)
+    }
 
     /**
      * Actors start automatically.
