@@ -73,8 +73,13 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
                 Thread.sleep (10.seconds.asMilliseconds)
 
                 val graph = srv.invoke (daemonObj, "graph", Array(), Array()).asInstanceOf [String]
-                graph  must_!=  ""
                 writeGraph (graph)
+                graph  must find (".*(Actor1).*")
+                graph  must find (".*(Actor2).*")
+                graph  must find (".*(Actor3).*")
+                graph  must find (".*(Actor4).*")
+                graph  must find (".*(MywireManager).*")
+                graph  must find (".*(DaemonStatus).*")
 
                 actor1.started  must_==  1
                 actor1.stopped  must_==  0
