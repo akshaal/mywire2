@@ -1,4 +1,0 @@
-#!/bin/sh
-
-export JAVA_HOME=/opt/jdk1.7.0
-mvn -Dtest.threads=1 clean test
