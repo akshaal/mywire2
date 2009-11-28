@@ -63,7 +63,7 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
                 IntegrationDaemon.init
                 IntegrationDaemon.start
 
-                Thread.sleep (5.seconds.asMilliseconds)
+                Thread.sleep (10.seconds.asMilliseconds)
 
                 actor1.started  must_==  1
                 actor1.stopped  must_==  0
@@ -148,7 +148,7 @@ object IntegrationTest extends TestHelper {
         val daemonStatusFileFile = File.createTempFile ("Mywire2", "IntegrationTest")
         daemonStatusFileFile.deleteOnExit
 
-        override lazy val monitoringInterval = 2.seconds
+        override lazy val monitoringInterval = 4.seconds
         
         override lazy val lowPriorityPoolThreads = 2
         override lazy val lowPriorityPoolLatencyLimit = 1.seconds
@@ -165,7 +165,7 @@ object IntegrationTest extends TestHelper {
         override lazy val schedulerLatencyLimit = 4.milliseconds
 
         override lazy val daemonStatusJmxName = "mywire:name=integrationTestStatus" + hashCode
-        override lazy val daemonStatusUpdateInterval = 5.seconds
+        override lazy val daemonStatusUpdateInterval = 9.seconds
         override lazy val daemonStatusFile = daemonStatusFileFile.getAbsolutePath
 
         override lazy val qosInterval = 1 seconds
