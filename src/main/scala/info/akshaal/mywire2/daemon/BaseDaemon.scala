@@ -87,7 +87,9 @@ abstract class BaseDaemon (module : Module) extends Logging with SimpleJmx {
     /**
      * Called by native executable to destroy the application.
      */
-    def destroy () : Unit = ()
+    def destroy () : Unit = {
+        unregisterJmxBean
+    }
 
     /**
      * Creates graphviz graph definition.

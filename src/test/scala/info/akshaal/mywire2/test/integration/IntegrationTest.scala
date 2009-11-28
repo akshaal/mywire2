@@ -9,10 +9,14 @@ package info.akshaal.mywire2
 package test
 package integration
 
-import java.io.File
+import java.io.{File, PrintWriter}
+import java.lang.management.ManagementFactory
+import javax.management.ObjectName
+
 import com.google.inject.{Guice, Binder, Inject, Singleton}
 import com.ibatis.sqlmap.client.{SqlMapClient, SqlMapClientBuilder}
 import com.ibatis.common.resources.Resources
+
 import org.specs.SpecificationWithJUnit
 
 import org.apache.activemq.broker.BrokerService
@@ -38,6 +42,9 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
 
     "A daemon" should {
         "survive for some time without problems" in {
+            val srv = ManagementFactory.getPlatformMBeanServer()
+            val daemonObj = new ObjectName (IntegrationDaemon.jmxObjectName)
+            
             val actor1 = injector.getInstanceOf [autostart.Actor1]
             val actor2 = injector.getInstanceOf [autostart.Actor2]
             val actor3 = injector.getInstanceOf [autostart.Actor3]
@@ -64,6 +71,10 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
                 IntegrationDaemon.start
 
                 Thread.sleep (10.seconds.asMilliseconds)
+
+                val graph = srv.invoke (daemonObj, "graph", Array(), Array()).asInstanceOf [String]
+                graph  must_!=  ""
+                writeGraph (graph)
 
                 actor1.started  must_==  1
                 actor1.stopped  must_==  0
@@ -103,8 +114,18 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
 
             actor5.started  must_==  0
             actor5.stopped  must_==  0
+        }
+    }
 
-            createModuleGraphInDebugDir ("integration-module.dot")
+    def writeGraph (graph : String) : Unit = {
+        val debugDir = System.getProperty ("jacore.module.debug.dir")
+        if (debugDir != null) {
+            new File (debugDir).mkdirs
+
+            val filename = debugDir + "/" + "integration-module.dot"
+            withCloseableIO (new PrintWriter (new File (filename), "UTF-8")) (out =>
+                out.print (graph)
+            )
         }
     }
 }
