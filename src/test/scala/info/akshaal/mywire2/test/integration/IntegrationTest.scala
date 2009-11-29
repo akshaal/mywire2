@@ -211,7 +211,7 @@ object IntegrationTest extends TestHelper {
             super.configure (binder)
 
             // sqlmap
-            val dataSourcePrefs = new Prefs ("/jdbc.properties")
+            val dataSourcePrefs = new Prefs ("jdbc.properties")
             val dataSourceFactory = new PooledDataSourceFactory
             dataSourceFactory.setProperties (dataSourcePrefs.properties)
             val dataSource = dataSourceFactory.getDataSource

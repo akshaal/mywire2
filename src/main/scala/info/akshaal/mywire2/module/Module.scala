@@ -21,7 +21,7 @@ import utils.NativeThreadPriorityChanger
  * to work.
  */
 class Module extends JacoreModule {
-    override lazy val prefsResource = "/mywire.properties"
+    override lazy val prefsResource = "mywire.properties"
 
     override lazy val threadPriorityChangerImplClass = classOf [NativeThreadPriorityChanger]
 
