@@ -11,19 +11,11 @@ package integration
 
 import java.io.{File, PrintWriter}
 import java.lang.management.ManagementFactory
-import java.util.{HashMap => JavaHashMap}
 import javax.management.ObjectName
 
 import com.google.inject.{Guice, Binder, Inject, Singleton}
 
-import org.apache.ibatis.session.{SqlSessionFactory, SqlSessionFactoryBuilder}
-import org.apache.ibatis.datasource.pooled.PooledDataSourceFactory
-import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory
-import org.apache.ibatis.mapping.Environment
-import org.apache.ibatis.session.Configuration
-import org.apache.ibatis.builder.xml.XMLMapperBuilder
-import org.apache.ibatis.io.Resources
-import org.apache.ibatis.parsing.XNode
+import org.apache.ibatis.session.SqlSessionFactory
 
 import org.specs.SpecificationWithJUnit
 
@@ -38,7 +30,7 @@ import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.daemon.DaemonStatus
 import info.akshaal.jacore.actor.{Actor, LowPriorityActorEnv}
 import info.akshaal.jacore.test.TestHelper
-import info.akshaal.jacore.utils.Prefs
+import info.akshaal.jacore.utils.IbatisUtils._
 
 import daemon.{BaseDaemon, Autostart}
 import module.Module
@@ -211,22 +203,11 @@ object IntegrationTest extends TestHelper {
             super.configure (binder)
 
             // sqlmap
-            val dataSourcePrefs = new Prefs ("jdbc.properties")
-            val dataSourceFactory = new PooledDataSourceFactory
-            dataSourceFactory.setProperties (dataSourcePrefs.properties)
-            val dataSource = dataSourceFactory.getDataSource
+            val dataSource = createPooledDataSource ("jdbc.properties")
+            val sqlConfig = createJdbcConfiguration ("integration", dataSource)
+            sqlConfig.parseMapperXml ("info/akshaal/mywire2/sqlmaps/log.xml")
 
-            val transactionFactory = new JdbcTransactionFactory
-            val sqlEnvironment = new Environment ("development", transactionFactory, dataSource)
-            val configuration = new Configuration (sqlEnvironment)
-
-            val sqlFragments = new JavaHashMap [String, XNode]
-            val reader = Resources.getResourceAsReader ("info/akshaal/mywire2/sqlmaps/log.xml")
-            val mapperBuilder = new XMLMapperBuilder (reader, configuration, "123", sqlFragments)
-            mapperBuilder.parse ()
-
-            val sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder
-            val sqlSessionFactory = sqlSessionFactoryBuilder.build (configuration)
+            val sqlSessionFactory = createSqlSessionFactory (sqlConfig)
 
             binder.bind (classOf[SqlSessionFactory]).annotatedWith (classOf[LogDB])
                   .toInstance (sqlSessionFactory)
