@@ -3,7 +3,7 @@
           PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
                  "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 
-<sqlMap namespace="Log">
+<sqlMap namespace="info.akshaal.mywire2.log">
     <insert id="insertLogRecord"
             parameterClass="info.akshaal.mywire2.domain.LogRecord">
         INSERT DELAYED INTO log SET time            = #time#,

@@ -14,8 +14,12 @@ import java.lang.management.ManagementFactory
 import javax.management.ObjectName
 
 import com.google.inject.{Guice, Binder, Inject, Singleton}
-import com.ibatis.sqlmap.client.{SqlMapClient, SqlMapClientBuilder}
-import com.ibatis.common.resources.Resources
+
+import org.apache.ibatis.session.{SqlSessionFactory, SqlSessionFactoryBuilder}
+import org.apache.ibatis.datasource.pooled.PooledDataSourceFactory
+import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory
+import org.apache.ibatis.mapping.Environment
+import org.apache.ibatis.session.Configuration
 
 import org.specs.SpecificationWithJUnit
 
@@ -30,6 +34,7 @@ import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.daemon.DaemonStatus
 import info.akshaal.jacore.actor.{Actor, LowPriorityActorEnv}
 import info.akshaal.jacore.test.TestHelper
+import info.akshaal.jacore.utils.Prefs
 
 import daemon.{BaseDaemon, Autostart}
 import module.Module
@@ -202,9 +207,20 @@ object IntegrationTest extends TestHelper {
             super.configure (binder)
 
             // sqlmap
-            val reader = Resources.getResourceAsReader ("sqlmap.xml")
-            val sqlmap = SqlMapClientBuilder.buildSqlMapClient (reader)
-            binder bind classOf[SqlMapClient] annotatedWith (classOf[LogDB]) toInstance sqlmap
+            val dataSourcePrefs = new Prefs ("/jdbc.properties")
+            val dataSourceFactory = new PooledDataSourceFactory
+            dataSourceFactory.setProperties (dataSourcePrefs.properties)
+            val dataSource = dataSourceFactory.getDataSource
+
+            val transactionFactory = new JdbcTransactionFactory
+            val sqlEnvironment = new Environment ("development", transactionFactory, dataSource)
+            val configuration = new Configuration (sqlEnvironment)
+
+            val sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder
+            val sqlSessionFactory = sqlSessionFactoryBuilder.build (configuration)
+
+            binder.bind (classOf[SqlSessionFactory]).annotatedWith (classOf[LogDB])
+                  .toInstance (sqlSessionFactory)
 
             // JMS
             val connectionFactory = new PooledConnectionFactory (amqConnectionFactory)

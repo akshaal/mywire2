@@ -6,7 +6,7 @@ import com.google.inject.{Singleton, Inject}
 import org.apache.log4j.spi.LoggingEvent
 import org.apache.log4j.Level
 
-import com.ibatis.sqlmap.client.SqlMapClient
+import org.apache.ibatis.session.SqlSessionFactory
 
 import java.util.Date
 
@@ -76,10 +76,10 @@ private[mywire2] class LogServiceActor @Inject() (
  */
 @Singleton
 private[logger] class LogRecordInserterActor @Inject() (
-                                            @LogDB sqlMapClient : SqlMapClient,
+                                            @LogDB sqlSessionFactory : SqlSessionFactory,
                                             lowPriorityActorEnv : LowPriorityActorEnv)
                         extends AbstractIbatisDataInserterActor[LogRecord] (
-                                            sqlMapClient = sqlMapClient,
+                                            sqlSessionFactory = sqlSessionFactory,
                                             lowPriorityActorEnv = lowPriorityActorEnv)
                         with DummyLogging
 {
