@@ -1,17 +1,16 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE sqlMap
-          PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
-                 "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+          "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+          "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
 
-<sqlMap namespace="info.akshaal.mywire2.log">
-    <insert id="insertLogRecord"
-            parameterClass="info.akshaal.mywire2.domain.LogRecord">
-        INSERT DELAYED INTO log SET time            = #time#,
-                                    nano            = #nano#,
-                                    log_level_id    = #levelId#,
-                                    category        = #category#,
-                                    msg             = #msg#,
-                                    thread          = #thread#,
-                                    throwable       = #throwable#
+<mapper namespace="info.akshaal.mywire2.log">
+    <insert id="insertLogRecord" parameterType="info.akshaal.mywire2.domain.LogRecord">
+        INSERT DELAYED INTO log SET time            = #{time},
+                                    nano            = #{nano},
+                                    log_level_id    = #{levelId},
+                                    category        = #{category},
+                                    msg             = #{msg},
+                                    thread          = #{thread},
+                                    throwable       = #{throwable}
     </insert>
-</sqlMap>
+</mapper>

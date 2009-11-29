@@ -83,5 +83,5 @@ private[logger] class LogRecordInserterActor @Inject() (
                                             lowPriorityActorEnv = lowPriorityActorEnv)
                         with DummyLogging
 {
-    protected override val insertStatementId = "insertLogRecord"
+    protected override val insertStatementId = "info.akshaal.mywire2.log.insertLogRecord"
 }
