@@ -205,7 +205,7 @@ object IntegrationTest extends TestHelper {
             // sqlmap
             val dataSource = createPooledDataSource ("jdbc.properties")
             val sqlConfig = createJdbcConfiguration ("integration", dataSource)
-            sqlConfig.parseMapperXml ("info/akshaal/mywire2/sqlmaps/log.xml")
+            sqlConfig.parseMapperXmlsInPackages ("info.akshaal.mywire2.sqlmaps")
 
             val sqlSessionFactory = createSqlSessionFactory (sqlConfig)
 
