@@ -161,7 +161,7 @@ object IntegrationTest extends TestHelper {
         val daemonStatus = injector.getInstanceOf [DaemonStatus]
         val publicInjector = injector
 
-        override lazy val jmxObjectName = "mywire:name=integrationTestStatus" + hashCode
+        override lazy val jmxObjectName = "mywire:name=integrationDaemon" + hashCode
 
         override protected val additionalActors : Seq [Actor] =
                     List (injector.getInstanceOf[autostart.Actor3])

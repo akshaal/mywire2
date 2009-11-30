@@ -36,6 +36,8 @@ class Module extends JacoreModule {
     override def configure (binder : Binder) = {
         super.configure (binder)
 
+	// TODO: Add requirements for log and so on
+
         binder.bind (classOf[MywireManager]).to (classOf[MywireManagerImpl])
 
         //  - - - - - - - - - - -  Named - - - - - - - - - -  - - - -
