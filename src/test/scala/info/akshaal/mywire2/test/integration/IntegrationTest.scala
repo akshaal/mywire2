@@ -13,7 +13,7 @@ import java.io.{File, PrintWriter}
 import java.lang.management.ManagementFactory
 import javax.management.ObjectName
 
-import com.google.inject.{Guice, Binder, Inject, Singleton}
+import com.google.inject.{Inject, Singleton}
 
 import org.apache.ibatis.session.SqlSessionFactory
 
@@ -199,8 +199,8 @@ object IntegrationTest extends TestHelper {
 
         override lazy val qosInterval = 1 seconds
 
-        override def configure (binder : Binder) = {
-            super.configure (binder)
+        override def configure () = {
+            super.configure ()
 
             // sqlmap
             val dataSource = createPooledDataSource ("jdbc.properties")
@@ -209,17 +209,17 @@ object IntegrationTest extends TestHelper {
 
             val sqlSessionFactory = createSqlSessionFactory (sqlConfig)
 
-            binder.bind (classOf[SqlSessionFactory]).annotatedWith (classOf[LogDB])
+            bind (classOf[SqlSessionFactory]).annotatedWith (classOf[LogDB])
                   .toInstance (sqlSessionFactory)
 
             // JMS
             val connectionFactory = new PooledConnectionFactory (amqConnectionFactory)
-            binder.bind (classOf[ConnectionFactory])
+            bind (classOf[ConnectionFactory])
                   .annotatedWith (classOf[JmsIntegrationExport])
                   .toInstance (connectionFactory)
 
             val exportTopic = new ActiveMQTopic ("integration-test-export")
-            binder.bind (classOf[Destination])
+            bind (classOf[Destination])
                   .annotatedWith (classOf[JmsIntegrationExport])
                   .toInstance (exportTopic)
         }

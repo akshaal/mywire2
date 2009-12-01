@@ -8,7 +8,6 @@
 package info.akshaal.mywire2
 package module
 
-import com.google.inject.Binder
 import com.google.inject.name.Names
 
 import info.akshaal.jacore.Predefs._
@@ -33,28 +32,26 @@ class Module extends JacoreModule {
 
     // - - - - - - - - - - - - Bindings - - - - - - - - - -
 
-    override def configure (binder : Binder) = {
-        super.configure (binder)
+    override def configure () = {
+        super.configure ()
 
-	// TODO: Add requirements for log and so on
-
-        binder.bind (classOf[MywireManager]).to (classOf[MywireManagerImpl])
+        bind (classOf[MywireManager]).to (classOf[MywireManagerImpl])
 
         //  - - - - - - - - - - -  Named - - - - - - - - - -  - - - -
 
-        binder.bind (classOf[TimeUnit])
+        bind (classOf[TimeUnit])
               .annotatedWith (Names.named ("mywire.qos.interval"))
               .toInstance (qosInterval)
 
-        binder.bind (classOf[Int])
+        bind (classOf[Int])
               .annotatedWith (Names.named ("mywire.os.priority.low"))
               .toInstance (lowOsPriority)
 
-        binder.bind (classOf[Int])
+        bind (classOf[Int])
               .annotatedWith (Names.named ("mywire.os.priority.normal"))
               .toInstance (normalOsPriority)
 
-        binder.bind (classOf[Int])
+        bind (classOf[Int])
               .annotatedWith (Names.named ("mywire.os.priority.hi"))
               .toInstance (hiOsPriority)
     }
