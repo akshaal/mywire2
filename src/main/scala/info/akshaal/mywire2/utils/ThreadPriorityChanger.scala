@@ -11,7 +11,7 @@ package utils
 import com.google.inject.{Inject, Singleton}
 import com.google.inject.name.Named
 
-import ru.toril.daemonhelper.{DaemonHelper, OSException}
+import info.akshaal.daemonhelper.{DaemonHelper, OSException}
 
 import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.logger.Logging

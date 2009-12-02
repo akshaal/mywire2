@@ -7,6 +7,8 @@ import com.google.inject.Guice
 
 import scala.collection.mutable.{Set, HashSet}
 
+import info.akshaal.daemonhelper.{OSException, DaemonHelper}
+
 import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.module.Module
 import info.akshaal.jacore.actor.Actor
@@ -44,6 +46,15 @@ abstract class BaseDaemon (module : Module) extends Logging with SimpleJmx {
      * Called by native executable to initialize the application before starting it.
      */
     def init () : Unit = {
+        // Lock memory
+        try {
+            DaemonHelper.mlockall ();
+            info ("Memory has been locked");
+        } catch {
+            case e : OSException =>
+                warn ("Failed to lock memory for thread " + ": " + e.getMessage, e);
+        }
+
         // Actor classes
         val allAdditionalActorClasses : Set [Class [_ <: Actor]] = new HashSet
         allAdditionalActorClasses ++= additionalActorClasses
