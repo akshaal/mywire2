@@ -26,13 +26,13 @@ private[mywire2] final class NativeThreadPriorityChanger @Inject() (
 {
     import ThreadPriorityChanger._
 
-    def toOsPriority (priority : Priority) = priority match {
+    def toOsPriority (priority : Priority) : Int = priority match {
         case LowPriority    => lowOsPriority
         case NormalPriority => normalOsPriority
         case HiPriority     => hiOsPriority
     }
 
-    def change (priority : Priority) = {
+    def change (priority : Priority) : Unit = {
         val pid = DaemonHelper.getPid
         val tid = DaemonHelper.getTid
         val name = Thread.currentThread.getName
