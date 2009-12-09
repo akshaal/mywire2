@@ -52,59 +52,57 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
             val actor4 = injector.getInstanceOf [autostart.Actor4]
             val actor5 = injector.getInstanceOf [autostart.Actor5]
 
-            try {
-                actor1.started  must_==  0
-                actor1.stopped  must_==  0
+	    actor1.started  must_==  0
+	    actor1.stopped  must_==  0
 
-                actor2.started  must_==  0
-                actor2.stopped  must_==  0
+	    actor2.started  must_==  0
+	    actor2.stopped  must_==  0
 
-                actor3.started  must_==  0
-                actor3.stopped  must_==  0
+	    actor3.started  must_==  0
+	    actor3.stopped  must_==  0
 
-                actor4.started  must_==  0
-                actor4.stopped  must_==  0
+	    actor4.started  must_==  0
+	    actor4.stopped  must_==  0
 
-                actor5.started  must_==  0
-                actor5.stopped  must_==  0
+	    actor5.started  must_==  0
+	    actor5.stopped  must_==  0
 
-                IntegrationDaemon.init
-                IntegrationDaemon.start
+	    IntegrationDaemon.init
+	    IntegrationDaemon.start
 
-                Thread.sleep (10.seconds.asMilliseconds)
+	    Thread.sleep (10.seconds.asMilliseconds)
 
-                val graph = srv.invoke (daemonObj, "graph", Array(), Array()).asInstanceOf [String]
-                writeGraph (graph)
-                graph  must find (".*(Actor1).*")
-                graph  must find (".*(Actor2).*")
-                graph  must find (".*(Actor3).*")
-                graph  must find (".*(Actor4).*")
-                graph  must find (".*(MywireManager).*")
-                graph  must find (".*(DaemonStatus).*")
+	    val graph = srv.invoke (daemonObj, "graph", Array(), Array()).asInstanceOf [String]
+	    writeGraph (graph)
+	    graph  must find (".*(Actor1).*")
+	    graph  must find (".*(Actor2).*")
+	    graph  must find (".*(Actor3).*")
+	    graph  must find (".*(Actor4).*")
+	    graph  must find (".*(MywireManager).*")
+	    graph  must find (".*(DaemonStatus).*")
 
-                actor1.started  must_==  1
-                actor1.stopped  must_==  0
+	    actor1.started  must_==  1
+	    actor1.stopped  must_==  0
 
-                actor2.started  must_==  1
-                actor2.stopped  must_==  0
+	    actor2.started  must_==  1
+	    actor2.stopped  must_==  0
 
-                actor3.started  must_==  1
-                actor3.stopped  must_==  0
+	    actor3.started  must_==  1
+	    actor3.stopped  must_==  0
 
-                actor4.started  must_==  1
-                actor4.stopped  must_==  0
+	    actor4.started  must_==  1
+	    actor4.stopped  must_==  0
 
-                actor5.started  must_==  0
-                actor5.stopped  must_==  0
+	    actor5.started  must_==  0
+	    actor5.stopped  must_==  0
 
-                Thread.sleep (10.seconds.asMilliseconds)
+	    Thread.sleep (10.seconds.asMilliseconds)
 
-                IntegrationDaemon.daemonStatus.isDying         must beFalse
-                IntegrationDaemon.daemonStatus.isShuttingDown  must beFalse
-            } finally {
-                IntegrationDaemon.stop
-                IntegrationDaemon.destroy
-            }
+	    IntegrationDaemon.daemonStatus.isDying         must beFalse
+	    IntegrationDaemon.daemonStatus.isShuttingDown  must beFalse
+
+	    IntegrationDaemon.stop
+	    IntegrationDaemon.destroy
 
             actor1.started  must_==  1
             actor1.stopped  must_==  1
