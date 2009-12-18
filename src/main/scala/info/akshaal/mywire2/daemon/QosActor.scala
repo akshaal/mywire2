@@ -12,9 +12,8 @@ import com.google.inject.name.Named
 import info.akshaal.jacore.utils.{TimeUnit, LowPriorityPool, HiPriorityPool,
                                   NormalPriorityPool}
 import info.akshaal.jacore.actor.{NormalPriorityActorEnv, Actor}
-import info.akshaal.jacore.scheduler.{TimeOut, Scheduler}
+import info.akshaal.jacore.scheduler.Scheduler
 import info.akshaal.jacore.daemon.DaemonStatus
-import info.akshaal.jacore.annotation.Act
 
 import domain.Qos
 
@@ -32,24 +31,19 @@ private[mywire2] class QosActor @Inject() (
                              scheduler : Scheduler)
                          extends Actor (actorEnv = normalPriorityActorEnv)
 {
-    schedule payload 'Check every interval
+    schedule every interval executionOf {
+        if (daemonStatus.isQosAllowed) {
+            // Calculate memory used
+            val runtime = Runtime.getRuntime ()
+            val max = runtime.maxMemory ()
+            val total = runtime.totalMemory ()
+            val free = runtime.freeMemory ()
+            val used = total - free
+            val usedPerc : Double = 100.0 * used / max
 
-    @Act
-    protected def onTimeout (msg : TimeOut) : Unit = {
-        if (!daemonStatus.isQosAllowed) {
-            return
-        }
-
-        // Calculate memory used
-        val runtime = Runtime.getRuntime ()
-        val max = runtime.maxMemory ()
-        val total = runtime.totalMemory ()
-        val free = runtime.freeMemory ()
-        val used = total - free
-        val usedPerc : Double = 100.0 * used / max
-
-        // Create QOS object
-        val qos = new Qos (
+            // Create QOS object
+            val qos =
+                new Qos (
                     memoryUsedPercent = usedPerc,
                     schedulerLatencyNs = scheduler.averageLatency.asNanoseconds,
                     hiPoolExecutionNs = hiPriorityPool.executionTiming.average.asNanoseconds,
@@ -59,7 +53,8 @@ private[mywire2] class QosActor @Inject() (
                     lowPoolExecutionNs = lowPriorityPool.executionTiming.average.asNanoseconds,
                     lowPoolLatencyNs = lowPriorityPool.latencyTiming.average.asNanoseconds)
 
-        // Broadcast
-        broadcaster.broadcast (qos)
+            // Broadcast
+            broadcaster.broadcast (qos)
+        }
     }
 }
