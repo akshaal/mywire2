@@ -4,30 +4,39 @@
  */
 
 package info.akshaal.mywire2
-package test.unit.onewire
+package test
+package unit.onewire
 
 import org.specs.SpecificationWithJUnit
+import org.specs.mock.Mockito
+
+import info.akshaal.jacore.actor.{ActorEnv, Broadcaster}
 
 import onewire.device._
 
-class LocationTest extends SpecificationWithJUnit ("1-wire device location spec") {
-    "1-wire device location definition" should {
-        "work" in {
-            val mp = LocationTestMountPoint
-            def path (dev : HasDeviceLocation) = dev.deviceLocation.absolutePath
-            
-            path (mp.aCoupler.mainBranch)  must_==  "/tmp/test/uncached/1234444/main"
-            path (mp.aCoupler.auxBranch)   must_==  "/tmp/test/uncached/1234444/aux"
+class LocationTest extends SpecificationWithJUnit ("1-wire device location spec") with Mockito {
+    val deviceEnv = mock [DeviceEnv]
+    deviceEnv.actorEnv returns unit.UnitTestHelper.TestModule.hiPriorityActorEnv
+
+    object mountPoint extends MountPoint ("/tmp/test") {
+        object aCoupler extends DS2409 ("1234444") {
+            object mainBranch extends MainBranch {
+                object temp1 extends DS18S20 ("4a5", deviceEnv)
+            }
+
+            object auxBranch extends AuxBranch {
+            }
         }
     }
-}
 
-object LocationTestMountPoint extends MountPoint ("/tmp/test") {
-    object aCoupler extends DS2409 ("1234444") {
-        object mainBranch extends MainBranch {
-        }
+    val mp = mountPoint
+    def path (dev : HasDeviceLocation) = dev.deviceLocation.absolutePath
 
-        object auxBranch extends AuxBranch {
+    "1-wire device location definition" should {
+        "work" in {            
+            path (mp.aCoupler.mainBranch)         must_==  "/tmp/test/uncached/1234444/main"
+            path (mp.aCoupler.auxBranch)          must_==  "/tmp/test/uncached/1234444/aux"
+            path (mp.aCoupler.mainBranch.temp1)   must_==  "/tmp/test/uncached/1234444/main/4a5"
         }
     }
 }

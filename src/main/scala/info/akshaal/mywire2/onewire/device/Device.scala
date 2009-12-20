@@ -8,4 +8,4 @@ package info.akshaal.mywire2.onewire.device
 /**
  * Abstract 1-wire device.
  */
-abstract class Device extends HasDeviceLocation
+trait Device extends HasDeviceLocation with NotNull

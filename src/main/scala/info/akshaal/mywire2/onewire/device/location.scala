@@ -10,7 +10,7 @@ package device
 /**
  * Class describes device location in the filesystem.
  */
-sealed case class DeviceLocation (absolutePath : String) {
+sealed case class DeviceLocation (absolutePath : String) extends NotNull {
     def this (parent : DeviceLocation, relativePath : String) =
             this (parent.absolutePath + "/" + relativePath)
 }
@@ -35,7 +35,7 @@ abstract sealed class LocationDevice extends Device
  */
 case class MountPoint (absolutePath : String) extends LocationDevice {
     protected implicit val _ = this
-    implicit val deviceLocation = new DeviceLocation (absolutePath + "/uncached")
+    override implicit val deviceLocation = new DeviceLocation (absolutePath + "/uncached")
 }
 
 /**
@@ -45,7 +45,7 @@ case class DS2409 (id : String) (implicit parentDeviceLocation : DeviceLocation)
                             extends LocationDevice
 {
     protected implicit val _ = this
-    implicit val deviceLocation = new DeviceLocation (parentDeviceLocation, id)
+    override implicit val deviceLocation = new DeviceLocation (parentDeviceLocation, id)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -54,7 +54,7 @@ case class DS2409 (id : String) (implicit parentDeviceLocation : DeviceLocation)
 abstract sealed class Branch (parentDeviceLocation : DeviceLocation, name : String)
                                                     extends HasDeviceLocation
 {
-    implicit val deviceLocation = new DeviceLocation (parentDeviceLocation, name)
+    override implicit val deviceLocation = new DeviceLocation (parentDeviceLocation, name)
 }
 
 case class MainBranch (implicit ds2409 : DS2409) extends Branch (ds2409.deviceLocation, "main")
