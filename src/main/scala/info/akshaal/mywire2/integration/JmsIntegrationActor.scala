@@ -19,7 +19,7 @@ import domain.Export
 
 /**
  * This actor has no public interfaces and is not supposed to be used by other actors.
- * All this actor is supposed to do is to listen for broadcasted object of ExportNotification
+ * All this actor is supposed to do is to listen for broadcasted object of Export
  * type.
  */
 @Singleton
