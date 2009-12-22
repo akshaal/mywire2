@@ -17,6 +17,13 @@ import info.akshaal.jacore.fs.text.TextFile
 // Common
 
 /**
+ * For devices that are support family code.
+ */
+trait HasFamilyCode {
+    val familyCode : String
+}
+
+/**
  * Device environment.
  */
 @Singleton
@@ -28,16 +35,19 @@ class DeviceEnv @Inject() (val actorEnv : HiPriorityActorEnv,
  * An abstract device actor.
  *
  * @param id identifier of the device
+ * @param familyCode family code of the device
  * @param parentDevLoc device location of the parent device (or mount point)
  * @param deviceEnv device environment
  */
 abstract class DeviceActor (id : String,
+                            val familyCode : String,
                             parentDevLoc : DeviceLocation,
                             protected val deviceEnv : DeviceEnv)
                         extends Actor (actorEnv = deviceEnv.actorEnv)
                            with Device
+                           with HasFamilyCode
 {
-    override val deviceLocation = new DeviceLocation (parentDevLoc, id)
+    override val deviceLocation = new DeviceLocation (parentDevLoc, familyCode + "." + id)
 
     /**
      * Makes absoulte path for the device file.
@@ -104,5 +114,5 @@ trait DeviceHasTemperature {
  * @param deviceEnv device environment
  */
 class DS18S20 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : DeviceLocation)
-                                extends DeviceActor (id, parentDevLoc, deviceEnv)
+                                extends DeviceActor (id, "10", parentDevLoc, deviceEnv)
                                    with DeviceHasTemperature

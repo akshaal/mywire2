@@ -43,9 +43,12 @@ case class MountPoint (absolutePath : String) extends LocationDevice {
  */
 case class DS2409 (id : String) (implicit parentDeviceLocation : DeviceLocation)
                             extends LocationDevice
+                               with HasFamilyCode
 {
     protected implicit val _ = this
-    override implicit val deviceLocation = new DeviceLocation (parentDeviceLocation, id)
+    override val familyCode = "1F"
+    override implicit val deviceLocation =
+                new DeviceLocation (parentDeviceLocation, familyCode + "." + id)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

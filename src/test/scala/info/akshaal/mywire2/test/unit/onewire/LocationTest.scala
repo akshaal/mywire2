@@ -33,9 +33,9 @@ class LocationTest extends SpecificationWithJUnit ("1-wire device location spec"
 
     "1-wire device location definition" should {
         "work" in {            
-            path (mp.aCoupler.mainBranch)         must_==  "/tmp/test/uncached/1234444/main"
-            path (mp.aCoupler.auxBranch)          must_==  "/tmp/test/uncached/1234444/aux"
-            path (mp.aCoupler.mainBranch.temp1)   must_==  "/tmp/test/uncached/1234444/main/4a5"
+            path (mp.aCoupler.mainBranch)         must_==  "/tmp/test/uncached/1F.1234444/main"
+            path (mp.aCoupler.auxBranch)          must_==  "/tmp/test/uncached/1F.1234444/aux"
+            path (mp.aCoupler.mainBranch.temp1)   must_==  "/tmp/test/uncached/1F.1234444/main/10.4a5"
         }
     }
 }

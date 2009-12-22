@@ -27,8 +27,8 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
     "DS18S20" should {
         "work" in {
             val fnf = new java.io.FileNotFoundException ("not found")
-            val readFs = Map ("/tmp/test/uncached/abc/temperature" -> Success("23.44"),
-                              "/tmp/test/uncached/bca/temperature" -> Failure[String](fnf))
+            val readFs = Map ("/tmp/test/uncached/10.abc/temperature" -> Success("23.44"),
+                              "/tmp/test/uncached/10.bca/temperature" -> Failure[String](fnf))
             
             withMockedTextFile (readFs) (textFileActor => {
                 val deviceEnv = Mocker.newDeviceEnv
