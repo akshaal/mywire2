@@ -6,6 +6,8 @@
 package info.akshaal.mywire2
 package test.unit
 
+import scala.collection.mutable.ListBuffer
+
 import com.google.inject.{Guice, Binder}
 import java.io.File
 
