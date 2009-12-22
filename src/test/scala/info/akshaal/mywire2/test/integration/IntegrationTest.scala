@@ -28,7 +28,7 @@ import javax.jms.{ConnectionFactory, Destination}
 
 import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.daemon.DaemonStatus
-import info.akshaal.jacore.actor.{Actor, LowPriorityActorEnv}
+import info.akshaal.jacore.actor.{Actor, LowPriorityActorEnv, HiPriorityActorEnv}
 import info.akshaal.jacore.test.TestHelper
 import info.akshaal.jacore.utils.IbatisUtils._
 
@@ -52,57 +52,63 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
             val actor4 = injector.getInstanceOf [autostart.Actor4]
             val actor5 = injector.getInstanceOf [autostart.Actor5]
 
-	    actor1.started  must_==  0
-	    actor1.stopped  must_==  0
+            actor1.started  must_==  0
+            actor1.stopped  must_==  0
 
-	    actor2.started  must_==  0
-	    actor2.stopped  must_==  0
+            actor2.started  must_==  0
+            actor2.stopped  must_==  0
 
-	    actor3.started  must_==  0
-	    actor3.stopped  must_==  0
+            actor3.started  must_==  0
+            actor3.stopped  must_==  0
 
-	    actor4.started  must_==  0
-	    actor4.stopped  must_==  0
+            actor4.started  must_==  0
+            actor4.stopped  must_==  0
 
-	    actor5.started  must_==  0
-	    actor5.stopped  must_==  0
+            actor5.started  must_==  0
+            actor5.stopped  must_==  0
 
-	    IntegrationDaemon.init
-	    IntegrationDaemon.start
+            autostart.obj.ActorObject.started  must_==  0
+            autostart.obj.ActorObject.stopped  must_==  0
 
-	    Thread.sleep (10.seconds.asMilliseconds)
+            IntegrationDaemon.init
+            IntegrationDaemon.start
 
-	    val graph = srv.invoke (daemonObj, "graph", Array(), Array()).asInstanceOf [String]
-	    writeGraph (graph)
-	    graph  must find (".*(Actor1).*")
-	    graph  must find (".*(Actor2).*")
-	    graph  must find (".*(Actor3).*")
-	    graph  must find (".*(Actor4).*")
-	    graph  must find (".*(MywireManager).*")
-	    graph  must find (".*(DaemonStatus).*")
+            Thread.sleep (10.seconds.asMilliseconds)
 
-	    actor1.started  must_==  1
-	    actor1.stopped  must_==  0
+            val graph = srv.invoke (daemonObj, "graph", Array(), Array()).asInstanceOf [String]
+            writeGraph (graph)
+            graph  must find (".*(Actor1).*")
+            graph  must find (".*(Actor2).*")
+            graph  must find (".*(Actor3).*")
+            graph  must find (".*(Actor4).*")
+            graph  must find (".*(MywireManager).*")
+            graph  must find (".*(DaemonStatus).*")
 
-	    actor2.started  must_==  1
-	    actor2.stopped  must_==  0
+            actor1.started  must_==  1
+            actor1.stopped  must_==  0
 
-	    actor3.started  must_==  1
-	    actor3.stopped  must_==  0
+            actor2.started  must_==  1
+            actor2.stopped  must_==  0
 
-	    actor4.started  must_==  1
-	    actor4.stopped  must_==  0
+            actor3.started  must_==  1
+            actor3.stopped  must_==  0
 
-	    actor5.started  must_==  0
-	    actor5.stopped  must_==  0
+            actor4.started  must_==  1
+            actor4.stopped  must_==  0
 
-	    Thread.sleep (10.seconds.asMilliseconds)
+            actor5.started  must_==  0
+            actor5.stopped  must_==  0
 
-	    IntegrationDaemon.daemonStatus.isDying         must beFalse
-	    IntegrationDaemon.daemonStatus.isShuttingDown  must beFalse
+            autostart.obj.ActorObject.started  must_==  1
+            autostart.obj.ActorObject.stopped  must_==  0
 
-	    IntegrationDaemon.stop
-	    IntegrationDaemon.destroy
+            Thread.sleep (10.seconds.asMilliseconds)
+
+            IntegrationDaemon.daemonStatus.isDying         must beFalse
+            IntegrationDaemon.daemonStatus.isShuttingDown  must beFalse
+
+            IntegrationDaemon.stop
+            IntegrationDaemon.destroy
 
             actor1.started  must_==  1
             actor1.stopped  must_==  1
@@ -118,6 +124,9 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
 
             actor5.started  must_==  0
             actor5.stopped  must_==  0
+
+            autostart.obj.ActorObject.started  must_==  1
+            autostart.obj.ActorObject.stopped  must_==  1
         }
     }
 
@@ -225,8 +234,9 @@ object IntegrationTest extends TestHelper {
 }
 
 package autostart {
-    class ActorBase (actorEnv : LowPriorityActorEnv) extends Actor (actorEnv = actorEnv)
-    {
+    trait ActorStartStopCounting extends Actor {
+        this : Actor =>
+
         var started = 0
         var stopped = 0
 
@@ -242,6 +252,18 @@ package autostart {
             stopped += 1
         }
     }
+
+    package obj {
+        class ActorBase 
+                extends Actor (actorEnv = IntegrationTest.injector
+                                                         .getInstanceOf [HiPriorityActorEnv])
+                   with ActorStartStopCounting
+
+        object ActorObject extends ActorBase with Autostart
+    }
+
+    class ActorBase (actorEnv : LowPriorityActorEnv) extends Actor (actorEnv = actorEnv)
+                                                        with ActorStartStopCounting
 
     @Singleton
     class Actor1 @Inject() (actorEnv : LowPriorityActorEnv) extends ActorBase (actorEnv = actorEnv)
