@@ -36,22 +36,32 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
                     object temp extends DS18S20 ("abc", deviceEnv)
                 }
 
-                mp.temp.start
-
-                try {
-                    withStartedActor [DS18S20WorkTest] (actor => {
-                        waitForMessageBatchesAfter (actor, 2) {actor.test (mp.temp)}
-
-                        actor.buf  must haveSize (1)
-
-                        val result = actor.buf (0)
-                        result  must_==  Success (23.44)
-                    })
-                } finally {
-                    mp.temp.stop
+                withStartedActor (mp.temp) {
+                    runOneOperation (mp.temp.readTemperature ())  must_==  Success (23.44)
                 }
             })
         }
+    }
+
+    def runOneOperation [A] (runner : => Operation.WithComplexResult [A]) : A =
+    {
+        class RunnerActor extends TestActor {
+            val buf = new ListBuffer [A]
+
+            def run () : Unit = {
+                postponed ("run") {
+                    runner matchResult (buf += _)
+                }
+            }
+        }
+
+        val runnerActor = new RunnerActor
+
+        withStartedActor (runnerActor) {
+            waitForMessageBatchesAfter (runnerActor, 2) {runnerActor.run}
+        }
+
+        runnerActor.buf (0)
     }
 
     def withMockedTextFile (reader : String => Result[String])
@@ -69,16 +79,6 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
 }
 
 object DeviceTest {
-    class DS18S20WorkTest extends TestActor {
-        val buf = new ListBuffer [Result[Double]]
-        
-        def test (temp : DS18S20) : Unit = {
-            postponed ("test") {
-                temp.readTemperature () matchResult (buf += _)
-            }
-        }
-    }
-
     /**
      * Mocked text file reader.
      */
