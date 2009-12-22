@@ -70,7 +70,7 @@ abstract class BaseDaemon (module : Module) extends Logging with SimpleJmx {
 
         // Actors
         allAdditionalActors ++= additionalActors
-        allAdditionalActors ++= allAdditionalActorClasses.map (injector.getInstance (_))
+        allAdditionalActors ++= allAdditionalActorClasses.map (getActorInstanceOfClass (_))
 
         // Debug
         debugLazy ("All additional actors: " + allAdditionalActors)
@@ -109,6 +109,23 @@ abstract class BaseDaemon (module : Module) extends Logging with SimpleJmx {
         val allAdditionalActorsClasses = allAdditionalActors.map (_.getClass)
 
         GuiceUtils.createModuleGraphAsString (injector, allAdditionalActorsClasses.toSeq : _*)
+    }
+
+    /**
+     * Construct instance of the given class. If the given class is a scala object
+     * then instance of the class is obtained, otherwise Guice is used to get instance.
+     */
+    private[this] def getActorInstanceOfClass [A <: Actor] (clazz : Class [A]) : A = {
+        val realClazz = Class.forName (clazz.getName).asInstanceOf [Class [A]]
+
+        try {
+            val moduleField = realClazz.getField ("MODULE$")
+            
+            moduleField.get (null).asInstanceOf [A]
+        } catch {
+            case exc : NoSuchFieldException =>
+                injector.getInstance (clazz)
+        }
     }
 
     /**
