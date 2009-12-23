@@ -10,11 +10,12 @@ import scala.collection.mutable.{Set, HashSet}
 import info.akshaal.daemonhelper.{OSException, DaemonHelper}
 
 import info.akshaal.jacore.Predefs._
-import info.akshaal.jacore.module.Module
 import info.akshaal.jacore.actor.Actor
 import info.akshaal.jacore.utils.{ClassUtils, GuiceUtils}
 import info.akshaal.jacore.logger.Logging
 import info.akshaal.jacore.jmx.{SimpleJmx, JmxOper}
+
+import module.Module
 
 /**
  * Abstract daemon.
