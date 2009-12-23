@@ -70,7 +70,22 @@ abstract class BaseDaemon (module : Module) extends Logging with SimpleJmx {
 
         // Actors
         allAdditionalActors ++= additionalActors
-        allAdditionalActors ++= allAdditionalActorClasses.map (getActorInstanceOfClass (_))
+
+        // Separate actor object classes from actor classes
+        val actorClassesForGuice : Set [Class [_ <: Actor]] = new HashSet
+
+        for (clazz <- allAdditionalActorClasses) {
+            ClassUtils.getModuleInstance (clazz) match {
+                case Some (obj) => allAdditionalActors += obj
+                case None       => actorClassesForGuice += clazz
+            }
+        }
+
+        // Register actor objects (modules) in Guice, BEFORE getting instances from guice
+        // TODO: Do it
+
+        // Instantiate by guice
+        allAdditionalActors ++= actorClassesForGuice.map (injector.getInstance (_))
 
         // Debug
         debugLazy ("All additional actors: " + allAdditionalActors)
