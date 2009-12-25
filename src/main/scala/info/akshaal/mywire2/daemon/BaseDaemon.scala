@@ -3,7 +3,8 @@
 package info.akshaal.mywire2
 package daemon
 
-import com.google.inject.Guice
+import com.google.inject.{Guice, Injector}
+import com.google.inject.AbstractModule
 
 import scala.collection.mutable.{Set, HashSet}
 
@@ -20,29 +21,45 @@ import module.Module
 /**
  * Abstract daemon.
  *
- * @param Instantance of module that will is used for injector.
+ * @param module Instantance of module that will is used for injector.
+ * @param additionalActorClasses instance of these class will be created using reflections or guice.
+ * @param additionalAutostartActorPackages A number of packages that is supposed
+ *        to be scanned to find actors that implement Autostart trait. These actors will
+ *        be started automatically.
  */
-abstract class BaseDaemon (module : Module) extends Logging with SimpleJmx {
+abstract class BaseDaemon (module : Module,
+                           additionalActorClasses : Seq [Class [_ <: Actor]] = Seq (),
+                           additionalAutostartActorPackages : Seq [String] = Seq ())
+                  extends Logging
+                     with SimpleJmx
+{
     /**
-     * Injector that is supposed to be used to instantiate all IoC classes of the app.
+     * Injector that holds basic stuff (mywire actors). This injector is created first.
+     * Using this injector we can construct other object depending on basic actors
+     * and place them into the final injector.
      */
-    protected final val injector = Guice.createInjector (module)
+    protected final val basicInjector = Guice.createInjector (module)
+
+    /**
+     * All actors that are to be started/stopped automaticcaly. Populated in init method.
+     */
+    private[this] final val allAdditionalActors : Set[Actor] = new HashSet
 
     /**
      * MywireManager instance of the application.
      */
-    protected final val mywireManager = injector.getInstanceOf [MywireManager]
-
-    /**
-     * All actors that are to be started/stopped automaticcaly.
-     */
-    private[this] final val allAdditionalActors : Set[Actor] = new HashSet
+    protected final val mywireManager = basicInjector.getInstanceOf [MywireManager]
 
     /**
      * Operations exposed through jmx.
      */
     override lazy val jmxOperations = List (JmxOper ("graph", createGraph))
     
+    /**
+     * Main injector.
+     */
+    private[this] final var mainInjector : Option[Injector] = None
+
     /**
      * Called by native executable to initialize the application before starting it.
      */
@@ -56,36 +73,47 @@ abstract class BaseDaemon (module : Module) extends Logging with SimpleJmx {
                 warn ("Failed to lock memory for thread " + ": " + e.getMessage, e);
         }
 
-        // Actor classes
-        val allAdditionalActorClasses : Set [Class [_ <: Actor]] = new HashSet
-        allAdditionalActorClasses ++= additionalActorClasses
-        
-        for (pkg <- additionalAutostartActorPackages) {
-            val classes =
-                    ClassUtils.findClasses (pkg,
-                                            Thread.currentThread.getContextClassLoader,
-                                            classOf [Autostart].isAssignableFrom (_))
-
-            allAdditionalActorClasses ++= classes.asInstanceOf [List [Class [Actor]]]
-        }
-
-        // Actors
-        allAdditionalActors ++= additionalActors
-
-        // Separate actor object classes from actor classes
+        // A set of classes that must be instantiate using full-blown injector.
         val actorClassesForGuice : Set [Class [_ <: Actor]] = new HashSet
 
-        for (clazz <- allAdditionalActorClasses) {
-            ClassUtils.getModuleInstance (clazz) match {
-                case Some (obj) => allAdditionalActors += obj
-                case None       => actorClassesForGuice += clazz
+        /**
+         * Additional module. Module that is in charge of creating and registering additional
+         * actors from scala object (modules).
+         */
+        object additionalModule extends AbstractModule {
+            private[this] val allAdditionalActorClasses : Set [Class[_ <: Actor]] = new HashSet
+            allAdditionalActorClasses ++= additionalActorClasses
+
+            for (pkg <- additionalAutostartActorPackages) {
+                val classes =
+                        ClassUtils.findClasses (pkg,
+                                                Thread.currentThread.getContextClassLoader,
+                                                classOf [Autostart].isAssignableFrom (_))
+
+                allAdditionalActorClasses ++= classes.asInstanceOf [List [Class [Actor]]]
+            }
+
+            // Separate actor object classes from actor classes
+            for (clazz <- allAdditionalActorClasses) {
+                ClassUtils.getModuleInstance (clazz) match {
+                    case Some (obj) => allAdditionalActors += obj
+                    case None       => actorClassesForGuice += clazz
+                }
+            }
+
+            def configure () : Unit = {
+                // Register actor objects (modules) in Guice, BEFORE getting instances from guice
+                // TODO: Do it
             }
         }
 
-        // Register actor objects (modules) in Guice, BEFORE getting instances from guice
-        // TODO: Do it
+        /**
+         * Injector that is supposed to be used to instantiate all IoC classes of the app.
+         */
+        val injector = basicInjector.createChildInjector (additionalModule)
+        mainInjector = Some (injector)
 
-        // Instantiate by guice
+        // Instantiate actor classes by guice
         allAdditionalActors ++= actorClassesForGuice.map (injector.getInstance (_))
 
         // Debug
@@ -124,40 +152,12 @@ abstract class BaseDaemon (module : Module) extends Logging with SimpleJmx {
     private[this] def createGraph () : String = {
         val allAdditionalActorsClasses = allAdditionalActors.map (_.getClass)
 
+        val injector =
+            mainInjector match {
+                case None => basicInjector
+                case Some (inj) => inj
+            }
+
         GuiceUtils.createModuleGraphAsString (injector, allAdditionalActorsClasses.toSeq : _*)
     }
-
-    /**
-     * Construct instance of the given class. If the given class is a scala object
-     * then instance of the class is obtained, otherwise Guice is used to get instance.
-     */
-    private[this] def getActorInstanceOfClass [A <: Actor] (clazz : Class [A]) : A = {
-        val realClazz = Class.forName (clazz.getName).asInstanceOf [Class [A]]
-
-        try {
-            val moduleField = realClazz.getField ("MODULE$")
-            
-            moduleField.get (null).asInstanceOf [A]
-        } catch {
-            case exc : NoSuchFieldException =>
-                injector.getInstance (clazz)
-        }
-    }
-
-    /**
-     * Actors start automatically.
-     */
-    protected def additionalActors : Seq [Actor] = Seq ()
-
-    /**
-     * Actors classes to instantiate using injector and start them.
-     */
-    protected def additionalActorClasses : Seq [Class [_ <: Actor]] = Seq ()
-
-    /**
-     * A number of packages that is supposed to be scanned to find
-     * actors that implement Autostart trait. These actors will
-     * be started automatically.
-     */
-    protected def additionalAutostartActorPackages : Seq [String] = Seq ()
 }

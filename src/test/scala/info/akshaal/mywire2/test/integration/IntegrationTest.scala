@@ -48,7 +48,6 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
             
             val actor1 = injector.getInstanceOf [autostart.Actor1]
             val actor2 = injector.getInstanceOf [autostart.Actor2]
-            val actor3 = injector.getInstanceOf [autostart.Actor3]
             val actor4 = injector.getInstanceOf [autostart.Actor4]
             val actor5 = injector.getInstanceOf [autostart.Actor5]
 
@@ -57,9 +56,6 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
 
             actor2.started  must_==  0
             actor2.stopped  must_==  0
-
-            actor3.started  must_==  0
-            actor3.stopped  must_==  0
 
             actor4.started  must_==  0
             actor4.stopped  must_==  0
@@ -79,7 +75,6 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
             writeGraph (graph)
             graph  must find (".*(Actor1).*")
             graph  must find (".*(Actor2).*")
-            graph  must find (".*(Actor3).*")
             graph  must find (".*(Actor4).*")
             graph  must find (".*(MywireManager).*")
             graph  must find (".*(DaemonStatus).*")
@@ -89,9 +84,6 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
 
             actor2.started  must_==  1
             actor2.stopped  must_==  0
-
-            actor3.started  must_==  1
-            actor3.stopped  must_==  0
 
             actor4.started  must_==  1
             actor4.stopped  must_==  0
@@ -104,8 +96,8 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
 
             Thread.sleep (10.seconds.asMilliseconds)
 
-            IntegrationDaemon.daemonStatus.isDying         must beFalse
-            IntegrationDaemon.daemonStatus.isShuttingDown  must beFalse
+            daemonStatus.isDying         must beFalse
+            daemonStatus.isShuttingDown  must beFalse
 
             IntegrationDaemon.stop
             IntegrationDaemon.destroy
@@ -115,9 +107,6 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
 
             actor2.started  must_==  1
             actor2.stopped  must_==  1
-
-            actor3.started  must_==  1
-            actor3.stopped  must_==  1
 
             actor4.started  must_==  1
             actor4.stopped  must_==  1
@@ -162,22 +151,16 @@ object IntegrationTest extends TestHelper {
     val amqConnectionFactory = new ActiveMQConnectionFactory ("vm://localhost")
 
     override val timeout = 2.seconds
-    override val injector = IntegrationDaemon.publicInjector
+    override val injector = IntegrationDaemon.publicBasicInjector
+    val daemonStatus = injector.getInstanceOf [DaemonStatus]
 
-    object IntegrationDaemon extends BaseDaemon (IntegrationModule) {
-        val daemonStatus = injector.getInstanceOf [DaemonStatus]
-        val publicInjector = injector
+    object IntegrationDaemon extends BaseDaemon (module = IntegrationModule,
+                    additionalActorClasses = List (classOf [autostart.Actor4]),
+                    additionalAutostartActorPackages = List ("info.akshaal.mywire2.test.integration.autostart"))
+    {
+        def publicBasicInjector = basicInjector
 
         override lazy val jmxObjectName = "mywire:name=integrationDaemon" + hashCode
-
-        override protected val additionalActors : Seq [Actor] =
-                    List (injector.getInstanceOf[autostart.Actor3])
-
-        override protected val additionalActorClasses : Seq [Class [_ <: Actor]] =
-                    List (classOf [autostart.Actor4])
-
-        override protected def additionalAutostartActorPackages : Seq [String] =
-                    List ("info.akshaal.mywire2.test.integration.autostart")
     }
 
     object IntegrationModule extends Module {
@@ -216,7 +199,7 @@ object IntegrationTest extends TestHelper {
 
             val sqlSessionFactory = createSqlSessionFactory (sqlConfig)
 
-            bind (classOf[SqlSessionFactory]).annotatedWith (classOf[LogDB])
+            bind (classOf[SqlSessionFactory]).annotatedWith (classOf [LogDB])
                   .toInstance (sqlSessionFactory)
 
             // JMS
@@ -272,9 +255,6 @@ package autostart {
     @Singleton
     class Actor2 @Inject() (actorEnv : LowPriorityActorEnv) extends ActorBase (actorEnv = actorEnv)
                                                             with Autostart
-
-    @Singleton
-    class Actor3 @Inject() (actorEnv : LowPriorityActorEnv) extends ActorBase (actorEnv = actorEnv)
 
     @Singleton
     class Actor4 @Inject() (actorEnv : LowPriorityActorEnv) extends ActorBase (actorEnv = actorEnv)
