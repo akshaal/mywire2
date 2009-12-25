@@ -13,6 +13,8 @@ import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.actor.{Operation, Actor, HiPriorityActorEnv}
 import info.akshaal.jacore.fs.text.TextFile
 
+import info.akshaal.mywire2.daemon.Autoregister
+
 // /////////////////////////////////////////////////////////////////
 // Common
 
@@ -46,8 +48,10 @@ abstract class DeviceActor (id : String,
                         extends Actor (actorEnv = deviceEnv.actorEnv)
                            with Device
                            with HasFamilyCode
+                           with Autoregister
 {
     override val deviceLocation = new DeviceLocation (parentDevLoc, familyCode + "." + id)
+    override val registrationName = id
 
     /**
      * Makes absoulte path for the device file.
