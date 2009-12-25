@@ -5,6 +5,7 @@ package daemon
 
 import com.google.inject.{Guice, Injector}
 import com.google.inject.AbstractModule
+import com.google.inject.name.Names
 
 import scala.collection.mutable.{Set, HashSet}
 
@@ -102,8 +103,18 @@ abstract class BaseDaemon (module : Module,
             }
 
             def configure () : Unit = {
-                // Register actor objects (modules) in Guice, BEFORE getting instances from guice
-                // TODO: Do it
+                for (actor <- allAdditionalActors if actor.isInstanceOf [Autoregister]) {
+                    val autoreg = actor.asInstanceOf [Autoregister]
+                    val actorParentClass = actor.getClass.getSuperclass
+
+                    def forceBind [A, B] (clazz : Class[A], obj : B) : Unit = {
+                        bind (clazz)
+                                .annotatedWith (Names.named (autoreg.registrationName))
+                                .toInstance (obj.asInstanceOf [A])
+                    }
+
+                    forceBind (actorParentClass, actor)
+                }
             }
         }
 

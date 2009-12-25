@@ -14,6 +14,7 @@ import java.lang.management.ManagementFactory
 import javax.management.ObjectName
 
 import com.google.inject.{Inject, Singleton}
+import com.google.inject.name.Named
 
 import org.apache.ibatis.session.SqlSessionFactory
 
@@ -32,7 +33,7 @@ import info.akshaal.jacore.actor.{Actor, LowPriorityActorEnv, HiPriorityActorEnv
 import info.akshaal.jacore.test.TestHelper
 import info.akshaal.jacore.utils.IbatisUtils._
 
-import daemon.{BaseDaemon, Autostart}
+import daemon.{BaseDaemon, Autostart, Autoregister}
 import module.Module
 import annotation.{LogDB, JmsIntegrationExport}
 
@@ -75,7 +76,9 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
             writeGraph (graph)
             graph  must find (".*(Actor1).*")
             graph  must find (".*(Actor2).*")
+            graph  must find (".*(Actor3).*")
             graph  must find (".*(Actor4).*")
+            graph  must find (".*(actorObject).*")
             graph  must find (".*(MywireManager).*")
             graph  must find (".*(DaemonStatus).*")
 
@@ -242,7 +245,9 @@ package autostart {
                                                          .getInstanceOf [HiPriorityActorEnv])
                    with ActorStartStopCounting
 
-        object ActorObject extends ActorBase with Autostart
+        object ActorObject extends ActorBase with Autostart with Autoregister {
+            def registrationName = "actorObject"
+        }
     }
 
     class ActorBase (actorEnv : LowPriorityActorEnv) extends Actor (actorEnv = actorEnv)
@@ -255,6 +260,12 @@ package autostart {
     @Singleton
     class Actor2 @Inject() (actorEnv : LowPriorityActorEnv) extends ActorBase (actorEnv = actorEnv)
                                                             with Autostart
+
+    @Singleton
+    class Actor3 @Inject() (actorEnv : LowPriorityActorEnv,
+                            @Named ("actorObject") ob : obj.ActorBase)
+                    extends ActorBase (actorEnv = actorEnv)
+                       with Autostart
 
     @Singleton
     class Actor4 @Inject() (actorEnv : LowPriorityActorEnv) extends ActorBase (actorEnv = actorEnv)
