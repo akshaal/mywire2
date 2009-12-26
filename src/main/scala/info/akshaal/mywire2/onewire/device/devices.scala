@@ -88,6 +88,25 @@ abstract class DeviceActor (id : String,
                 case Failure (exc) => resultHandler (Failure (exc))
             })
     }
+
+    /**
+     * Give a description to the object.
+     */
+    override def toString : String = {
+        if (deviceLocation == null) {
+            // Object is not finished initialization
+            super.toString
+        } else {
+            val clazzName =
+                if (getClass.getSimpleName.endsWith("$")) {
+                    getClass.getSuperclass.getSimpleName
+                } else {
+                    getClass.getSimpleName
+                }
+
+            clazzName + "(" + deviceLocation.absolutePath + ")"
+        }
+    }
 }
 
 /**
