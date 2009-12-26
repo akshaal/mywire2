@@ -32,6 +32,7 @@ class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
     }
 
     override def toString : String = {
-        getClass.getSimpleName + "(name=" + name + ", interval=" + interval + ")"
+        getClass.getSimpleName + "(name=" + name +
+            ", temperatureDevice=" + temperatureDevice + ", interval=" + interval + ")"
     }
 }
