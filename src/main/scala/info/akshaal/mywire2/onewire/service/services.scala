@@ -11,6 +11,7 @@ import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.actor.{Actor, HiPriorityActorEnv}
 
 import device.DeviceHasTemperature
+import domain.Temperature
 
 /**
  * Read temperature value from device and broadcasts it as exportable object.
@@ -23,11 +24,13 @@ class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
 {
     schedule every interval executionOf {
         temperatureDevice.readTemperature () matchResult {
-            case Success (temperature) =>
-                // TODO
+            case Success (temperatureValue) =>
+                val temperature = new Temperature (name = name, value = temperatureValue)
+                broadcaster.broadcast (temperature)
 
             case Failure (exc) =>
-                // TODO
+                error ("Error reading temperature of " + temperatureDevice + ": "
+                       + exc.getMessage, exc)
         }
     }
 
