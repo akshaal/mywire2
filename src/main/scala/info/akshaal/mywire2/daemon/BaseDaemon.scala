@@ -47,6 +47,11 @@ abstract class BaseDaemon (module : Module,
     private[this] final val allAdditionalActors : Set[Actor] = new HashSet
 
     /**
+     * A set of classes that are instantiated using full-blown injector.
+     */
+    private[this] final val actorClassesForGuice : Set [Class [_ <: Actor]] = new HashSet
+
+    /**
      * MywireManager instance of the application.
      */
     protected final val mywireManager = basicInjector.getInstanceOf [MywireManager]
@@ -54,7 +59,7 @@ abstract class BaseDaemon (module : Module,
     /**
      * Operations exposed through jmx.
      */
-    override lazy val jmxOperations = List (JmxOper ("graph", createGraph))
+    protected override lazy val jmxOperations = List (JmxOper ("graph", createGraph))
     
     /**
      * Main injector.
@@ -74,9 +79,6 @@ abstract class BaseDaemon (module : Module,
                 warn ("Failed to lock memory for thread " + ": " + e.getMessage, e);
         }
 
-        // A set of classes that must be instantiate using full-blown injector.
-        val actorClassesForGuice : Set [Class [_ <: Actor]] = new HashSet
-
         /**
          * Additional module. Module that is in charge of creating and registering additional
          * actors from scala object (modules).
@@ -94,6 +96,8 @@ abstract class BaseDaemon (module : Module,
                 allAdditionalActorClasses ++= classes.asInstanceOf [List [Class [Actor]]]
             }
 
+            debugLazy ("All additional actor classes: " + allAdditionalActorClasses)
+
             // Separate actor object classes from actor classes
             for (clazz <- allAdditionalActorClasses) {
                 ClassUtils.getModuleInstance (clazz) match {
@@ -101,6 +105,9 @@ abstract class BaseDaemon (module : Module,
                     case None       => actorClassesForGuice += clazz
                 }
             }
+
+            debugLazy ("Set of additional actors after instantion by MODULE$: "
+                       + allAdditionalActors)
 
             def configure () : Unit = {
                 for (actor <- allAdditionalActors if actor.isInstanceOf [Autoregister]) {
@@ -111,6 +118,8 @@ abstract class BaseDaemon (module : Module,
                         bind (clazz)
                                 .annotatedWith (Names.named (autoreg.registrationName))
                                 .toInstance (obj.asInstanceOf [A])
+
+                        debugLazy ("Binding " + clazz + " to " + obj)
                     }
 
                     forceBind (actorParentClass, actor)
@@ -125,6 +134,7 @@ abstract class BaseDaemon (module : Module,
         mainInjector = Some (injector)
 
         // Instantiate actor classes by guice
+        debugLazy ("Actor classes to be instantiated by Guice: " + actorClassesForGuice)        
         allAdditionalActors ++= actorClassesForGuice.map (injector.getInstance (_))
 
         // Debug
@@ -161,14 +171,12 @@ abstract class BaseDaemon (module : Module,
      * Creates graphviz graph definition.
      */
     private[this] def createGraph () : String = {
-        val allAdditionalActorsClasses = allAdditionalActors.map (_.getClass)
-
         val injector =
             mainInjector match {
                 case None => basicInjector
                 case Some (inj) => inj
             }
 
-        GuiceUtils.createModuleGraphAsString (injector, allAdditionalActorsClasses.toSeq : _*)
+        GuiceUtils.createModuleGraphAsString (injector, actorClassesForGuice.toSeq : _*)
     }
 }
