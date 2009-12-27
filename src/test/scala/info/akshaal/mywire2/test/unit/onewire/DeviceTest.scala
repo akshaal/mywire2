@@ -25,7 +25,7 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
     import DeviceTest._
 
     "DS18S20" should {
-        "work" in {
+        "read temperature" in {
             val fnf = new java.io.FileNotFoundException ("not found")
             val readFs = Map ("/tmp/test/uncached/10.abc/temperature" -> Success("23.44"),
                               "/tmp/test/uncached/10.bca/temperature" -> Failure[String](fnf))
@@ -41,6 +41,32 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
 
                 withStartedActor (mp.temp1) {
                     runOneOperation (mp.temp1.readTemperature ())  must_==  Success (23.44)
+                }
+
+                withStartedActor (mp.temp2) {
+                    runOneOperation (mp.temp2.readTemperature ())  must_==  Failure[String](fnf)
+                }
+            })
+        }
+    }
+
+    "DS2438" should {
+        "read temperature" in {
+            val fnf = new java.io.FileNotFoundException ("not found")
+            val readFs = Map ("/tmp/test/uncached/26.4445/temperature" -> Success("11.43"),
+                              "/tmp/test/uncached/26.3333/temperature" -> Failure[String](fnf))
+
+            withMockedTextFile (readFs) (textFileActor => {
+                val deviceEnv = Mocker.newDeviceEnv
+                deviceEnv.textFile returns textFileActor
+
+                val mp = new MountPoint ("/tmp/test") {
+                    object temp1 extends DS2438 ("4445", deviceEnv)
+                    object temp2 extends DS2438 ("3333", deviceEnv)
+                }
+
+                withStartedActor (mp.temp1) {
+                    runOneOperation (mp.temp1.readTemperature ())  must_==  Success (11.43)
                 }
 
                 withStartedActor (mp.temp2) {

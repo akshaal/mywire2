@@ -139,3 +139,13 @@ trait DeviceHasTemperature {
 class DS18S20 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : DeviceLocation)
                                 extends DeviceActor (id, "10", parentDevLoc, deviceEnv)
                                    with DeviceHasTemperature
+
+/**
+ * Smart Battery Monitor.
+ *
+ * @param id unique 1-wire identifier
+ * @param deviceEnv device environment
+ */
+class DS2438 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : DeviceLocation)
+                                extends DeviceActor (id, "26", parentDevLoc, deviceEnv)
+                                   with DeviceHasTemperature
