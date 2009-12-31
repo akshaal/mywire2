@@ -37,6 +37,14 @@ abstract class BaseDaemon (module : Module,
                      with SimpleJmx
 {
     /**
+     * Main pid of the daemon.
+     */
+    private[this] val pid = readFileLinesAsString (pidFile, "latin1").trim.toInt
+
+    // Some stuff
+    infoLazy ("Loading daemon: main pid=" + pid)
+
+    /**
      * Injector that holds basic stuff (mywire actors). This injector is created first.
      * Using this injector we can construct other object depending on basic actors
      * and place them into the final injector.
@@ -69,14 +77,6 @@ abstract class BaseDaemon (module : Module,
      * Main injector.
      */
     private[this] final var mainInjector : Option[Injector] = None
-
-    /**
-     * Main pid of the daemon.
-     */
-    private[this] val pid = readFileLinesAsString (pidFile, "latin1").trim.toInt
-
-    // Some stuff
-    infoLazy ("Loading daemon: main pid=" + pid)
 
     /**
      * Called by native executable to initialize the application before starting it.
