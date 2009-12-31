@@ -128,14 +128,19 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
             new File (debugDir).mkdirs
 
             val filename = debugDir + "/" + "integration-module.dot"
-            withCloseableIO (new PrintWriter (new File (filename), "UTF-8")) (out =>
-                out.print (graph)
-            )
+            withCloseableIO (new PrintWriter (new File (filename), "UTF-8")) (_.print (graph))
         }
     }
 }
 
 object IntegrationTest extends TestHelper {
+    // Prepare pid
+    val pidFileFile = File.createTempFile ("Mywire2pid", "IntegrationTest")
+    val pidFile = pidFileFile.getAbsolutePath
+    pidFileFile.deleteOnExit
+
+    withCloseableIO (new PrintWriter (new File (pidFile), "latin1")) (_.print ("12333451"))
+
     // Prepare AMQ broker
     val mywireTestAmqDir = System.getProperty ("mywire.test.amq.dir")
     val amqDir =
@@ -157,7 +162,9 @@ object IntegrationTest extends TestHelper {
     override val injector = IntegrationDaemon.publicBasicInjector
     val daemonStatus = injector.getInstanceOf [DaemonStatus]
 
-    object IntegrationDaemon extends BaseDaemon (module = IntegrationModule,
+    object IntegrationDaemon extends BaseDaemon (
+                    module = IntegrationModule,
+                    pidFile = pidFile,
                     additionalActorClasses = List (classOf [autostart.Actor4]),
                     additionalAutostartActorPackages = List ("info.akshaal.mywire2.test.integration.autostart"))
     {

@@ -23,12 +23,14 @@ import module.Module
  * Abstract daemon.
  *
  * @param module Instantance of module that will is used for injector.
+ * @param pidFile path to pid file of this daemon
  * @param additionalActorClasses instance of these class will be created using reflections or guice.
  * @param additionalAutostartActorPackages A number of packages that is supposed
  *        to be scanned to find actors that implement Autostart trait. These actors will
  *        be started automatically.
  */
 abstract class BaseDaemon (module : Module,
+                           pidFile : String,
                            additionalActorClasses : Seq [Class [_ <: Actor]] = Seq (),
                            additionalAutostartActorPackages : Seq [String] = Seq ())
                   extends Logging
@@ -59,12 +61,22 @@ abstract class BaseDaemon (module : Module,
     /**
      * Operations exposed through jmx.
      */
-    protected override lazy val jmxOperations = List (JmxOper ("graph", createGraph))
+    protected override lazy val jmxOperations =
+            List (JmxOper ("graph", createGraph),
+                  JmxOper ("restart", restart))
     
     /**
      * Main injector.
      */
     private[this] final var mainInjector : Option[Injector] = None
+
+    /**
+     * Main pid of the daemon.
+     */
+    private[this] val pid = readFileLinesAsString (pidFile, "latin1").trim.toInt
+
+    // Some stuff
+    infoLazy ("Loading daemon: main pid=" + pid)
 
     /**
      * Called by native executable to initialize the application before starting it.
@@ -178,5 +190,16 @@ abstract class BaseDaemon (module : Module,
             }
 
         GuiceUtils.createModuleGraphAsString (injector, actorClassesForGuice.toSeq : _*)
+    }
+
+    /**
+     * Restart the daemon.
+     */
+    private[this] def restart () : Unit = {
+        debug ("About to restart the daemon")
+
+        DaemonHelper.kill (pid, DaemonHelper.SIG_HUP);
+
+        debug ("HUP signal has been sent")
     }
 }
