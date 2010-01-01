@@ -38,22 +38,22 @@
     <!-- = = = = = = = = = = Dependencies = = = = = = = = = = = = = -->
     <dependencies>
         <dependency>
-           <groupId>info.akshaal.daemonhelper</groupId>
-           <artifactId>daemonhelper-api</artifactId>
-           <version>${daemonhelper.version}</version>
+            <groupId>info.akshaal.daemonhelper</groupId>
+            <artifactId>daemonhelper-api</artifactId>
+            <version>${daemonhelper.version}</version>
         </dependency>
 
         <dependency>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-          <version>${junit.version}</version>
-          <scope>test</scope>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
-           <groupId>info.akshaal.jacore</groupId>
-           <artifactId>jacore</artifactId>
-           <version>${jacore.version}</version>
+            <groupId>info.akshaal.jacore</groupId>
+            <artifactId>jacore</artifactId>
+            <version>${jacore.version}</version>
         </dependency>
 
     	<dependency>
@@ -136,16 +136,16 @@
     <!-- = = = = = = = = = = = = = Repositories = = = = = = = = = = = = -->
     <repositories>
         <repository>
-		    <id>scala-tools.org</id>
-		    <name>Scala-tools Maven2 Repository Snapshots</name>
-		    <url>http://scala-tools.org/repo-snapshots</url>
-	    </repository>
+            <id>scala-tools.org</id>
+            <name>Scala-tools Maven2 Repository Snapshots</name>
+            <url>http://scala-tools.org/repo-snapshots</url>
+        </repository>
 
         <repository>
-		    <id>scala-tools.org</id>
-		    <name>Scala-tools Maven2 Repository</name>
-		    <url>http://scala-tools.org/repo-releases</url>
-	    </repository>
+            <id>scala-tools.org</id>
+            <name>Scala-tools Maven2 Repository</name>
+            <url>http://scala-tools.org/repo-releases</url>
+        </repository>
 
         <repository>
             <id>google-maven-repository</id>
