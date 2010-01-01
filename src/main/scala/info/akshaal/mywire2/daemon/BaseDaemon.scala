@@ -36,6 +36,8 @@ abstract class BaseDaemon (module : Module,
                   extends Logging
                      with SimpleJmx
 {
+    override lazy val jmxObjectName = module.daemonJmxName
+
     /**
      * Main pid of the daemon.
      */

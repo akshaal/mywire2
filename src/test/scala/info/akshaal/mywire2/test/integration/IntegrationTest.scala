@@ -200,6 +200,7 @@ object IntegrationTest extends TestHelper {
         override lazy val schedulerLatencyLimit = 4.milliseconds
 
         override lazy val daemonStatusJmxName = "mywire:name=integrationTestStatus" + hashCode
+        override lazy val daemonJmxName = "mywire:name=integrationTestDaemon" + hashCode
         override lazy val daemonStatusUpdateInterval = 9.seconds
         override lazy val daemonStatusFile = daemonStatusFileFile.getAbsolutePath
 

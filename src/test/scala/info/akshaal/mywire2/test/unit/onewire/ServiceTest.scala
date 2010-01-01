@@ -30,7 +30,7 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
 
                         waitForMessageAfter (listener) {}
                         listener.temp  must_==  36.6
-                        listener.recs  must_== 1
+                        listener.recs  must_==  1
 
                         waitForMessageAfter (listener) {}
                         listener.temp  must_==  1.0

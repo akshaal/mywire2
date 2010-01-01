@@ -30,6 +30,7 @@ class Module extends JacoreModule {
     lazy val normalOsPriority = prefs.getInt ("mywire.os.priority.normal")
     lazy val hiOsPriority = prefs.getInt ("mywire.os.priority.hi")
     lazy val version = prefs.getString ("version")
+    lazy val daemonJmxName = prefs.getString("mywire.daemon.jmx.name")
 
     // - - - - - - - - - - - - Bindings - - - - - - - - - -
 
@@ -59,5 +60,9 @@ class Module extends JacoreModule {
         bind (classOf[String])
               .annotatedWith (Names.named ("version"))
               .toInstance (version)
+
+        bind (classOf[String])
+              .annotatedWith (Names.named ("mywire.daemon.jmx.name"))
+              .toInstance (daemonJmxName)
     }
 }
