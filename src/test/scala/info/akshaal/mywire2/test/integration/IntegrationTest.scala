@@ -32,6 +32,7 @@ import info.akshaal.jacore.daemon.DaemonStatus
 import info.akshaal.jacore.actor.{Actor, LowPriorityActorEnv, HiPriorityActorEnv}
 import info.akshaal.jacore.test.TestHelper
 import info.akshaal.jacore.utils.IbatisUtils._
+import info.akshaal.jacore.utils.Prefs
 
 import daemon.{BaseDaemon, Autostart, Autoregister}
 import module.Module
@@ -81,6 +82,8 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
             graph  must find (".*(actorObject).*")
             graph  must find (".*(MywireManager).*")
             graph  must find (".*(DaemonStatus).*")
+
+            srv.getAttribute (daemonObj, "version")  must_==  version
 
             actor1.started  must_==  1
             actor1.stopped  must_==  0
@@ -134,6 +137,9 @@ class IntegrationTest extends SpecificationWithJUnit ("Integration specification
 }
 
 object IntegrationTest extends TestHelper {
+    val prefs = new Prefs ("mywire.properties")
+    val version = prefs.getString("version")
+
     // Prepare pid
     val pidFileFile = File.createTempFile ("Mywire2pid", "IntegrationTest")
     val pidFile = pidFileFile.getAbsolutePath

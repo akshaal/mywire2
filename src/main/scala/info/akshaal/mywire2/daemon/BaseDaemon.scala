@@ -15,7 +15,7 @@ import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.actor.Actor
 import info.akshaal.jacore.utils.{ClassUtils, GuiceUtils}
 import info.akshaal.jacore.logger.Logging
-import info.akshaal.jacore.jmx.{SimpleJmx, JmxOper}
+import info.akshaal.jacore.jmx.{SimpleJmx, JmxOper, JmxAttr}
 
 import module.Module
 
@@ -42,7 +42,7 @@ abstract class BaseDaemon (module : Module,
     private[this] val pid = readFileLinesAsString (pidFile, "latin1").trim.toInt
 
     // Some stuff
-    infoLazy ("Loading daemon: main pid=" + pid)
+    infoLazy ("Loading daemon: main pid=" + pid + ", version=" + module.version)
 
     /**
      * Injector that holds basic stuff (mywire actors). This injector is created first.
@@ -72,6 +72,13 @@ abstract class BaseDaemon (module : Module,
     protected override lazy val jmxOperations =
             List (JmxOper ("graph", createGraph),
                   JmxOper ("restart", restart))
+
+    /**
+     * List of exposed JMX attributes.
+     */
+    override protected lazy val jmxAttributes = List (
+        JmxAttr ("version",    Some (() => module.version),   None)
+    )
     
     /**
      * Main injector.
