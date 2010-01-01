@@ -1,7 +1,5 @@
 #!/bin/sh
 
-export JAVA_HOME=/opt/jdk1.7.0
-
 rm -rf target/jacore
 rm -f target/test-log4j.log
 rm -rf target/cglib
