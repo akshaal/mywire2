@@ -210,7 +210,7 @@ object IntegrationTest extends TestHelper {
             super.configure ()
 
             // sqlmap
-            val dataSource = createWarmedUpPooledDataSource ("jdbc.properties")
+            val dataSource = createPooledDataSource ("jdbc.properties")
             val sqlConfig = createJdbcConfiguration ("integration", dataSource)
             sqlConfig.parseMapperXmlsInPackages ("info.akshaal.mywire2.sqlmaps")
 
