@@ -25,7 +25,7 @@ import org.apache.activemq.ActiveMQConnectionFactory
 import org.apache.activemq.pool.PooledConnectionFactory
 import org.apache.activemq.command.ActiveMQTopic
 
-import javax.jms.{ConnectionFactory, Destination}
+import javax.jms.{Connection, Destination}
 
 import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.daemon.DaemonStatus
@@ -221,9 +221,12 @@ object IntegrationTest extends TestHelper {
 
             // JMS
             val connectionFactory = new PooledConnectionFactory (amqConnectionFactory)
-            bind (classOf[ConnectionFactory])
+            val connection = connectionFactory.createConnection
+            connection.start
+
+            bind (classOf[Connection])
                   .annotatedWith (classOf[JmsIntegrationExport])
-                  .toInstance (connectionFactory)
+                  .toInstance (connection)
 
             val exportTopic = new ActiveMQTopic ("integration-test-export")
             bind (classOf[Destination])

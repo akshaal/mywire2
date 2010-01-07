@@ -7,7 +7,7 @@ package info.akshaal.mywire2
 package integration
 
 import com.google.inject.{Singleton, Inject}
-import javax.jms.{ConnectionFactory, Destination, Message, Session}
+import javax.jms.{Connection, Destination, Message, Session}
 import java.util.HashMap
 
 import info.akshaal.jacore.annotation.Act
@@ -47,11 +47,11 @@ private[mywire2] class JmsIntegrationActor @Inject() (
 @Singleton
 private[integration] class JmsIntegrationSenderActor @Inject() (
                                     lowPriorityActorEnv : LowPriorityActorEnv,
-                                    @JmsIntegrationExport connectionFactory : ConnectionFactory,
+                                    @JmsIntegrationExport connection : Connection,
                                     @JmsIntegrationExport destination : Destination)
                      extends AbstractJmsSenderActor [Map[String, Any]] (
                                     lowPriorityActorEnv : LowPriorityActorEnv,
-                                    connectionFactory : ConnectionFactory,
+                                    connection : Connection,
                                     destination : Destination)
 {
     /** {InheritDoc} */
