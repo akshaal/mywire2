@@ -4,7 +4,7 @@
     <groupId>info.akshaal.mywire2</groupId>
     <artifactId>mywire2</artifactId>
     <packaging>jar</packaging>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.6</version>
     <name>mywire2</name>
 
     <!-- = = = = = = = = = = = = Default properties = = = = = = = = = = -->
