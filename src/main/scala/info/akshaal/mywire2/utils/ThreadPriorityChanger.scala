@@ -41,8 +41,8 @@ private[mywire2] final class NativeThreadPriorityChanger @Inject() (
 
         try {
             val curPrio = DaemonHelper.getPriority (tid)
-            info ("Current priority for thread " + identifier
-                  + " is " + curPrio);
+            debug ("Current priority for thread " + identifier
+                   + " is " + curPrio);
         } catch {
             case e : OSException =>
                 warn ("Failed to get priority for the current thread "
@@ -51,9 +51,9 @@ private[mywire2] final class NativeThreadPriorityChanger @Inject() (
 
         try {
             DaemonHelper.setPriority (tid, osPriority)
-            info ("Priority for thread " + identifier
-                  + " has been successfuly changed to "
-                  + osPriority)
+            debug ("Priority for thread " + identifier
+                   + " has been successfuly changed to "
+                   + osPriority)
         } catch {
             case e : OSException =>
                 warn ("Failed to set priority to " + osPriority

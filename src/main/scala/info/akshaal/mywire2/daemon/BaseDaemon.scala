@@ -94,7 +94,7 @@ abstract class BaseDaemon (module : Module,
         // Lock memory
         try {
             DaemonHelper.mlockall ();
-            info ("Memory has been locked");
+            debug ("Memory has been locked");
         } catch {
             case e : OSException =>
                 warn ("Failed to lock memory for thread " + ": " + e.getMessage, e);
