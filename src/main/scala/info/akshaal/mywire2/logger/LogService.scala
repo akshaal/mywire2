@@ -3,12 +3,7 @@ package logger
 
 import com.google.inject.{Singleton, Inject}
 
-import org.apache.log4j.spi.LoggingEvent
-import org.apache.log4j.Level
-
 import org.apache.ibatis.session.SqlSessionFactory
-
-import java.util.Date
 
 import info.akshaal.jacore.annotation.CallByMessage
 import info.akshaal.jacore.actor.{Actor, LowPriorityActorEnv, NormalPriorityActorEnv}
@@ -24,10 +19,10 @@ import domain.LogRecord
 private[mywire2] trait LogService {
     /**
      * Log event that happened at the given time.
-     * @param event event to log
+     * @param record record to log
      * @param nano (relative) time of event in nanosecond
      */
-    def log (event : LoggingEvent, nano : Long) : Unit
+    def log (record : LogRecord) : Unit
 }
 
 /**
@@ -45,29 +40,8 @@ private[mywire2] class LogServiceActor @Inject() (
 
     /** {InheritDoc} */
     @CallByMessage
-    override def log (event : LoggingEvent, nano : Long) : Unit = {
-        val stack = event.getThrowableStrRep
-        val stackStr = if (stack == null) "" else stack.mkString("\n")
-        val levelId = levelToLevelId (event.getLevel)
-
-        val logRecord = LogRecord (time      = new Date (event.getTimeStamp),
-                                   nano      = nano,
-                                   levelId   = levelId,
-                                   category  = event.getLoggerName,
-                                   msg       = event.getRenderedMessage,
-                                   thread    = event.getThreadName,
-                                   throwable = stackStr)
-
-        logRecordInserted.insert (logRecord)
-    }
-
-    private def levelToLevelId (level : Level) = level match {
-        case Level.DEBUG => LogRecord.debugId
-        case Level.INFO  => LogRecord.infoId
-        case Level.WARN  => LogRecord.warnId
-        case Level.ERROR => LogRecord.errorId
-        case level =>
-            throw new IllegalArgumentException ("Unsupported level: " + level)
+    override def log (record : LogRecord) : Unit = {
+        logRecordInserted.insert (record)
     }
 }
 
