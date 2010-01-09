@@ -72,7 +72,7 @@ abstract class BaseDaemonJMXClient (module : Module) {
                 }
             } catch {
                 case ex : Exception =>
-                    show (".. in progress: " + ex.getMessage)
+                    show (".. in progress ..")
             }
         }
 
