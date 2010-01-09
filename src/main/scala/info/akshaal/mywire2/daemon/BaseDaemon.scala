@@ -3,6 +3,8 @@
 package info.akshaal.mywire2
 package daemon
 
+import java.util.concurrent.Future
+
 import com.google.inject.{Guice, Injector}
 import com.google.inject.AbstractModule
 import com.google.inject.name.Names
@@ -45,6 +47,27 @@ abstract class BaseDaemon (module : Module,
 
     // Some stuff
     infoLazy ("Loading daemon: main pid=" + pid + ", version=" + module.version)
+
+    // Scan for all additional actor classes
+    private[this] val allAdditionalActorClassesFuture : Future [Set [Class[_ <: Actor]]] =
+        DaemonBoot.executor.submit {
+            val all = new HashSet [Class[_ <: Actor]]
+            all ++= additionalActorClasses
+
+            for (pkg <- additionalAutostartActorPackages) {
+                val classes =
+                        ClassUtils.findClasses (pkg,
+                                                Thread.currentThread.getContextClassLoader,
+                                                classOf [Autostart].isAssignableFrom (_))
+
+                all ++= classes.asInstanceOf [List [Class [Actor]]]
+            }
+            
+            all
+        }
+
+    private[this] def allAdditionalActorClasses : Set [Class[_ <: Actor]] =
+                            allAdditionalActorClassesFuture.get
 
     /**
      * Injector that holds basic stuff (mywire actors). This injector is created first.
@@ -105,18 +128,6 @@ abstract class BaseDaemon (module : Module,
          * actors from scala object (modules).
          */
         object additionalModule extends AbstractModule {
-            private[this] val allAdditionalActorClasses : Set [Class[_ <: Actor]] = new HashSet
-            allAdditionalActorClasses ++= additionalActorClasses
-
-            for (pkg <- additionalAutostartActorPackages) {
-                val classes =
-                        ClassUtils.findClasses (pkg,
-                                                Thread.currentThread.getContextClassLoader,
-                                                classOf [Autostart].isAssignableFrom (_))
-
-                allAdditionalActorClasses ++= classes.asInstanceOf [List [Class [Actor]]]
-            }
-
             debugLazy ("All additional actor classes: " + allAdditionalActorClasses)
 
             // Separate actor object classes from actor classes
@@ -170,6 +181,8 @@ abstract class BaseDaemon (module : Module,
         mywireManager.start
 
         mywireManager.jacoreManager.startActors (allAdditionalActors)
+
+        DaemonBoot.executor.shutdown ()
     }
 
     /**
