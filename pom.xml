@@ -10,18 +10,18 @@
     <!-- = = = = = = = = = = = = Default properties = = = = = = = = = = -->
     <properties>
         <!-- Versions -->
-        <scala.version>2.8.0.Beta1-RC2</scala.version>
+        <scala.version>2.8.0.Beta1-RC7</scala.version>
         <jetlang.version>0.2.0</jetlang.version>
         <junit.version>4.7</junit.version>
         <daemonhelper.version>1.2</daemonhelper.version>
-        <jacore.version>1.10</jacore.version>
+        <jacore.version>1.11-SNAPSHOT</jacore.version>
         <slf4j.version>1.5.8</slf4j.version>
         <log4j.version>1.2.15</log4j.version>
         <ibatis.version>3.0-beta-7</ibatis.version>
         <mysql-connector.version>5.1.6</mysql-connector.version>
         <guice.version>2.0</guice.version>
         <mockito.version>1.8.1-rc1</mockito.version>
-        <specs.version>1.6.2-SNAP-20091113</specs.version>
+        <specs.version>1.6.1-2.8.0.Beta1-RC7</specs.version>
         <activemq.version>5.3.0</activemq.version>
 
         <!-- Plugin versions -->
@@ -128,7 +128,7 @@
         </dependency>
 
     	<dependency>
-            <groupId>org.specs</groupId>
+            <groupId>org.scala-tools.testing</groupId>
             <artifactId>specs</artifactId>
             <version>${specs.version}</version>
             <scope>test</scope>

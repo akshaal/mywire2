@@ -6,9 +6,7 @@
 package info.akshaal.mywire2
 package daemon
 
-import com.google.inject.{Inject, Singleton}
-import com.google.inject.name.Named
-
+import info.akshaal.jacore.Predefs._
 import info.akshaal.jacore.utils.{TimeUnit, LowPriorityPool, HiPriorityPool,
                                   NormalPriorityPool}
 import info.akshaal.jacore.actor.{NormalPriorityActorEnv, Actor}

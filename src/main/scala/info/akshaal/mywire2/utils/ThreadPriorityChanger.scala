@@ -8,9 +8,6 @@
 package info.akshaal.mywire2
 package utils
 
-import com.google.inject.{Inject, Singleton}
-import com.google.inject.name.Named
-
 import info.akshaal.daemonhelper.{DaemonHelper, OSException}
 
 import info.akshaal.jacore.Predefs._

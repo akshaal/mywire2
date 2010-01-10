@@ -13,9 +13,6 @@ import java.io.{File, PrintWriter}
 import java.lang.management.ManagementFactory
 import javax.management.ObjectName
 
-import com.google.inject.{Inject, Singleton}
-import com.google.inject.name.Named
-
 import org.apache.ibatis.session.SqlSessionFactory
 
 import org.specs.SpecificationWithJUnit
