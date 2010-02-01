@@ -167,47 +167,6 @@
         </dependency>
     </dependencies>
 
-    <!-- = = = = = = = = = = = = = Repositories = = = = = = = = = = = = -->
-    <repositories>
-        <repository>
-            <id>scala-tools.org</id>
-            <name>Scala-tools Maven2 Repository Snapshots</name>
-            <url>http://scala-tools.org/repo-snapshots</url>
-        </repository>
-
-        <repository>
-            <id>scala-tools.org</id>
-            <name>Scala-tools Maven2 Repository</name>
-            <url>http://scala-tools.org/repo-releases</url>
-        </repository>
-
-        <repository>
-            <id>google-maven-repository</id>
-            <name>Google Maven Repository</name>
-            <url>http://google-maven-repository.googlecode.com/svn/repository/</url>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>scala-tool</id>
-            <name>ScalaTool</name>
-            <url>http://scala-tools.org/repo-releases</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-
-        <pluginRepository>
-            <id>scala-tool</id>
-            <name>ScalaTool Snaps</name>
-            <url>http://scala-tools.org/repo-snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
-
     <!-- = = = = = = = = = = = = = = Build = = = = = = = = = = = = = = = -->
 
     <build>
