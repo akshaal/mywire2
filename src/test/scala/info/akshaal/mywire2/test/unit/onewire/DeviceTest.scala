@@ -7,14 +7,12 @@ package info.akshaal.mywire2
 package test
 package unit.onewire
 
-import scala.collection.mutable.ListBuffer
-
 import org.specs.SpecificationWithJUnit
 import org.specs.mock.Mockito
 
 import java.io.File
 
-import info.akshaal.jacore.Predefs._
+import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.fs.text.TextFile
 import info.akshaal.jacore.actor.Operation
 import onewire.device._
@@ -40,11 +38,11 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
                 }
 
                 withStartedActor (mp.temp1) {
-                    runOneOperation (mp.temp1.readTemperature ())  must_==  Success (23.44)
+                    mp.temp1.opReadTemperature ().runWithFutureAsy().get  must_==  Success (23.44)
                 }
 
                 withStartedActor (mp.temp2) {
-                    runOneOperation (mp.temp2.readTemperature ())  must_==  Failure[String](fnf)
+                    mp.temp2.opReadTemperature ().runWithFutureAsy().get  must_==  Failure[String](fnf)
                 }
             })
         }
@@ -66,35 +64,14 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
                 }
 
                 withStartedActor (mp.temp1) {
-                    runOneOperation (mp.temp1.readTemperature ())  must_==  Success (11.43)
+                    mp.temp1.opReadTemperature ().runWithFutureAsy ().get  must_==  Success (11.43)
                 }
 
                 withStartedActor (mp.temp2) {
-                    runOneOperation (mp.temp2.readTemperature ())  must_==  Failure[String](fnf)
+                    mp.temp2.opReadTemperature ().runWithFutureAsy ().get  must_==  Failure[String](fnf)
                 }
             })
         }
-    }
-
-    def runOneOperation [A] (runner : => Operation.WithComplexResult [A]) : A =
-    {
-        class RunnerActor extends TestActor {
-            val buf = new ListBuffer [A]
-
-            def run () : Unit = {
-                postponed ("run") {
-                    runner matchResult (buf += _)
-                }
-            }
-        }
-
-        val runnerActor = new RunnerActor
-
-        withStartedActor (runnerActor) {
-            waitForMessageBatchesAfter (runnerActor, 2) {runnerActor.run}
-        }
-
-        runnerActor.buf (0)
     }
 
     def withMockedTextFile (reader : String => Result[String])
@@ -117,24 +94,30 @@ object DeviceTest {
      */
     class TestTextFileActor (read : String => Result[String]) extends TestActor with TextFile
     {
-        override def writeFile (file : File, content : String, payload : Any) : Unit =
+        override def writeFileAsy (file : File, content : String, payload : Any) : Unit =
         {
             throw new RuntimeException ("NYI")
         }
 
-        def writeFile (file : File, content : String) : Operation.WithResult [Unit] = {
-            operation [Unit] ("writeFile") (resultReceiver => throw new RuntimeException ("NYI"))
+        override def opWriteFile (file : File, content : String) : Operation.WithResult [Unit] = {
+            new AbstractOperation [Result [Unit]] {
+                override def processRequest () {
+                    throw new RuntimeException ("NYI")
+                }
+            }
         }
 
-        override def readFile (file : File, payload : Any) : Unit =
+        override def readFileAsy (file : File, payload : Any) : Unit =
         {
             throw new RuntimeException ("NYI")
         }
 
-        override def readFile (file : File) : Operation.WithResult [String] = {
-            operation [String] ("readFile") (resultReceiver =>
-                    resultReceiver (read (file.getPath))
-                )
+        override def opReadFile (file : File) : Operation.WithResult [String] = {
+            new AbstractOperation [Result[String]] {
+                override def processRequest () {
+                    yieldResult (read (file.getPath))
+                }
+            }
         }
     }
 }

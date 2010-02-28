@@ -10,7 +10,7 @@ package module
 
 import com.google.inject.name.Names
 
-import info.akshaal.jacore.Predefs._
+import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.module.{Module => JacoreModule}
 
 import utils.NativeThreadPriorityChanger
@@ -24,7 +24,7 @@ class Module extends JacoreModule {
 
     override lazy val threadPriorityChangerImplClass = classOf [NativeThreadPriorityChanger]
 
-    lazy val qosInterval = prefs.getTimeUnit ("mywire.qos.interval")
+    lazy val qosInterval = prefs.getTimeValue ("mywire.qos.interval")
 
     lazy val lowOsPriority = prefs.getInt ("mywire.os.priority.low")
     lazy val normalOsPriority = prefs.getInt ("mywire.os.priority.normal")
@@ -41,7 +41,7 @@ class Module extends JacoreModule {
 
         //  - - - - - - - - - - -  Named - - - - - - - - - -  - - - -
 
-        bind (classOf[TimeUnit])
+        bind (classOf[TimeValue])
               .annotatedWith (Names.named ("mywire.qos.interval"))
               .toInstance (qosInterval)
 

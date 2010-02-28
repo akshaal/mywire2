@@ -9,7 +9,7 @@ package device
 
 import com.google.inject.{Inject, Singleton}
 
-import info.akshaal.jacore.Predefs._
+import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.{Operation, Actor, HiPriorityActorEnv}
 import info.akshaal.jacore.fs.text.TextFile
 
@@ -63,30 +63,32 @@ abstract class DeviceActor (id : String,
     /**
      * Async operation to read file and parse its content.
      *
-     * @param description description
      * @param relativePath a file of the device to read
      * @param parser what parser to use to parse the file
      */
-    protected def readAndParse [A] (description : String,
-                                    relativePath : String,
-                                    parser : String => A)
+    protected def opReadAndParse [A] (relativePath : String,
+                                       parser : String => A)
                                                 : Operation.WithResult [A] =
     {
-        operation [A] (description) (resultHandler =>
-            deviceEnv.textFile.readFile (deviceFile (relativePath)) matchResult {
-                case Success (content) =>
-                    val result : Result[A] =
-                        try {
-                            Success (parser (content))
-                        } catch {
-                            case exc : NumberFormatException =>
-                                Failure (exc)
-                        }
+        new AbstractOperation [Result[A]] {
+            override def processRequest () {
+                deviceEnv.textFile.opReadFile (deviceFile (relativePath)) runMatchingResultAsy {
+                    case Success (content) =>
+                        val result : Result[A] =
+                            try {
+                                Success (parser (content))
+                            } catch {
+                                case exc : NumberFormatException =>
+                                    Failure (exc)
+                            }
 
-                    resultHandler (result)
+                        yieldResult (result)
 
-                case Failure (exc) => resultHandler (Failure (exc))
-            })
+                    case Failure (exc) =>
+                        yieldResult (Failure (exc))
+                }
+            }
+        }
     }
 
     /**
@@ -123,8 +125,8 @@ trait DeviceHasTemperature {
     /**
      * Async operation to read temperature of device.
      */
-    def readTemperature () : Operation.WithResult [Double] =
-                readAndParse ("readTemperature", temperatureFileName, _.toDouble)
+    def opReadTemperature () : Operation.WithResult [Double] =
+                opReadAndParse (temperatureFileName, _.toDouble)
 }
 
 // /////////////////////////////////////////////////////////////////

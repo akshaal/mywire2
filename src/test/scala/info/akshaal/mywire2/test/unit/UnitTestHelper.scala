@@ -13,7 +13,7 @@ import java.io.File
 
 import org.specs.mock.MockitoStubs
 
-import info.akshaal.jacore.Predefs._
+import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.{Actor, HiPriorityActorEnv, LowPriorityActorEnv}
 import info.akshaal.jacore.module.Module
 import info.akshaal.jacore.scheduler.Scheduler

@@ -37,7 +37,7 @@ private[mywire2] class JmsIntegrationActor @Inject() (
     protected def handleNotifications (msg : Export) : Unit = {
         val map = msg.toMap updated ("time", System.currentTimeMillis)
 
-        sender.send (map)
+        sender.sendAsy (map)
     }
 }
 

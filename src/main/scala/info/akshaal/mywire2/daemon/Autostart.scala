@@ -6,7 +6,7 @@
 package info.akshaal.mywire2
 package daemon
 
-import info.akshaal.jacore.Predefs._
+import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.Actor
 
 /**

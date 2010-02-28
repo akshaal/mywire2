@@ -7,7 +7,7 @@ package info.akshaal.mywire2
 package onewire
 package service
 
-import info.akshaal.jacore.Predefs._
+import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.{Actor, HiPriorityActorEnv}
 
 import device.DeviceHasTemperature
@@ -19,11 +19,11 @@ import domain.Temperature
 class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
                                     temperatureDevice : DeviceHasTemperature,
                                     name : String,
-                                    interval : TimeUnit)
+                                    interval : TimeValue)
                      extends Actor (actorEnv = actorEnv)
 {
     schedule every interval executionOf {
-        temperatureDevice.readTemperature () matchResult {
+        temperatureDevice.opReadTemperature () runMatchingResultAsy {
             case Success (temperatureValue) =>
                 val temperature = new Temperature (name = name, value = temperatureValue)
                 broadcaster.broadcast (temperature)

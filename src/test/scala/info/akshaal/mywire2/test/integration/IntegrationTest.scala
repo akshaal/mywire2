@@ -24,7 +24,7 @@ import org.apache.activemq.command.ActiveMQTopic
 
 import javax.jms.{Connection, Destination}
 
-import info.akshaal.jacore.Predefs._
+import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.daemon.DaemonStatus
 import info.akshaal.jacore.actor.{Actor, LowPriorityActorEnv, HiPriorityActorEnv}
 import info.akshaal.jacore.test.TestHelper
@@ -241,15 +241,19 @@ package autostart {
         var stopped = 0
 
         override def start () = {
-            super.start ()
+            val s = super.start ()
 
             started += 1
+
+            s
         }
 
         override def stop () = {
-            super.stop ()
+            val s = super.stop ()
 
             stopped += 1
+
+            s
         }
     }
 

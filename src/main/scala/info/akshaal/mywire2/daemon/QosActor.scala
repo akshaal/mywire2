@@ -6,8 +6,8 @@
 package info.akshaal.mywire2
 package daemon
 
-import info.akshaal.jacore.Predefs._
-import info.akshaal.jacore.utils.{TimeUnit, LowPriorityPool, HiPriorityPool,
+import info.akshaal.jacore.`package`._
+import info.akshaal.jacore.utils.{TimeValue, LowPriorityPool, HiPriorityPool,
                                   NormalPriorityPool}
 import info.akshaal.jacore.actor.{NormalPriorityActorEnv, Actor}
 import info.akshaal.jacore.scheduler.Scheduler
@@ -21,7 +21,7 @@ import domain.Qos
 @Singleton
 private[mywire2] class QosActor @Inject() (
                              normalPriorityActorEnv : NormalPriorityActorEnv,
-                             @Named("mywire.qos.interval") interval : TimeUnit,
+                             @Named("mywire.qos.interval") interval : TimeValue,
                              hiPriorityPool : HiPriorityPool,
                              lowPriorityPool : LowPriorityPool,
                              normalPriorityPool : NormalPriorityPool,

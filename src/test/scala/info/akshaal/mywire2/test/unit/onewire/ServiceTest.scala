@@ -9,7 +9,7 @@ package unit.onewire
 
 import org.specs.SpecificationWithJUnit
 
-import info.akshaal.jacore.Predefs._
+import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.Operation
 import onewire.device._
 import onewire.service._
@@ -28,11 +28,11 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                     withStartedActor (devices.temperatureMonitoringServiceMP.temp) {
                         val started = System.currentTimeMillis
 
-                        waitForMessageAfter (listener) {}
+                        listener.waitForMessageAfter {}
                         listener.temp  must_==  36.6
                         listener.recs  must_==  1
 
-                        waitForMessageAfter (listener) {}
+                        listener.waitForMessageAfter {}
                         listener.temp  must_==  1.0
                         listener.recs  must_==  2
 
@@ -73,8 +73,9 @@ object ServiceTest {
             object temp extends DS18S20 ("abc", deviceEnv) {
                 var n = 0
 
-                override def readTemperature () : Operation.WithResult [Double] =
-                    operation ("readTemperature") (resultHandler => {
+                override def opReadTemperature () : Operation.WithResult [Double] =
+                    new AbstractOperation [Result[Double]] {
+                        override def processRequest () = {
                             val result : Result[Double] = n match {
                                 case 0 => Success (36.6)
                                 case 1 => Success (1.0)
@@ -82,8 +83,9 @@ object ServiceTest {
                             }
                             n += 1
 
-                            resultHandler (result)
-                    })
+                            yieldResult (result)
+                        }
+                    }
             }
         }
     }

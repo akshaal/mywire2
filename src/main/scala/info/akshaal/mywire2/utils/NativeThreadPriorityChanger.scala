@@ -10,7 +10,7 @@ package utils
 
 import info.akshaal.daemonhelper.{DaemonHelper, OSException}
 
-import info.akshaal.jacore.Predefs._
+import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.logger.Logging
 import info.akshaal.jacore.utils.ThreadPriorityChanger
 
