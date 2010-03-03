@@ -67,8 +67,8 @@ abstract class DeviceActor (id : String,
      * @param parser what parser to use to parse the file
      */
     protected def opReadAndParse [A] (relativePath : String,
-                                       parser : String => A)
-                                                : Operation.WithResult [A] =
+                                      parser : String => A)
+                                 : Operation.WithResult [A] =
     {
         new AbstractOperation [Result[A]] {
             override def processRequest () {
@@ -123,10 +123,40 @@ trait DeviceHasTemperature {
     protected val temperatureFileName = "temperature"
 
     /**
-     * Async operation to read temperature of device.
+     * Async operation to read temperature from device.
      */
     def opReadTemperature () : Operation.WithResult [Double] =
                 opReadAndParse (temperatureFileName, _.toDouble)
+}
+
+/**
+ * Trait for device to read humidity.
+ */
+trait DeviceHasHumidity {
+    this : DeviceActor =>
+
+    /**
+     * A name of file with humidity.
+     */
+    protected val humidityFileName : String = "humidity"
+
+    /**
+     * Async operation to read humidity from device.
+     */
+    def opReadHumidity () : Operation.WithResult [Double] =
+                opReadAndParse (humidityFileName, _.toDouble)
+}
+
+/**
+ * Trait for device that use HIH4000 to read humidity.
+ */
+trait HIH4000 {
+    this : DeviceHasHumidity =>
+
+    /**
+     * A name of file with humidity.
+     */
+    protected override val humidityFileName = "HIH4000/humidity"
 }
 
 // /////////////////////////////////////////////////////////////////
@@ -151,3 +181,4 @@ class DS18S20 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : Devi
 class DS2438 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : DeviceLocation)
                                 extends DeviceActor (id, "26", parentDevLoc, deviceEnv)
                                    with DeviceHasTemperature
+                                   with DeviceHasHumidity
