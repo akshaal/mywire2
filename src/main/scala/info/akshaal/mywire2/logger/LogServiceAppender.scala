@@ -64,7 +64,7 @@ private[mywire2] object LogServiceAppender {
      * Add pending msg.
      */
     private def addPending (logRecord : LogRecord) : Unit = {
-        pending synchronized {
+        synchronized {
             logService match {
                 case None =>
                     pending.addLast (logRecord)
