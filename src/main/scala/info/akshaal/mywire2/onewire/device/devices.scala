@@ -54,6 +54,11 @@ abstract class DeviceActor (id : String,
     override val registrationName = id
 
     /**
+     * Masimum file size that this device might have.
+     */
+    protected val maxFileSize = 1024
+
+    /**
      * Makes absoulte path for the device file.
      */
     protected def deviceFile (relativePath : String) : String = {
@@ -72,24 +77,35 @@ abstract class DeviceActor (id : String,
     {
         new AbstractOperation [Result[A]] {
             override def processRequest () {
-                deviceEnv.textFile.opReadFile (deviceFile (relativePath)) runMatchingResultAsy {
-                    case Success (content) =>
-                        val result : Result[A] =
-                            try {
-                                Success (parser (content))
-                            } catch {
-                                case exc : NumberFormatException =>
-                                    Failure (exc)
+                deviceEnv.textFile
+                         .opReadFile (deviceFile (relativePath), Some(maxFileSize))
+                         .runMatchingResultAsy {
+                                case Success (content) =>
+                                    val result : Result[A] =
+                                        try {
+                                            Success (parser (content))
+                                        } catch {
+                                            case exc : NumberFormatException =>
+                                                Failure (exc)
+                                        }
+
+                                    yieldResult (result)
+
+                                case Failure (exc) =>
+                                    yieldResult (Failure (exc))
                             }
-
-                        yieldResult (result)
-
-                    case Failure (exc) =>
-                        yieldResult (Failure (exc))
-                }
             }
         }
     }
+
+    /**
+     * Async operation to write to file
+     *
+     * @param relativePath a file of the device to read
+     * @param content new content for the file
+     */
+    protected def opWrite (relativePath : String, content : String) : Operation.WithResult [Unit] =
+            deviceEnv.textFile.opWriteFile (deviceFile (relativePath), content)
 
     /**
      * Give a description to the object.
@@ -182,3 +198,42 @@ class DS2438 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : Devic
                                 extends DeviceActor (id, "26", parentDevLoc, deviceEnv)
                                    with DeviceHasTemperature
                                    with DeviceHasHumidity
+
+/**
+ * Addressable swtich.
+ * @param id unique 1-wire identifier
+ * @param deviceEnv device environment
+ */
+class DS2405 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : DeviceLocation)
+                                extends DeviceActor (id, "05", parentDevLoc, deviceEnv)
+{
+    /**
+     * A name of file with PIO state.
+     */
+    protected final val pioFileName : String = "PIO"
+
+    /**
+     * Parse state.
+     */
+    protected def parseState (state : String) : Boolean =
+        state match {
+            case "0" => false
+
+            case "1" => true
+
+            case x => throw new NumberFormatException ("Unknown state: " + x)
+        }
+
+    /**
+     * Async operation to read current PIO state. This is state that was set previously.
+     * This is not sensed state (actual state).
+     */
+    def opReadPIO () : Operation.WithResult [Boolean] =
+                opReadAndParse (pioFileName, parseState)
+
+    /**
+     * Write new state for the PIO.
+     */
+    def opWritePIO (state : Boolean) : Operation.WithResult [Unit] =
+                opWrite (pioFileName, if (state) "1" else "0")
+}

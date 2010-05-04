@@ -7,6 +7,8 @@ package info.akshaal.mywire2
 package test
 package unit.onewire
 
+import scala.collection.mutable.HashMap
+
 import org.specs.SpecificationWithJUnit
 import org.specs.mock.Mockito
 
@@ -22,9 +24,10 @@ import unit.UnitTestHelper._
 class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification") with Mockito {
     import DeviceTest._
 
+    val fnf = new java.io.FileNotFoundException ("not found")
+
     "DS18S20" should {
         "read temperature" in {
-            val fnf = new java.io.FileNotFoundException ("not found")
             val readFs = Map ("/tmp/test/uncached/10.abc/temperature" -> Success("23.44"),
                               "/tmp/test/uncached/10.bca/temperature" -> Failure[String](fnf))
             
@@ -48,9 +51,73 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
         }
     }
 
+    "DS2405" should {
+        "read PIO" in {
+            val readFs = Map ("/tmp/test/uncached/05.abc/PIO" -> Success("0"),
+                              "/tmp/test/uncached/05.abd/PIO" -> Success("1"),
+                              "/tmp/test/uncached/05.abe/PIO" -> Success(""),
+                              "/tmp/test/uncached/05.bcd/PIO" -> Failure[String](fnf))
+
+            withMockedTextFile (readFs) (textFileActor => {
+                val deviceEnv = Mocker.newDeviceEnv
+                deviceEnv.textFile returns textFileActor
+
+                val mp = new MountPoint ("/tmp/test") {
+                    object dev1 extends DS2405 ("abc", deviceEnv)
+                    object dev2 extends DS2405 ("abd", deviceEnv)
+                    object dev3 extends DS2405 ("abe", deviceEnv)
+                    object dev4 extends DS2405 ("bcd", deviceEnv)
+                }
+
+                withStartedActor (mp.dev1) {
+                    mp.dev1.opReadPIO ().runWithFutureAsy().get  must_==  Success (false)
+                }
+
+                withStartedActor (mp.dev2) {
+                    mp.dev2.opReadPIO ().runWithFutureAsy().get  must_==  Success (true)
+                }
+
+                withStartedActor (mp.dev3) {
+                    mp.dev3.opReadPIO ().runWithFutureAsy().get  must beLike {
+                        case Failure(exc) => exc.isInstanceOf[NumberFormatException]
+                    }
+                }
+
+                withStartedActor (mp.dev4) {
+                    mp.dev4.opReadPIO ().runWithFutureAsy().get  must_==  Failure[Boolean](fnf)
+                }
+            })
+        }
+
+        "write PIO" in {
+            val writeFs = new HashMap[String, String]
+
+            withMockedTextFile (writer = writeFs.update) (textFileActor => {
+                val deviceEnv = Mocker.newDeviceEnv
+                deviceEnv.textFile returns textFileActor
+
+                val mp = new MountPoint ("/tmp/test") {
+                    object dev1 extends DS2405 ("abc", deviceEnv)
+                    object dev2 extends DS2405 ("abd", deviceEnv)
+                }
+
+                withStartedActor (mp.dev1) {
+                    mp.dev1.opWritePIO (false).runWithFutureAsy().get
+                }
+
+                withStartedActor (mp.dev2) {
+                    mp.dev2.opWritePIO (true).runWithFutureAsy().get
+                }
+            })
+
+            writeFs.size must_== 2
+            writeFs ("/tmp/test/uncached/05.abc/PIO") must_== "0"
+            writeFs ("/tmp/test/uncached/05.abd/PIO") must_== "1"
+        }
+    }
+
     "DS2438" should {
         "read temperature" in {
-            val fnf = new java.io.FileNotFoundException ("not found")
             val readFs = Map ("/tmp/test/uncached/26.4445/temperature" -> Success("11.43"),
                               "/tmp/test/uncached/26.3333/temperature" -> Failure[String](fnf))
 
@@ -74,7 +141,6 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
         }
 
         "read humidity from HIH4000" in {
-            val fnf = new java.io.FileNotFoundException ("not found")
             val readFs = Map ("/tmp/test/uncached/26.1445/HIH4000/humidity"
                                         -> Success("75"),
 
@@ -101,10 +167,11 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
         }
     }
 
-    def withMockedTextFile (reader : String => Result[String])
+    def withMockedTextFile (reader : String => Result[String] = Map(),
+                            writer : (String, String) => Unit = (new HashMap).update)
                            (textFileUser : TextFile => Unit) : Unit =
     {
-        val textFile = new TestTextFileActor (reader)
+        val textFile = new TestTextFileActor (reader, writer)
 
         textFile.start
         try {
@@ -119,7 +186,9 @@ object DeviceTest {
     /**
      * Mocked text file reader.
      */
-    class TestTextFileActor (read : String => Result[String]) extends TestActor with TextFile
+    class TestTextFileActor (read : String => Result[String],
+                             writer : (String, String) => Unit)
+                    extends TestActor with TextFile
     {
         override def writeFileAsy (file : File, content : String, payload : Any) : Unit =
         {
@@ -129,7 +198,8 @@ object DeviceTest {
         override def opWriteFile (file : File, content : String) : Operation.WithResult [Unit] = {
             new AbstractOperation [Result [Unit]] {
                 override def processRequest () {
-                    throw new RuntimeException ("NYI")
+                    writer (file.getPath, content)
+                    yieldResult (null)
                 }
             }
         }
