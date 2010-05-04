@@ -134,12 +134,12 @@ object DeviceTest {
             }
         }
 
-        override def readFileAsy (file : File, payload : Any) : Unit =
+        override def readFileAsy (file : File, payload : Any, size : Option[Int] = None) : Unit =
         {
             throw new RuntimeException ("NYI")
         }
 
-        override def opReadFile (file : File) : Operation.WithResult [String] = {
+        override def opReadFile (file : File, size : Option[Int] = None) : Operation.WithResult [String] = {
             new AbstractOperation [Result[String]] {
                 override def processRequest () {
                     yieldResult (read (file.getPath))

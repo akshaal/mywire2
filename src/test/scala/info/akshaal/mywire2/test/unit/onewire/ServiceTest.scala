@@ -120,7 +120,7 @@ object ServiceTest {
         var temp : Double = 0.0
         var recs = 0
 
-        broadcaster.subscribe (this, classOf [Temperature])
+        subscribe [Temperature]
 
         override def act () = {
             case Temperature ("testTemperatureMonitoringService", value) =>
@@ -142,7 +142,7 @@ object ServiceTest {
         var hum : Double = 0.0
         var recs = 0
 
-        broadcaster.subscribe (this, classOf [Humidity])
+        subscribe [Humidity]
 
         override def act () = {
             case Humidity ("testHumidityMonitoringService", value) =>
