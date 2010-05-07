@@ -14,6 +14,7 @@ import info.akshaal.jacore.actor.{Operation, Actor, HiPriorityActorEnv}
 import info.akshaal.jacore.fs.text.TextFile
 
 import info.akshaal.mywire2.daemon.Autoregister
+import utils.StateContainer
 
 // /////////////////////////////////////////////////////////////////
 // Common
@@ -206,6 +207,7 @@ class DS2438 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : Devic
  */
 class DS2405 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : DeviceLocation)
                                 extends DeviceActor (id, "05", parentDevLoc, deviceEnv)
+                                   with StateContainer[Boolean]
 {
     /**
      * A name of file with PIO state.
@@ -228,12 +230,12 @@ class DS2405 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : Devic
      * Async operation to read current PIO state. This is state that was set previously.
      * This is not sensed state (actual state).
      */
-    def opReadPIO () : Operation.WithResult [Boolean] =
+    def opGetState () : Operation.WithResult [Boolean] =
                 opReadAndParse (pioFileName, parseState)
 
     /**
      * Write new state for the PIO.
      */
-    def opWritePIO (state : Boolean) : Operation.WithResult [Unit] =
+    def opSetState (state : Boolean) : Operation.WithResult [Unit] =
                 opWrite (pioFileName, if (state) "1" else "0")
 }

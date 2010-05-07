@@ -70,21 +70,21 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
                 }
 
                 withStartedActor (mp.dev1) {
-                    mp.dev1.opReadPIO ().runWithFutureAsy().get  must_==  Success (false)
+                    mp.dev1.opGetState ().runWithFutureAsy().get  must_==  Success (false)
                 }
 
                 withStartedActor (mp.dev2) {
-                    mp.dev2.opReadPIO ().runWithFutureAsy().get  must_==  Success (true)
+                    mp.dev2.opGetState ().runWithFutureAsy().get  must_==  Success (true)
                 }
 
                 withStartedActor (mp.dev3) {
-                    mp.dev3.opReadPIO ().runWithFutureAsy().get  must beLike {
+                    mp.dev3.opGetState ().runWithFutureAsy().get  must beLike {
                         case Failure(exc) => exc.isInstanceOf[NumberFormatException]
                     }
                 }
 
                 withStartedActor (mp.dev4) {
-                    mp.dev4.opReadPIO ().runWithFutureAsy().get  must_==  Failure[Boolean](fnf)
+                    mp.dev4.opGetState ().runWithFutureAsy().get  must_==  Failure[Boolean](fnf)
                 }
             })
         }
@@ -102,11 +102,11 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
                 }
 
                 withStartedActor (mp.dev1) {
-                    mp.dev1.opWritePIO (false).runWithFutureAsy().get
+                    mp.dev1.opSetState (false).runWithFutureAsy().get
                 }
 
                 withStartedActor (mp.dev2) {
-                    mp.dev2.opWritePIO (true).runWithFutureAsy().get
+                    mp.dev2.opSetState (true).runWithFutureAsy().get
                 }
             })
 
