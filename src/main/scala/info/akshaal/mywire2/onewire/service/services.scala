@@ -29,7 +29,7 @@ class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
         temperatureDevice.opReadTemperature () runMatchingResultAsy {
             case Success (temperatureValue) =>
                 if (Some (temperatureValue) == illegalTemperature) {
-                    error ("Illegal temperature " + illegalTemperature.get)
+                    error ("Illegal temperature got from " + temperatureDevice + "" + illegalTemperature.get)
                 } else {
                     val temperature = new Temperature (name = name, value = temperatureValue)
                     broadcaster.broadcast (temperature)
