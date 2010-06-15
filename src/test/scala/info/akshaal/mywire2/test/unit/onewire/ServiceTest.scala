@@ -95,7 +95,7 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                         listener.errors  must_==  0
 
                         devices.stateControllingServiceMP.switch.n must beIn (4 to 12)
-                        (listener.ons - listener.offs) must_== 0
+                        (listener.ons - listener.offs)  must_==  0
 
                         val lasted = System.currentTimeMillis - started
                         lasted  must beIn (200 to 1000)
