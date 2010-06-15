@@ -16,19 +16,24 @@ import domain.{Temperature, Humidity, StateUpdated}
 import utils.{StateContainer, StateUpdate}
 
 /**
- * Read temperature value from device and broadcasts it as exportable object.
+ * Reads temperature value from device and broadcasts it as exportable object.
  */
 class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
                                     temperatureDevice : DeviceHasTemperature,
                                     name : String,
-                                    interval : TimeValue)
+                                    interval : TimeValue,
+                                    illegalTemperature : Option[Double] = None)
                      extends Actor (actorEnv = actorEnv)
 {
     schedule every interval executionOf {
         temperatureDevice.opReadTemperature () runMatchingResultAsy {
             case Success (temperatureValue) =>
-                val temperature = new Temperature (name = name, value = temperatureValue)
-                broadcaster.broadcast (temperature)
+                if (Some (temperatureValue) == illegalTemperature) {
+                    error ("Illegal temperature " + illegalTemperature.get)
+                } else {
+                    val temperature = new Temperature (name = name, value = temperatureValue)
+                    broadcaster.broadcast (temperature)
+                }
 
             case Failure (exc) =>
                 error ("Error reading temperature of " + temperatureDevice + ": "
