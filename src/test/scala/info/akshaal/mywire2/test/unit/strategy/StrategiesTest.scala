@@ -22,18 +22,22 @@ class StrategiesTest extends SpecificationWithJUnit ("Strategies specification")
             Thread.sleep (80 - System.currentTimeMillis % 80 + 15)
 
             s.getStateUpdate.state  must_== true
+            (!s.getStateUpdate).state  must_== false
 
             Thread.sleep (50)
 
             s.getStateUpdate.state  must_== false
+            (!s.getStateUpdate).state  must_== true
 
             Thread.sleep (30)
 
             s.getStateUpdate.state  must_== true
+            (!s.getStateUpdate).state  must_== false
 
             Thread.sleep (50)
 
             s.getStateUpdate.state  must_== false
+            (!s.getStateUpdate).state  must_== true
         }
     }
 }

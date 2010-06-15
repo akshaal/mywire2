@@ -51,4 +51,9 @@ final class BooleanStateUpdate (state : Boolean, validTime : TimeValue)
             that
         }
     }
+
+    /**
+     * Not operation for boolean state.
+     */
+    def unary_! (): BooleanStateUpdate = new BooleanStateUpdate (!state, validTime)
 }
