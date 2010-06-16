@@ -10,6 +10,7 @@ package service
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.{Actor, HiPriorityActorEnv}
 import info.akshaal.jacore.scheduler.ScheduleControl
+import info.akshaal.jacore.utils.DoubleValueFrameNaNIgnored
 
 import device.{DeviceHasTemperature, DeviceHasHumidity}
 import domain.{Temperature, Humidity, StateUpdated}
@@ -25,9 +26,15 @@ class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
                                     illegalTemperature : Option[Double] = None)
                      extends Actor (actorEnv = actorEnv)
 {
+    private val frame = new DoubleValueFrameNaNIgnored (3)
+
     // Local function to bradcast temperature
     private def broadcastTemperature (temperatureValue : Double) : Unit = {
-        val temperature = new Temperature (name = name, value = temperatureValue)
+        frame.put (temperatureValue)
+
+        val temperature = new Temperature (name = name,
+                                           value = temperatureValue,
+                                           average3 = frame.average)
         broadcaster.broadcast (temperature)
     }
 
@@ -63,9 +70,13 @@ class HumidityMonitoringService (actorEnv : HiPriorityActorEnv,
                                  interval : TimeValue)
                      extends Actor (actorEnv = actorEnv)
 {
+    private val frame = new DoubleValueFrameNaNIgnored (3)
+
     // Load function to broadcast humidity
     private def broadcastHumidity (humidityValue : Double) : Unit = {
-        val humidity = new Humidity (name = name, value = humidityValue)
+        frame.put (humidityValue)
+
+        val humidity = new Humidity (name = name, value = humidityValue, average3 = frame.average)
         broadcaster.broadcast (humidity)
     }
 

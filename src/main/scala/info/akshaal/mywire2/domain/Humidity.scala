@@ -5,10 +5,11 @@
 
 package info.akshaal.mywire2.domain
 
-case class Humidity (name : String, value : Double) extends Export {
+case class Humidity (name : String, value : Double, average3 : Double) extends Export {
     override def toMap : Map[String, Any] = {
         super.toMap
              .updated ("name", name)
              .updated ("value", value)
+             .updated ("average3", average3)
     }
 }
