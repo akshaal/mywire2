@@ -120,7 +120,7 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                         (listener.ons - listener.offs)  must_==  0
 
                         val lasted = System.currentTimeMillis - started
-                        lasted  must beIn (200 to 1000)
+                        lasted  must beIn (180 to 1000)
                     }
                 }
             )
