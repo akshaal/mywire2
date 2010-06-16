@@ -32,6 +32,7 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
 
                         listener.waitForMessageAfter {}
                         listener.temp  must_==  36.6
+                        listener.avg3  must_==  36.6
                         listener.recs  must_==  1
 
                         // It is important that the same value received twice
@@ -39,14 +40,17 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                         // point in time.
                         listener.waitForMessageAfter {}
                         listener.temp  must_==  1.0
+                        listener.avg3  must_==  (36.6d + 1.0d) / 2.0d
                         listener.recs  must_==  2
 
                         listener.waitForMessageAfter {}
                         listener.temp  must_==  1.0
+                        listener.avg3  must_==  (36.6d + 1.0d + 1.0d) / 3.0d
                         listener.recs  must_==  3
 
                         listener.waitForMessageAfter {}
                         listener.temp.isNaN  must_==  true
+                        listener.avg3  must_==  (1.0d + 1.0d) / 2.0d
                         listener.recs  must_==  4
 
                         val lasted = System.currentTimeMillis - started
@@ -67,6 +71,7 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
 
                         listener.waitForMessageAfter {}
                         listener.hum  must_==  70.1
+                        listener.avg3  must_==  70.1
                         listener.recs  must_==  1
 
                         // It is important that the same value received twice
@@ -74,13 +79,16 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                         // point in time.
                         listener.waitForMessageAfter {}
                         listener.hum  must_==  60.2
+                        listener.avg3  must_==  (60.2d + 70.1d) / 2.0d
                         listener.recs  must_==  2
 
                         listener.waitForMessageAfter {}
+                        listener.avg3  must_==  (60.2d + 60.2d + 70.1d) / 3.0d
                         listener.hum  must_==  60.2
                         listener.recs  must_==  3
 
                         listener.waitForMessageAfter {}
+                        listener.avg3  must_==  (60.2d + 60.2d) / 2.0d
                         listener.hum.isNaN  must_==  true
                         listener.recs  must_==  4
 
@@ -194,13 +202,15 @@ object ServiceTest {
     
     class TestTemperatureMonitoringServiceListener extends TestActor {
         var temp : Double = 0.0
+        var avg3 : Double = 0.0
         var recs = 0
 
         subscribe [Temperature]
 
         override def act () = {
-            case Temperature ("testTemperatureMonitoringService", value) =>
+            case Temperature ("testTemperatureMonitoringService", value, avg3v) =>
                 temp = value
+                avg3 = avg3v
                 recs += 1
         }
     }
@@ -217,13 +227,15 @@ object ServiceTest {
 
     class TestHumidityMonitoringServiceListener extends TestActor {
         var hum : Double = 0.0
+        var avg3 : Double = 0.0
         var recs = 0
 
         subscribe [Humidity]
 
         override def act () = {
-            case Humidity ("testHumidityMonitoringService", value) =>
+            case Humidity ("testHumidityMonitoringService", value, avg3v) =>
                 hum = value
+                avg3 = avg3v
                 recs += 1
         }
     }
