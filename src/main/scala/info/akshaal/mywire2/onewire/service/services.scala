@@ -25,19 +25,26 @@ class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
                                     illegalTemperature : Option[Double] = None)
                      extends Actor (actorEnv = actorEnv)
 {
+    // Local function to bradcast temperature
+    private def broadcastTemperature (temperatureValue : Double) : Unit = {
+        val temperature = new Temperature (name = name, value = temperatureValue)
+        broadcaster.broadcast (temperature)
+    }
+
     schedule every interval executionOf {
         temperatureDevice.opReadTemperature () runMatchingResultAsy {
             case Success (temperatureValue) =>
                 if (Some (temperatureValue) == illegalTemperature) {
-                    error ("Illegal temperature got from " + temperatureDevice + "" + illegalTemperature.get)
+                    warn ("Illegal temperature got from " + temperatureDevice + "" + illegalTemperature.get)
+                    broadcastTemperature (Double.NaN)
                 } else {
-                    val temperature = new Temperature (name = name, value = temperatureValue)
-                    broadcaster.broadcast (temperature)
+                    broadcastTemperature (temperatureValue)
                 }
 
             case Failure (exc) =>
                 error ("Error reading temperature of " + temperatureDevice + ": "
                        + exc.getMessage, exc)
+                broadcastTemperature (Double.NaN)
         }
     }
 
@@ -56,14 +63,20 @@ class HumidityMonitoringService (actorEnv : HiPriorityActorEnv,
                                  interval : TimeValue)
                      extends Actor (actorEnv = actorEnv)
 {
+    // Load function to broadcast humidity
+    private def broadcastHumidity (humidityValue : Double) : Unit = {
+        val humidity = new Humidity (name = name, value = humidityValue)
+        broadcaster.broadcast (humidity)
+    }
+
     schedule every interval executionOf {
         humidityDevice.opReadHumidity () runMatchingResultAsy {
             case Success (humidityValue) =>
-                val humidity = new Humidity (name = name, value = humidityValue)
-                broadcaster.broadcast (humidity)
+                broadcastHumidity (humidityValue)
 
             case Failure (exc) =>
                 error ("Error reading humidity of " + humidityDevice + ": " + exc.getMessage, exc)
+                broadcastHumidity (Double.NaN)
         }
     }
 

@@ -34,12 +34,23 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                         listener.temp  must_==  36.6
                         listener.recs  must_==  1
 
+                        // It is important that the same value received twice
+                        // Because programs like jrobin wants to have value for every
+                        // point in time.
                         listener.waitForMessageAfter {}
                         listener.temp  must_==  1.0
                         listener.recs  must_==  2
 
+                        listener.waitForMessageAfter {}
+                        listener.temp  must_==  1.0
+                        listener.recs  must_==  3
+
+                        listener.waitForMessageAfter {}
+                        listener.temp.isNaN  must_==  true
+                        listener.recs  must_==  4
+
                         val lasted = System.currentTimeMillis - started
-                        lasted  must beIn (600 to 2100)
+                        lasted  must beIn (1800 to 4200)
                     }
                 }
             )
@@ -58,12 +69,23 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                         listener.hum  must_==  70.1
                         listener.recs  must_==  1
 
+                        // It is important that the same value received twice
+                        // Because programs like jrobin wants to have value for every
+                        // point in time.
                         listener.waitForMessageAfter {}
                         listener.hum  must_==  60.2
                         listener.recs  must_==  2
 
+                        listener.waitForMessageAfter {}
+                        listener.hum  must_==  60.2
+                        listener.recs  must_==  3
+
+                        listener.waitForMessageAfter {}
+                        listener.hum.isNaN  must_==  true
+                        listener.recs  must_==  4
+
                         val lasted = System.currentTimeMillis - started
-                        lasted  must beIn (600 to 2100)
+                        lasted  must beIn (1200 to 4200)
                     }
                 }
             )
@@ -120,6 +142,7 @@ object ServiceTest {
                             val result : Result[Double] = n match {
                                 case 0 => Success (36.6)
                                 case 1 => Success (1.0)
+                                case 2 => Success (1.0)
                                 case _ => Failure (new RuntimeException ())
                             }
                             n += 1
@@ -140,6 +163,7 @@ object ServiceTest {
                             val result : Result[Double] = n match {
                                 case 0 => Success (70.1)
                                 case 1 => Success (60.2)
+                                case 2 => Success (60.2)
                                 case _ => Failure (new RuntimeException ())
                             }
                             n += 1
@@ -186,7 +210,8 @@ object ServiceTest {
                                 actorEnv = TestModule.hiPriorityActorEnv,
                                 temperatureDevice = devices.temperatureMonitoringServiceMP.temp,
                                 name = "testTemperatureMonitoringService",
-                                interval = 1 seconds)
+                                interval = 1 seconds,
+                                illegalTemperature = Some(85.0))
 
     // Humidity testing - - - - - - - - - -
 
