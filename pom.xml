@@ -4,7 +4,7 @@
     <groupId>info.akshaal.mywire2</groupId>
     <artifactId>mywire2</artifactId>
     <packaging>jar</packaging>
-    <version>1.12-SNAPSHOT</version>
+    <version>1.12</version>
     <name>Mywire2 - Home Automation Template</name>
 
     <!-- = = = = = = = = = = = = Default properties = = = = = = = = = = -->
