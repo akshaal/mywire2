@@ -15,7 +15,7 @@ import onewire.device._
 import onewire.service._
 import strategy.SimpleOnOffStrategy
 import domain.{Temperature, Humidity, StateUpdated}
-import utils.StateUpdate
+import utils.{StateUpdate, TemperatureTracker, Problem}
 
 import unit.UnitTestHelper._
 
@@ -133,6 +133,86 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                 }
             )
         }
+
+        "be safe" in {
+            withStartedActor [TestStateControllingService2] (
+                service => {
+                    withStartedActor (devices.stateControllingServiceMP.switch2) {
+                        def readState () =
+                            devices.stateControllingServiceMP.switch2.opReadState.runWithFutureAsy.get
+
+                        Thread.sleep (10.milliseconds.asMilliseconds)
+                        service.problems  must_==  0
+                        service.problemGones  must_==  0
+                        service.tooMany  must_==  0
+                        service.tooManyGone  must_==  0
+
+                        devices.stateControllingServiceMP.switch2
+                               .opReadState.runWithFutureAsy.get  must_==  Success(Some(true))
+
+                        // This should trigger 'unavailable temperature' problem
+                        Thread.sleep (50.milliseconds.asMilliseconds)
+                        service.updateStateIfChanged ()
+                        Thread.sleep (10.milliseconds.asMilliseconds)
+
+                        readState  must_==  Success(Some(false))
+                        service.problems  must_==  1
+                        service.problemGones  must_==  0
+                        service.tooMany  must_==  0
+                        service.tooManyGone  must_==  0
+
+                        // This should remove 'unavasilable temperature' problem
+                        service.updateTemp (25)
+                        Thread.sleep (50.milliseconds.asMilliseconds)
+                        readState  must_==  Success(Some(true))
+                        service.problems  must_==  1
+                        service.problemGones  must_==  1
+                        service.tooMany  must_==  0
+                        service.tooManyGone  must_==  0
+
+                        // This must check temp problem and trigger too many problems case
+                        for (i <- 1 to 4) {
+                            service.updateTemp (40)
+                            Thread.sleep (10.milliseconds.asMilliseconds)
+                            readState  must_==  Success(Some(false))
+                            service.problems  must_==  1 + i
+                            service.problemGones  must_==  1 + i - 1
+                            service.tooMany  must_==  0
+                            service.tooManyGone  must_==  0
+
+                            service.updateTemp (10)
+                            Thread.sleep (10.milliseconds.asMilliseconds)
+                            readState  must_==  Success(Some(i != 4))
+                            service.problems  must_==  1 + i
+                            service.problemGones  must_==  i + 1
+                            service.tooManyGone  must_==  0
+                        }
+
+                        // Too many problems must be triggered
+                        service.tooMany  must_==  1
+                        service.tooManyGone  must_==  0
+
+                        service.updateStateIfChanged ()
+                        Thread.sleep (50.milliseconds.asMilliseconds)
+                        service.tooMany  must_==  1
+                        service.tooManyGone  must_==  0
+                        readState  must_==  Success(Some(false))
+
+                        service.updateStateIfChanged ()
+                        Thread.sleep (10.milliseconds.asMilliseconds)
+                        service.tooMany  must_==  1
+                        service.tooManyGone  must_==  0
+                        readState  must_==  Success(Some(false))
+
+                        // Check expiration of too many problems
+                        Thread.sleep (300.milliseconds.asMilliseconds)
+                        service.tooMany  must_==  1
+                        service.tooManyGone  must_==  1
+                        readState  must_==  Success(Some(true))
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -191,6 +271,29 @@ object ServiceTest {
                         override def processRequest () = {
                             n += 1
                             yieldResult (Success(null))
+                        }
+                    }
+                }
+            }
+
+            object switch2 extends DS2405 ("cde", deviceEnv) {
+                private var state : Option[Boolean] = None
+                var states : List[Boolean] = Nil
+
+                override def opSetState (st : Boolean) : Operation.WithResult [Unit] = {
+                    new AbstractOperation [Result[Unit]] {
+                        override def processRequest () = {
+                            state = Some (st)
+                            states = st :: states
+                            yieldResult (Success(null))
+                        }
+                    }
+                }
+
+                def opReadState () : Operation.WithResult [Option[Boolean]] = {
+                    new AbstractOperation [Result[Option[Boolean]]] {
+                        override def processRequest () = {
+                            yieldResult (Success(state))
                         }
                     }
                 }
@@ -260,6 +363,10 @@ object ServiceTest {
                                                 offInterval = 40 milliseconds)
 
         protected def getStateUpdate () : StateUpdate[Boolean] = strategy.getStateUpdate
+
+        override protected val safeState = false
+
+        override protected val possibleProblems : List[Problem] = Nil
     }
 
     class TestStateControllingServiceListener extends TestActor {
@@ -288,6 +395,57 @@ object ServiceTest {
                 changes += 1
 
                 prev = Some (value)
+        }
+    }
+
+    // StateControllingService testing - - - - - - - - - -
+
+    class TestStateControllingService2
+            extends StateControllingService (
+                                actorEnv = TestModule.hiPriorityActorEnv,
+                                stateContainer = devices.stateControllingServiceMP.switch2,
+                                name = "testStateControllingService",
+                                interval = 170 seconds,
+                                tooManyProblemsInterval = 200 milliseconds,
+                                disableOnTooManyProblemsFor = 300 milliseconds)
+    {
+        private lazy val trackedTemperature = new TemperatureTracker ("temp")
+        var problems = 0
+        var problemGones = 0
+        var tooMany = 0
+        var tooManyGone = 0
+
+        override protected def getStateUpdate () : StateUpdate[Boolean] =
+                new StateUpdate (state = true, validTime = 1 minutes)
+
+        override protected val safeState = false
+
+        override protected val possibleProblems =
+           trackedTemperature.problemIfNaN ::
+           trackedTemperature.problemIfUndefinedFor (50 milliseconds) ::
+           trackedTemperature.problemIf ("temp").greaterThan (30, backOn=15) :: Nil
+
+        def updateTemp (temp : Double) = {
+            postponed {
+                trackedTemperature.updateFrom (new Temperature ("temp", value=temp, average3=temp))
+                updateStateIfChanged ()
+            }
+        }
+
+        override def onProblem (problem : Problem) = {
+            problems += 1
+        }
+
+        override def onProblemGone (problem : Problem) = {
+            problemGones += 1
+        }
+
+        override protected def onTooManyProblems () {
+            tooMany += 1
+        }
+
+        override protected def onTooManyProblemsExpired () {
+            tooManyGone += 1
         }
     }
 }

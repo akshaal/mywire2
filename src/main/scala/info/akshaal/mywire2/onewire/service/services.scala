@@ -14,7 +14,7 @@ import info.akshaal.jacore.utils.DoubleValueFrameNaNIgnored
 
 import device.{DeviceHasTemperature, DeviceHasHumidity}
 import domain.{Temperature, Humidity, StateUpdated}
-import utils.{StateContainer, StateUpdate}
+import utils.{StateContainer, StateUpdate, Problem}
 
 /**
  * Reads temperature value from device and broadcasts it as exportable object.
@@ -103,46 +103,118 @@ class HumidityMonitoringService (actorEnv : HiPriorityActorEnv,
  * @param stateContainer state container
  * @param name name
  * @param interval interval to check and update state
+ * @param tooManyProblemsNumber if number of problems within tooManyProblemsInterval
+ *              is greater or equal to this number, then service is disabled (in safe mode)
+ * @param tooManyProblemsInterval see tooManyProblemsNumber
+ * @param disableOnTooManyProblemsFor if too many problems detected, then the service is disabled
+ *                     for this amount of time
  */
 abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
                                             stateContainer : StateContainer [T],
                                             name : String,
-                                            interval : TimeValue)
+                                            interval : TimeValue = 10 seconds,
+                                            tooManyProblemsNumber : Int = 5,
+                                            tooManyProblemsInterval : TimeValue = 10 minutes,
+                                            disableOnTooManyProblemsFor : TimeValue = 15 minutes)
                             extends Actor (actorEnv = actorEnv)
 {
     private var earlyUpdateControl : Option[ScheduleControl] = None
     private var previousState : Option[T] = None
+    private var currentProblem : Option[Problem] = None
+    private var problemEndHistory : List[TimeValue] = Nil
+    private var disabledUntil : Option[TimeValue] = None
 
-    schedule every interval executionOf updateState
+    schedule every interval executionOf updateState()
 
+    /**
+     * Update state if state is changed.
+     */
+    def updateStateIfChanged () : Unit = {
+        postponed {
+            updateState (onlyIfChanged = true)
+        }
+    }
+    
     /**
      * Update state.
      */
-    protected def updateState () {
+    private def updateState (onlyIfChanged : Boolean = false) : Unit = {
         earlyUpdateControl foreach (_.cancel ())
         earlyUpdateControl = None
 
-        val stateUpdate = getStateUpdate ()
+        // Check if we are disabled
+        for (time <- disabledUntil) {
+            if (System.nanoTime.nanoseconds > time) {
+                onTooManyProblemsExpired ()
+                disabledUntil = None
+            }
+        }
+
+        // If not disabled, check for problems
+        if (disabledUntil == None) {
+            for (problem <- currentProblem) {
+                // Problem was detected previous time, so just check if it is disappeared
+                for (goneMsg <- problem.isGone) {
+                    onProblemGone (problem)
+                    currentProblem = None
+
+                    // We have to check if too many problems occured within interval
+                    problemEndHistory = System.nanoTime.nanoseconds :: problemEndHistory
+                    problemEndHistory = problemEndHistory.filter(_ + tooManyProblemsInterval > System.nanoTime.nanoseconds)
+                    if (problemEndHistory.size >= tooManyProblemsNumber) {
+                        onTooManyProblems ()
+                        disabledUntil = Some (System.nanoTime.nanoseconds + disableOnTooManyProblemsFor)
+                        schedule in disableOnTooManyProblemsFor executionOf updateState()
+                    }
+                }
+            }
+
+            if (currentProblem == None) {
+                for (newProblem <- possibleProblems.find (_.detected != None)) {
+                    onProblem (newProblem)
+                    currentProblem = Some (newProblem)
+                }
+            }
+        }
+
+        // Get new state
+        val stateUpdate =
+            if (currentProblem == None && disabledUntil == None)
+                getStateUpdate ()
+            else
+                new StateUpdate (state = safeState, validTime = interval * 3)
+            
+        val newState = stateUpdate.state
+        val newValidTime = stateUpdate.validTime
+
+        // Exit from method if onlyIfChanged flag set and state is not changed
+        if (onlyIfChanged) {
+            for (state <- previousState) {
+                if (state == newState) {
+                    return
+                }
+            }
+        }
 
         // Change state
-        stateContainer.opSetState (stateUpdate.state) runMatchingResultAsy {
+        stateContainer.opSetState (newState) runMatchingResultAsy {
             case Success (_) =>
-                previousState foreach (state => {
-                    if (state != stateUpdate.state) {
-                        val stateUpdated = new StateUpdated (name = name, value = stateUpdate.state)
+                for (state <- previousState) {
+                    if (state != newState) {
+                        val stateUpdated = new StateUpdated (name = name, value = newState)
                         broadcaster.broadcast (stateUpdated)
                     }
-                })
+                }
             
-                previousState = Some (stateUpdate.state)
+                previousState = Some (newState)
 
             case Failure (exc) =>
-                error ("Error setting state of " + stateContainer + ": " + exc.getMessage, exc)
+                error ("Error setting state " + newState + " of " + stateContainer + ": " + exc.getMessage, exc)
         }
 
         // Schedule next state update
-        if (stateUpdate.validTime > (0 nanoseconds) && stateUpdate.validTime < (interval * 2)) {
-            earlyUpdateControl = Some (schedule in stateUpdate.validTime executionOf updateState)
+        if (newValidTime > (0 nanoseconds) && newValidTime < (interval * 2)) {
+            earlyUpdateControl = Some (schedule in newValidTime executionOf updateState())
         } else {
             earlyUpdateControl = None
         }
@@ -161,7 +233,47 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
     }
 
     /**
+     * Called when a problem detected.
+     */
+    protected def onProblem (problem : Problem) {
+        error (name + ": Problem detected: " + problem.detected.get)
+    }
+
+    /**
+     * Called when a problem is gone.
+     */
+    protected def onProblemGone (problem : Problem) {
+        info (name + ": Problem gone: " + problem.isGone.get)
+    }
+
+    /**
+     * Called when too many problems detected.
+     */
+    protected def onTooManyProblems () {
+        error (name + ": Too many problems occured within last " + tooManyProblemsInterval
+               + ". Service will be switched into safe mode for the next "
+               + disableOnTooManyProblemsFor)
+    }
+
+    /**
+     * Called when service is switched back online after too many problems.
+     */
+    protected def onTooManyProblemsExpired () {
+        info (name + ": Service is back online after too many problems expired")
+    }
+
+    /**
      * Get new state.
      */
     protected def getStateUpdate () : StateUpdate[T]
+
+    /**
+     * Returns state that is considered safe for human environment.
+     */
+    protected def safeState : T
+
+    /**
+     * List of possible problems.
+     */
+    protected def possibleProblems : List [Problem]
 }
