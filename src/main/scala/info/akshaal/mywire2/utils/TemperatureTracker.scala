@@ -17,17 +17,22 @@ import domain.Temperature
  */
 class TemperatureTracker (names : String*) {
     private final val createdAt = System.nanoTime.nanoseconds
-    private final val map = new HashMap [String, Double]
+    private final val map = new HashMap [String, java.lang.Double]
 
     require (!names.isEmpty, "list of names must not be empty")
 
     /**
-     * Returns current temperature value or null if unknown.
+     * Returns current temperature value or NaN if unknown.
      */
     def apply (name : String) : Double = {
         require (names contains name, name + " is not tracked by this object")
 
-        map.get (name)
+        val result = map.getOrElse (name, Double.NaN)
+        if (result == null) {
+            return Double.NaN
+        } else {
+            return result.asInstanceOf[Double]
+        }
     }
 
     /**
@@ -127,8 +132,9 @@ class TemperatureTracker (names : String*) {
         def greaterThan (limit : Double, backOn : Double) : Problem =
             new Problem {
                 override def detected () : Option[String] = {
-                    val value = map.get (name)
-                    if (value == null || value.isNaN || value <= limit) {
+                    val valueObj = map.get (name)
+                    val value = valueObj.asInstanceOf[Double]
+                    if (valueObj == null || value.isNaN || value <= limit) {
                         None
                     } else {
                         Some ("Temperature '" + name + "' " + value + " is greater than " + limit)
@@ -136,8 +142,9 @@ class TemperatureTracker (names : String*) {
                 }
 
                 override def isGone () : Option[String] = {
-                    val value = map.get (name)
-                    if (value == null || value.isNaN || value > backOn) {
+                    val valueObj = map.get (name)
+                    val value = valueObj.asInstanceOf[Double]
+                    if (valueObj == null || value.isNaN || value > backOn) {
                         None
                     } else {
                         Some ("Temperature '" + name + "' " + value + " is back to normal")
@@ -148,8 +155,9 @@ class TemperatureTracker (names : String*) {
         def lessThan (limit : Double, backOn : Double) : Problem =
             new Problem {
                 override def detected () : Option[String] = {
-                    val value = map.get (name)
-                    if (value == null || value.isNaN || value >= limit) {
+                    val valueObj = map.get (name)
+                    val value = valueObj.asInstanceOf[Double]
+                    if (valueObj == null || value.isNaN || value >= limit) {
                         None
                     } else {
                         Some ("Temperature '" + name + "' " + value + " is less than " + limit)
@@ -157,8 +165,9 @@ class TemperatureTracker (names : String*) {
                 }
 
                 override def isGone () : Option[String] = {
-                    val value = map.get (name)
-                    if (value == null || value.isNaN || value < backOn) {
+                    val valueObj = map.get (name)
+                    val value = valueObj.asInstanceOf[Double]
+                    if (valueObj == null || value.isNaN || value < backOn) {
                         None
                     } else {
                         Some ("Temperature '" + name + "' " + value + " is back to normal")
