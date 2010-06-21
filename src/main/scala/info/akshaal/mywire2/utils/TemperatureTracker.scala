@@ -6,7 +6,6 @@
 package info.akshaal.mywire2
 package utils
 
-import java.util.HashMap
 import scala.collection.JavaConversions._
 
 import info.akshaal.jacore.`package`._
@@ -15,40 +14,19 @@ import domain.Temperature
 /**
  * Track temperatures.
  */
-class TemperatureTracker (names : String*) {
-    private final val createdAt = System.nanoTime.nanoseconds
-    private final val map = new HashMap [String, java.lang.Double]
-
-    require (!names.isEmpty, "list of names must not be empty")
-
+class TemperatureTracker (names : String*) extends AbstractTracker[java.lang.Double, Double] (names : _*) {
     /**
-     * Returns current temperature value or NaN if unknown.
+     * Returned when value is unavailable.
      */
-    def apply (name : String) : Double = {
-        require (names contains name, name + " is not tracked by this object")
-
-        val result = map.getOrElse (name, Double.NaN)
-        if (result == null) {
-            return Double.NaN
-        } else {
-            return result.asInstanceOf[Double]
-        }
-    }
+    protected override def undefined_value : Double = Double.NaN
 
     /**
      * Updates current temperature registry by using value from Temperature object.
      * Average3 is used as a value.
      * Returns true if value is changed.
      */
-    def updateFrom (temperature : Temperature) : Boolean = {
-        if (names contains temperature.name) {
-            val previous = map.put (temperature.name, temperature.average3)
-
-            return previous == null || previous != temperature.average3
-        } else {
-            return false
-        }
-    }
+    def updateFrom (temperature : Temperature) : Boolean =
+        update (temperature.name, temperature.average3)
 
     /**
      * Returns a definition of problem that appears when some of values are NaN.
@@ -79,40 +57,6 @@ class TemperatureTracker (names : String*) {
                 }
 
                 return Some ("All temperatures value are back")
-            }
-        }
-
-    /**
-     * Returns a definition of problem that appears when some temperature is unknown for too long.
-     */
-    def problemIfUndefinedFor (period : TimeValue) : Problem =
-        new Problem {
-            private def getUnknown : Option[String] = {
-                if (System.nanoTime.nanoseconds - createdAt > period) {
-                    for (name <- names) {
-                        if (!(map contains name)) {
-                            return Some (name)
-                        }
-                    }
-                }
-
-                return None
-            }
-
-            override def detected () : Option[String] = {
-                for (name <- getUnknown) {
-                    return Some ("Temperature '" + name + "' unavailable for too long")
-                }
-
-                return None
-            }
-
-            override def isGone () : Option[String] = {
-                for (name <- getUnknown) {
-                    return None
-                }
-
-                return Some ("All temperatures value are read")
             }
         }
 
