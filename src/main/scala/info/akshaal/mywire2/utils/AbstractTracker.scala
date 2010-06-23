@@ -11,7 +11,6 @@ import scala.collection.JavaConversions._
 
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.logger.Logging
-import domain.Temperature
 
 /**
  * Track some values.
@@ -23,12 +22,6 @@ abstract class AbstractTracker[T, B] (names : String*) extends Logging {
     require (!names.isEmpty, "list of names must not be empty")
 
     /**
-     * Must return NaN value or a value that is supposed to be returned when value
-     * is not yet in map (or throw exception).
-     */
-    protected def undefined_value : B
-
-    /**
      * Returns current value or NaN if unknown.
      */
     def apply (name : String) : B = {
@@ -36,8 +29,7 @@ abstract class AbstractTracker[T, B] (names : String*) extends Logging {
 
         val result = map.get (name)
         if (result == null) {
-            debugLazy ("Returning undefined value for " + name)
-            return undefined_value
+            throw new IllegalArgumentException ("No value available for name: " + name)
         } else {
             return result.asInstanceOf [B]
         }

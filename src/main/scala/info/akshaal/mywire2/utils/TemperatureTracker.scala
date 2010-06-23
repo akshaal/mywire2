@@ -16,11 +16,6 @@ import domain.Temperature
  */
 class TemperatureTracker (names : String*) extends AbstractTracker[java.lang.Double, Double] (names : _*) {
     /**
-     * Returned when value is unavailable.
-     */
-    protected override def undefined_value : Double = Double.NaN
-
-    /**
      * Updates current temperature registry by using value from Temperature object.
      * Average3 is used as a value.
      * Returns true if value is changed.

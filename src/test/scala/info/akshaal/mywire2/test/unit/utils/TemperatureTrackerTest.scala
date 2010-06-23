@@ -24,10 +24,10 @@ class TemperatureTrackerTest extends SpecificationWithJUnit ("TemperatureTracker
             tt ("name2")  must throwA [IllegalArgumentException]
         }
 
-        "should return NaN for undefined temperature" in {
+        "should throw exception for undefined temperature" in {
             val tt = new TemperatureTracker ("name1")
 
-            tt ("name1").isNaN  must beTrue
+            tt ("name1")  must throwA[IllegalArgumentException]
         }
 
         "should return inserted valuse from average3 attribute" in {
@@ -51,19 +51,19 @@ class TemperatureTrackerTest extends SpecificationWithJUnit ("TemperatureTracker
 
             tt.updateFrom (new Temperature (name = "name1", value = 10, average3 = 2))  must_== true
             tt ("name1")  must_==  2
-            tt ("name2").isNaN  must beTrue
+            tt ("name2")  must throwA[IllegalArgumentException]
 
             tt.updateFrom (new Temperature (name = "name1", value = 10, average3 = -30))  must_== true
             tt ("name1")  must_==  -30
-            tt ("name2").isNaN  must beTrue
+            tt ("name2")  must throwA[IllegalArgumentException]
 
             tt.updateFrom (new Temperature (name = "name1", value = 10, average3 = -30))  must_== false
             tt ("name1")  must_==  -30
-            tt ("name2").isNaN  must beTrue
+            tt ("name2")  must throwA[IllegalArgumentException]
 
             tt.updateFrom (new Temperature (name = "name1", value = 10, average3 = 30))  must_== true
             tt ("name1")  must_==  30
-            tt ("name2").isNaN  must beTrue
+            tt ("name2")  must throwA[IllegalArgumentException]
 
             tt.updateFrom (new Temperature (name = "name2", value = 10, average3 = 15))  must_== true
             tt ("name1")  must_==  30
@@ -120,13 +120,13 @@ class TemperatureTrackerTest extends SpecificationWithJUnit ("TemperatureTracker
             tt2.updateFrom (new Temperature (name = "name1", value = 1, average3 = 1))
             tt2.updateFrom (new Temperature (name = "name2", value = 2, average3 = 2))
 
-            tt.problemIfUndefinedFor(10 milliseconds).detected  must_==  None
-            tt.problemIfUndefinedFor(10 milliseconds).isGone    must_!=  None
+            tt2.problemIfUndefinedFor(10 milliseconds).detected  must_==  None
+            tt2.problemIfUndefinedFor(10 milliseconds).isGone    must_!=  None
 
             Thread.sleep (15.milliseconds.asMilliseconds)
 
-            tt.problemIfUndefinedFor(10 milliseconds).detected  must_==  None
-            tt.problemIfUndefinedFor(10 milliseconds).isGone    must_!=  None
+            tt2.problemIfUndefinedFor(10 milliseconds).detected  must_==  None
+            tt2.problemIfUndefinedFor(10 milliseconds).isGone    must_!=  None
         }
 
         "should detect problem when a temperature is greater than limit" in {
