@@ -23,8 +23,6 @@ class StateTracker [T] (names : String*) (implicit tManifest : ClassManifest[T])
         val valueObj = value.asInstanceOf [java.lang.Object]
         val valueClass = ClassUtils.box (valueObj.getClass ())
 
-        println ("expect=" + boxedTClass + ", got=" + valueClass)
-
         if (boxedTClass.isAssignableFrom(valueClass)) {
             update (stateUpdated.name, value.asInstanceOf[T])
         } else {
