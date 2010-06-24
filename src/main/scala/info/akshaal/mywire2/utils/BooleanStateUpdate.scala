@@ -37,6 +37,9 @@ final class BooleanStateUpdate (state : Boolean, validTime : TimeValue)
         }
     }
 
+    // Alias
+    def && (that : BooleanStateUpdate) = and (that)
+
     /**
      * Perform 'or' operation between current state update and other state update.
      */
@@ -52,8 +55,19 @@ final class BooleanStateUpdate (state : Boolean, validTime : TimeValue)
         }
     }
 
+    // Alias
+    def || (that : BooleanStateUpdate) = or (that)
+
     /**
      * Not operation for boolean state.
      */
     def unary_! (): BooleanStateUpdate = new BooleanStateUpdate (!state, validTime)
+}
+
+/**
+ * Helper.
+ */
+object BooleanStateUpdate {
+    implicit def boolean2BooleanStateUpdate (b : Boolean) : BooleanStateUpdate =
+        new BooleanStateUpdate (state = b, validTime = Long.MaxValue nanoseconds)
 }
