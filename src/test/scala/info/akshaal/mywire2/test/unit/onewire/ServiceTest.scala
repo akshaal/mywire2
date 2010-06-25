@@ -147,8 +147,9 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                         service.tooMany  must_==  0
                         service.tooManyGone  must_==  0
 
+                        // This is because of silent problem
                         devices.stateControllingServiceMP.switch2
-                               .opReadState.runWithFutureAsy.get  must_==  Success(Some(true))
+                               .opReadState.runWithFutureAsy.get  must_==  Success(Some(false))
 
                         // This should trigger 'unavailable temperature' problem
                         Thread.sleep (50.milliseconds.asMilliseconds)
@@ -367,6 +368,8 @@ object ServiceTest {
         override protected val safeState = false
 
         override protected val possibleProblems : List[Problem] = Nil
+
+        override protected val possibleSilentProblems : List[Problem] = Nil
     }
 
     class TestStateControllingServiceListener extends TestActor {
@@ -424,6 +427,9 @@ object ServiceTest {
            trackedTemperature.problemIfNaN ::
            trackedTemperature.problemIfUndefinedFor (50 milliseconds) ::
            trackedTemperature.problemIf ("temp").greaterThan (30, backOn=15) :: Nil
+
+        override protected val possibleSilentProblems : List[Problem] =
+           trackedTemperature.problemIfUndefined :: Nil
 
         def updateTemp (temp : Double) = {
             postponed {

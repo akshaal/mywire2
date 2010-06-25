@@ -177,9 +177,17 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
             }
         }
 
+        // Check for silent problems
+        lazy val foundSilentProblems = possibleSilentProblems.find(_.detected != None)
+        if (isDebugEnabled) {
+            for (silentProblem <- foundSilentProblems) {
+                debug ("Found silent problem: " + silentProblem.detected)
+            }
+        }
+
         // Get new state
         val stateUpdate =
-            if (currentProblem == None && disabledUntil == None)
+            if (currentProblem == None && disabledUntil == None && foundSilentProblems == None)
                 getStateUpdate ()
             else
                 new StateUpdate (state = safeState, validTime = interval * 3)
@@ -276,4 +284,10 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
      * List of possible problems.
      */
     protected def possibleProblems : List [Problem]
+
+    /**
+     * List of possible problem that don't generate any error messages, but just
+     * switches device to the safe mode.
+     */
+    protected def possibleSilentProblems : List[Problem]
 }
