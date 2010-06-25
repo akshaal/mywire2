@@ -49,7 +49,7 @@ abstract class AbstractTracker[T, B] (names : String*) extends Logging {
     }
 
     /**
-     * Returns a definition of problem that appears when some temperature is unknown for too long.
+     * Returns a definition of problem that appears when some value is unknown for too long.
      */
     def problemIfUndefinedFor (period : TimeValue) : Problem =
         new Problem {
@@ -81,4 +81,9 @@ abstract class AbstractTracker[T, B] (names : String*) extends Logging {
                 return Some ("All values are available now")
             }
         }
+
+    /**
+     * Returns a definition of problem that appears when some value is unknown for too long.
+     */
+    def problemIfUndefined () : Problem = problemIfUndefinedFor (0 nanoseconds)
 }

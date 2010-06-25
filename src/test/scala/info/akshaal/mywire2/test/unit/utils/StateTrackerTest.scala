@@ -74,7 +74,7 @@ class StateTrackerTest extends SpecificationWithJUnit ("StateTracker specificati
             st ("name2")  must_==  false
         }
 
-        "should detect problem when some of values are undefined" in {
+        "should detect problem when some of values are undefined for too long" in {
             val st = new StateTracker[Boolean] ("name1", "name2")
             st.problemIfUndefinedFor(10 milliseconds).detected  must_==  None
             st.problemIfUndefinedFor(10 milliseconds).isGone    must_!=  None
@@ -137,6 +137,25 @@ class StateTrackerTest extends SpecificationWithJUnit ("StateTracker specificati
             st.updateFrom (new StateUpdated (name = "name1", value = 11))
             problem.detected  must_==  None
             problem.isGone    must_!=  None
+        }
+
+        "should detect problem when some of values are undefined" in {
+            val st = new StateTracker[Boolean] ("name1", "name2")
+            st.problemIfUndefined().detected  must_!=  None
+            st.problemIfUndefined().isGone    must_==  None
+
+            Thread.sleep (15.milliseconds.asMilliseconds)
+
+            st.problemIfUndefined().detected  must_!=  None
+            st.problemIfUndefined().isGone    must_==  None
+
+            st.updateFrom (new StateUpdated (name = "name1", value = true))
+            st.problemIfUndefined().detected  must_!=  None
+            st.problemIfUndefined().isGone    must_==  None
+
+            st.updateFrom (new StateUpdated (name = "name2", value = true))
+            st.problemIfUndefined().detected  must_==  None
+            st.problemIfUndefined().isGone    must_!=  None
         }
     }
 }

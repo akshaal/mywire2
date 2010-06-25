@@ -96,7 +96,7 @@ class TemperatureTrackerTest extends SpecificationWithJUnit ("TemperatureTracker
             tt.problemIfNaN.isGone    must_==  None
         }
 
-        "should detect problem when some of values are undefined" in {
+        "should detect problem when some of values are undefined for too long" in {
             val tt = new TemperatureTracker ("name1", "name2")
             tt.problemIfUndefinedFor(10 milliseconds).detected  must_==  None
             tt.problemIfUndefinedFor(10 milliseconds).isGone    must_!=  None
@@ -199,6 +199,25 @@ class TemperatureTrackerTest extends SpecificationWithJUnit ("TemperatureTracker
             tt.updateFrom (new Temperature (name = "name1", value = 40, average3 = Double.NaN))
             problem.detected  must_==  None
             problem.isGone    must_==  None
+        }
+
+        "should detect problem when some of values are undefined" in {
+            val tt = new TemperatureTracker ("name1", "name2")
+            tt.problemIfUndefined().detected  must_!=  None
+            tt.problemIfUndefined().isGone    must_==  None
+
+            Thread.sleep (15.milliseconds.asMilliseconds)
+
+            tt.problemIfUndefined().detected  must_!=  None
+            tt.problemIfUndefined().isGone    must_==  None
+
+            tt.updateFrom (new Temperature (name = "name1", value = 1, average3 = 1))
+            tt.problemIfUndefined().detected  must_!=  None
+            tt.problemIfUndefined().isGone    must_==  None
+
+            tt.updateFrom (new Temperature (name = "name2", value = 2, average3 = 2))
+            tt.problemIfUndefined().detected  must_==  None
+            tt.problemIfUndefined().isGone    must_!=  None
         }
     }
 }
