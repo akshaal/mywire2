@@ -14,7 +14,8 @@ import info.akshaal.jacore.utils.DoubleValueFrameNaNIgnored
 
 import device.{DeviceHasTemperature, DeviceHasHumidity}
 import domain.{Temperature, Humidity, StateUpdated}
-import utils.{StateContainer, StateUpdate, Problem}
+import utils.{StateUpdate, Problem}
+import utils.container._
 
 /**
  * Reads temperature value from device and broadcasts it as exportable object.
@@ -110,7 +111,7 @@ class HumidityMonitoringService (actorEnv : HiPriorityActorEnv,
  *                     for this amount of time
  */
 abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
-                                            stateContainer : StateContainer [T],
+                                            stateContainer : WriteableStateContainer [T],
                                             name : String,
                                             interval : TimeValue = 10 seconds,
                                             tooManyProblemsNumber : Int = 5,

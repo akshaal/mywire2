@@ -70,21 +70,21 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
                 }
 
                 withStartedActor (mp.dev1) {
-                    mp.dev1.opGetState ().runWithFutureAsy().get  must_==  Success (false)
+                    mp.dev1.PIO.opGetState ().runWithFutureAsy().get  must_==  Success (false)
                 }
 
                 withStartedActor (mp.dev2) {
-                    mp.dev2.opGetState ().runWithFutureAsy().get  must_==  Success (true)
+                    mp.dev2.PIO.opGetState ().runWithFutureAsy().get  must_==  Success (true)
                 }
 
                 withStartedActor (mp.dev3) {
-                    mp.dev3.opGetState ().runWithFutureAsy().get  must beLike {
+                    mp.dev3.PIO.opGetState ().runWithFutureAsy().get  must beLike {
                         case Failure(exc) => exc.isInstanceOf[NumberFormatException]
                     }
                 }
 
                 withStartedActor (mp.dev4) {
-                    mp.dev4.opGetState ().runWithFutureAsy().get  must_==  Failure[Boolean](fnf)
+                    mp.dev4.PIO.opGetState ().runWithFutureAsy().get  must_==  Failure[Boolean](fnf)
                 }
             })
         }
@@ -102,17 +102,54 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
                 }
 
                 withStartedActor (mp.dev1) {
-                    mp.dev1.opSetState (false).runWithFutureAsy().get
+                    mp.dev1.PIO.opSetState (false).runWithFutureAsy().get
                 }
 
                 withStartedActor (mp.dev2) {
-                    mp.dev2.opSetState (true).runWithFutureAsy().get
+                    mp.dev2.PIO.opSetState (true).runWithFutureAsy().get
                 }
             })
 
             writeFs.size must_== 2
             writeFs ("/tmp/test/uncached/05.abc/PIO") must_== "0"
             writeFs ("/tmp/test/uncached/05.abd/PIO") must_== "1"
+        }
+
+        "read sensed" in {
+            val readFs = Map ("/tmp/test/uncached/05.abc/sensed" -> Success("1"),
+                              "/tmp/test/uncached/05.abd/sensed" -> Success("0"),
+                              "/tmp/test/uncached/05.abe/sensed" -> Success(""),
+                              "/tmp/test/uncached/05.bcd/sensed" -> Failure[String](fnf))
+
+            withMockedTextFile (readFs) (textFileActor => {
+                val deviceEnv = Mocker.newDeviceEnv
+                deviceEnv.textFile returns textFileActor
+
+                val mp = new MountPoint ("/tmp/test") {
+                    object dev1 extends DS2405 ("abc", deviceEnv)
+                    object dev2 extends DS2405 ("abd", deviceEnv)
+                    object dev3 extends DS2405 ("abe", deviceEnv)
+                    object dev4 extends DS2405 ("bcd", deviceEnv)
+                }
+
+                withStartedActor (mp.dev1) {
+                    mp.dev1.Sensed.opGetState ().runWithFutureAsy().get  must_==  Success (true)
+                }
+
+                withStartedActor (mp.dev2) {
+                    mp.dev2.Sensed.opGetState ().runWithFutureAsy().get  must_==  Success (false)
+                }
+
+                withStartedActor (mp.dev3) {
+                    mp.dev3.Sensed.opGetState ().runWithFutureAsy().get  must beLike {
+                        case Failure(exc) => exc.isInstanceOf[NumberFormatException]
+                    }
+                }
+
+                withStartedActor (mp.dev4) {
+                    mp.dev4.Sensed.opGetState ().runWithFutureAsy().get  must_==  Failure[Boolean](fnf)
+                }
+            })
         }
     }
 

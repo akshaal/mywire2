@@ -14,7 +14,7 @@ import info.akshaal.jacore.actor.{Operation, Actor, HiPriorityActorEnv}
 import info.akshaal.jacore.fs.text.TextFile
 
 import info.akshaal.mywire2.daemon.Autoregister
-import utils.StateContainer
+import utils.container._
 
 // /////////////////////////////////////////////////////////////////
 // Common
@@ -207,12 +207,16 @@ class DS2438 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : Devic
  */
 class DS2405 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : DeviceLocation)
                                 extends DeviceActor (id, "05", parentDevLoc, deviceEnv)
-                                   with StateContainer[Boolean]
 {
     /**
      * A name of file with PIO state.
      */
     protected final val pioFileName : String = "PIO"
+
+    /**
+     * A name of file with sensed state.
+     */
+    protected final val sensedFileName : String = "sensed"
 
     /**
      * Parse state.
@@ -227,15 +231,41 @@ class DS2405 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : Devic
         }
 
     /**
-     * Async operation to read current PIO state. This is state that was set previously.
-     * This is not sensed state (actual state).
+     * Get state from file.
      */
-    def opGetState () : Operation.WithResult [Boolean] =
-                opReadAndParse (pioFileName, parseState)
+    protected def opGetStateFromFile (file : String) : Operation.WithResult [Boolean] =
+        opReadAndParse (file, parseState)
 
     /**
-     * Write new state for the PIO.
+     * Set state in file.
      */
-    def opSetState (state : Boolean) : Operation.WithResult [Unit] =
-                opWrite (pioFileName, if (state) "1" else "0")
+    protected def opSetStateToFile (file : String, state : Boolean) : Operation.WithResult [Unit] =
+        opWrite (file, if (state) "1" else "0")
+
+    /**
+     * PIO object.
+     */
+    object PIO extends RWStateContainer[Boolean] {
+        /**
+         * Async operation to read current PIO state. This is state that was set previously.
+         * This is not sensed state (actual state).
+         */
+        override def opGetState () : Operation.WithResult [Boolean] =
+                  opGetStateFromFile (pioFileName)
+
+        /**
+         * Write new state for the PIO.
+         */
+        override def opSetState (state : Boolean) : Operation.WithResult [Unit] =
+                  opSetStateToFile (pioFileName, state)
+    }
+
+    object Sensed extends ReadableStateContainer[Boolean] {
+        /**
+         * Async operation to read current PIO state. This is state that was set previously.
+         * This is not sensed state (actual state).
+         */
+        override def opGetState () : Operation.WithResult [Boolean] =
+                  opGetStateFromFile (sensedFileName)
+    }
 }

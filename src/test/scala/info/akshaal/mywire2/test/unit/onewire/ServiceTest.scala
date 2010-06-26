@@ -267,10 +267,12 @@ object ServiceTest {
             object switch extends DS2405 ("abc", deviceEnv) {
                 var n = 0
 
-                override def opSetState (state : Boolean) : Operation.WithResult [Unit] = {
+                override def opSetStateToFile (file : String, state : Boolean) : Operation.WithResult [Unit] = {
                     new AbstractOperation [Result[Unit]] {
                         override def processRequest () = {
-                            n += 1
+                            if (file == "PIO") {
+                                n += 1
+                            }
                             yieldResult (Success(null))
                         }
                     }
@@ -281,11 +283,13 @@ object ServiceTest {
                 private var state : Option[Boolean] = None
                 var states : List[Boolean] = Nil
 
-                override def opSetState (st : Boolean) : Operation.WithResult [Unit] = {
+                override def opSetStateToFile (file : String, st : Boolean) : Operation.WithResult [Unit] = {
                     new AbstractOperation [Result[Unit]] {
                         override def processRequest () = {
-                            state = Some (st)
-                            states = st :: states
+                            if (file == "PIO") {
+                                state = Some (st)
+                                states = st :: states
+                            }
                             yieldResult (Success(null))
                         }
                     }
@@ -356,7 +360,7 @@ object ServiceTest {
     class TestStateControllingService
             extends StateControllingService (
                                 actorEnv = TestModule.hiPriorityActorEnv,
-                                stateContainer = devices.stateControllingServiceMP.switch,
+                                stateContainer = devices.stateControllingServiceMP.switch.PIO,
                                 name = "testStateControllingService",
                                 interval = 170 seconds)
     {
@@ -406,7 +410,7 @@ object ServiceTest {
     class TestStateControllingService2
             extends StateControllingService (
                                 actorEnv = TestModule.hiPriorityActorEnv,
-                                stateContainer = devices.stateControllingServiceMP.switch2,
+                                stateContainer = devices.stateControllingServiceMP.switch2.PIO,
                                 name = "testStateControllingService",
                                 interval = 170 seconds,
                                 tooManyProblemsInterval = 200 milliseconds,

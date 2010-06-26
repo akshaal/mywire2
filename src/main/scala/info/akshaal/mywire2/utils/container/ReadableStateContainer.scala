@@ -3,24 +3,18 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2
-package utils
+package info.akshaal.mywire2.utils.container
 
 import info.akshaal.jacore.`package`._
 
 import info.akshaal.jacore.actor.Operation
 
 /**
- * A state with method to get it and change it.
+ * A state container with a method to get its value.
  */
-trait StateContainer [T] {
+trait ReadableStateContainer [T] {
     /**
      * Operation to get current state.
      */
     def opGetState () : Operation.WithResult [T]
-
-    /**
-     * Operation to set current state.
-     */
-    def opSetState (t : T) : Operation.WithResult [Unit]
 }
