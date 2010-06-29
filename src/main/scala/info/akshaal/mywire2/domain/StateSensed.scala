@@ -5,15 +5,13 @@
 
 package info.akshaal.mywire2.domain
 
-case class Humidity (name : String,
-                     value : Option[Double],
-                     average3 : Option[Double])
+case class StateSensed (name : String,
+                        value : Option[Any])
             extends Export
 {
     override def toMap : Map[String, Any] = {
         super.toMap
              .updated ("name", name)
              .updated ("value", value getOrElse null)
-             .updated ("average3", average3 getOrElse null)
     }
 }

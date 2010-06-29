@@ -31,26 +31,26 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                         val started = System.currentTimeMillis
 
                         listener.waitForMessageAfter {}
-                        listener.temp  must_==  36.6
-                        listener.avg3  must_==  36.6
+                        listener.temp  must_==  Some(36.6)
+                        listener.avg3  must_==  Some(36.6)
                         listener.recs  must_==  1
 
                         // It is important that the same value received twice
                         // Because programs like jrobin wants to have value for every
                         // point in time.
                         listener.waitForMessageAfter {}
-                        listener.temp  must_==  1.0
-                        listener.avg3  must_==  (36.6d + 1.0d) / 2.0d
+                        listener.temp  must_==  Some(1.0)
+                        listener.avg3  must_==  Some((36.6d + 1.0d) / 2.0d)
                         listener.recs  must_==  2
 
                         listener.waitForMessageAfter {}
-                        listener.temp  must_==  1.0
-                        listener.avg3  must_==  (36.6d + 1.0d + 1.0d) / 3.0d
+                        listener.temp  must_==  Some(1.0)
+                        listener.avg3  must_==  Some((36.6d + 1.0d + 1.0d) / 3.0d)
                         listener.recs  must_==  3
 
                         listener.waitForMessageAfter {}
-                        listener.temp.isNaN  must_==  true
-                        listener.avg3  must_==  (1.0d + 1.0d) / 2.0d
+                        listener.temp  must_==  None
+                        listener.avg3  must_==  Some((1.0d + 1.0d) / 2.0d)
                         listener.recs  must_==  4
 
                         val lasted = System.currentTimeMillis - started
@@ -70,26 +70,26 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                         val started = System.currentTimeMillis
 
                         listener.waitForMessageAfter {}
-                        listener.hum  must_==  70.1
-                        listener.avg3  must_==  70.1
+                        listener.hum  must_==  Some(70.1)
+                        listener.avg3  must_==  Some(70.1)
                         listener.recs  must_==  1
 
                         // It is important that the same value received twice
                         // Because programs like jrobin wants to have value for every
                         // point in time.
                         listener.waitForMessageAfter {}
-                        listener.hum  must_==  60.2
-                        listener.avg3  must_==  (60.2d + 70.1d) / 2.0d
+                        listener.hum  must_==  Some(60.2)
+                        listener.avg3  must_==  Some((60.2d + 70.1d) / 2.0d)
                         listener.recs  must_==  2
 
                         listener.waitForMessageAfter {}
-                        listener.avg3  must_==  (60.2d + 60.2d + 70.1d) / 3.0d
-                        listener.hum  must_==  60.2
+                        listener.avg3  must_==  Some((60.2d + 60.2d + 70.1d) / 3.0d)
+                        listener.hum  must_==  Some(60.2)
                         listener.recs  must_==  3
 
                         listener.waitForMessageAfter {}
-                        listener.avg3  must_==  (60.2d + 60.2d) / 2.0d
-                        listener.hum.isNaN  must_==  true
+                        listener.avg3  must_==  Some((60.2d + 60.2d) / 2.0d)
+                        listener.hum  must_==  None
                         listener.recs  must_==  4
 
                         val lasted = System.currentTimeMillis - started
@@ -163,7 +163,7 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                         service.tooManyGone  must_==  0
 
                         // This should remove 'unavasilable temperature' problem
-                        service.updateTemp (25)
+                        service.updateTemp (Some(25))
                         Thread.sleep (50.milliseconds.asMilliseconds)
                         readState  must_==  Success(Some(true))
                         service.problems  must_==  1
@@ -173,7 +173,7 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
 
                         // This must check temp problem and trigger too many problems case
                         for (i <- 1 to 4) {
-                            service.updateTemp (40)
+                            service.updateTemp (Some(40))
                             Thread.sleep (10.milliseconds.asMilliseconds)
                             readState  must_==  Success(Some(false))
                             service.problems  must_==  1 + i
@@ -181,7 +181,7 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                             service.tooMany  must_==  0
                             service.tooManyGone  must_==  0
 
-                            service.updateTemp (10)
+                            service.updateTemp (Some(10))
                             Thread.sleep (10.milliseconds.asMilliseconds)
                             readState  must_==  Success(Some(i != 4))
                             service.problems  must_==  1 + i
@@ -309,8 +309,8 @@ object ServiceTest {
     // Temperature testing - - - - - - - - - -
     
     class TestTemperatureMonitoringServiceListener extends TestActor {
-        var temp : Double = 0.0
-        var avg3 : Double = 0.0
+        var temp : Option[Double] = Some(0.0)
+        var avg3 : Option[Double] = Some(0.0)
         var recs = 0
 
         subscribe [Temperature]
@@ -334,8 +334,8 @@ object ServiceTest {
     // Humidity testing - - - - - - - - - -
 
     class TestHumidityMonitoringServiceListener extends TestActor {
-        var hum : Double = 0.0
-        var avg3 : Double = 0.0
+        var hum : Option[Double] = Some(0.0)
+        var avg3 : Option[Double] = Some(0.0)
         var recs = 0
 
         subscribe [Humidity]
@@ -435,7 +435,7 @@ object ServiceTest {
         override protected val possibleSilentProblems : List[Problem] =
            trackedTemperature.problemIfUndefined :: Nil
 
-        def updateTemp (temp : Double) = {
+        def updateTemp (temp : Option[Double]) = {
             postponed {
                 trackedTemperature.updateFrom (new Temperature ("temp", value=temp, average3=temp))
                 updateStateIfChanged ()

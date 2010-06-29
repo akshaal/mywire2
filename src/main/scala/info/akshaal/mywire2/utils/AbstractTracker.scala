@@ -17,12 +17,13 @@ import info.akshaal.jacore.logger.Logging
  */
 abstract class AbstractTracker[T, B] (names : String*) extends Logging {
     protected final val createdAt = System.nanoTime.nanoseconds
+    protected final val updatedAt = new HashMap [String, TimeValue]
     protected final val map = new HashMap [String, T]
 
     require (!names.isEmpty, "list of names must not be empty")
 
     /**
-     * Returns current value or NaN if unknown.
+     * Returns current value or exception if unknown.
      */
     def apply (name : String) : B = {
         require (names contains name, name + " is not tracked by this tracker")
@@ -38,13 +39,19 @@ abstract class AbstractTracker[T, B] (names : String*) extends Logging {
     /**
      * Updates registry. Returns true if value is changed.
      */
-    def update (name : String, value : B) : Boolean = {
+    def update (name : String, valueOption : Option[B]) : Boolean = {
         if (names contains name) {
-            val previous = map.put (name, value.asInstanceOf[T])
+            valueOption match {
+                case None =>
+                    map.remove (name) != null
 
-            return previous == null || previous != value
+                case Some(value) =>
+                    updatedAt.put (name, System.nanoTime nanoseconds)
+                    val previous = map.put (name, value.asInstanceOf[T])
+                    previous == null || previous != value
+            }
         } else {
-            return false
+            false
         }
     }
 
@@ -57,7 +64,12 @@ abstract class AbstractTracker[T, B] (names : String*) extends Logging {
                 if (System.nanoTime.nanoseconds - createdAt > period) {
                     for (name <- names) {
                         if (!(map contains name)) {
-                            return Some (name)
+                            val lastUpdate = updatedAt.get (name)
+                            if (lastUpdate == null || System.nanoTime.nanoseconds - lastUpdate > period) {
+                                return Some (name)
+                            } else {
+                                None
+                            }
                         }
                     }
                 }

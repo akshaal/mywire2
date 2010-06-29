@@ -33,43 +33,43 @@ class TemperatureTrackerTest extends SpecificationWithJUnit ("TemperatureTracker
         "should return inserted valuse from average3 attribute" in {
             val tt = new TemperatureTracker ("name1")
 
-            tt.updateFrom (new Temperature (name = "name1", value = 1, average3 = 2))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(1), average3 = Some(2)))
             tt ("name1")  must_==  2
 
-            tt.updateFrom (new Temperature (name = "name1", value = 1, average3 = 10))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(1), average3 = Some(10)))
             tt ("name1")  must_==  10
 
-            tt.updateFrom (new Temperature (name = "name1", value = Double.NaN, average3 = Double.NaN))
-            tt ("name1").isNaN  must beTrue
+            tt.updateFrom (new Temperature (name = "name1", value = None, average3 = None))
+            tt ("name1")  must throwA[IllegalArgumentException]
 
-            tt.updateFrom (new Temperature (name = "name1", value = Double.NaN, average3 = 0))
+            tt.updateFrom (new Temperature (name = "name1", value = None, average3 = Some(0)))
             tt ("name1")  must_==  0
         }
 
         "should return true when value updated" in {
             val tt = new TemperatureTracker ("name1", "name2")
 
-            tt.updateFrom (new Temperature (name = "name1", value = 10, average3 = 2))  must_== true
+            tt.updateFrom (new Temperature (name = "name1", value = Some(10), average3 = Some(2)))  must_== true
             tt ("name1")  must_==  2
             tt ("name2")  must throwA[IllegalArgumentException]
 
-            tt.updateFrom (new Temperature (name = "name1", value = 10, average3 = -30))  must_== true
+            tt.updateFrom (new Temperature (name = "name1", value = Some(10), average3 = Some(-30)))  must_== true
             tt ("name1")  must_==  -30
             tt ("name2")  must throwA[IllegalArgumentException]
 
-            tt.updateFrom (new Temperature (name = "name1", value = 10, average3 = -30))  must_== false
+            tt.updateFrom (new Temperature (name = "name1", value = Some(10), average3 = Some(-30)))  must_== false
             tt ("name1")  must_==  -30
             tt ("name2")  must throwA[IllegalArgumentException]
 
-            tt.updateFrom (new Temperature (name = "name1", value = 10, average3 = 30))  must_== true
+            tt.updateFrom (new Temperature (name = "name1", value = Some(10), average3 = Some(30)))  must_== true
             tt ("name1")  must_==  30
             tt ("name2")  must throwA[IllegalArgumentException]
 
-            tt.updateFrom (new Temperature (name = "name2", value = 10, average3 = 15))  must_== true
+            tt.updateFrom (new Temperature (name = "name2", value = Some(10), average3 = Some(15)))  must_== true
             tt ("name1")  must_==  30
             tt ("name2")  must_==  15
 
-            tt.updateFrom (new Temperature (name = "name3", value = 10, average3 = 6))  must_== false
+            tt.updateFrom (new Temperature (name = "name3", value = Some(10), average3 = Some(6)))  must_== false
             tt ("name1")  must_==  30
             tt ("name2")  must_==  15
         }
@@ -79,19 +79,19 @@ class TemperatureTrackerTest extends SpecificationWithJUnit ("TemperatureTracker
             tt.problemIfNaN.detected  must_==  None
             tt.problemIfNaN.isGone    must_!=  None
 
-            tt.updateFrom (new Temperature (name = "name1", value = 1, average3 = 1))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(1), average3 = Some(1)))
             tt.problemIfNaN.detected  must_==  None
             tt.problemIfNaN.isGone    must_!=  None
 
-            tt.updateFrom (new Temperature (name = "name2", value = 2, average3 = 2))
+            tt.updateFrom (new Temperature (name = "name2", value = Some(2), average3 = Some(2)))
             tt.problemIfNaN.detected  must_==  None
             tt.problemIfNaN.isGone    must_!=  None
 
-            tt.updateFrom (new Temperature (name = "name1", value = 1, average3 = Double.NaN))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(1), average3 = Some(Double.NaN)))
             tt.problemIfNaN.detected  must_!=  None
             tt.problemIfNaN.isGone    must_==  None
 
-            tt.updateFrom (new Temperature (name = "name2", value = 1, average3 = Double.NaN))
+            tt.updateFrom (new Temperature (name = "name2", value = Some(1), average3 = Some(Double.NaN)))
             tt.problemIfNaN.detected  must_!=  None
             tt.problemIfNaN.isGone    must_==  None
         }
@@ -106,19 +106,19 @@ class TemperatureTrackerTest extends SpecificationWithJUnit ("TemperatureTracker
             tt.problemIfUndefinedFor(10 milliseconds).detected  must_!=  None
             tt.problemIfUndefinedFor(10 milliseconds).isGone    must_==  None
 
-            tt.updateFrom (new Temperature (name = "name1", value = 1, average3 = 1))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(1), average3 = Some(1)))
             tt.problemIfUndefinedFor(10 milliseconds).detected  must_!=  None
             tt.problemIfUndefinedFor(10 milliseconds).isGone    must_==  None
 
-            tt.updateFrom (new Temperature (name = "name2", value = 2, average3 = 2))
+            tt.updateFrom (new Temperature (name = "name2", value = Some(2), average3 = Some(2)))
             tt.problemIfUndefinedFor(10 milliseconds).detected  must_==  None
             tt.problemIfUndefinedFor(10 milliseconds).isGone    must_!=  None
 
             // Everything is good from the beginning
 
             val tt2 = new TemperatureTracker ("name1", "name2")
-            tt2.updateFrom (new Temperature (name = "name1", value = 1, average3 = 1))
-            tt2.updateFrom (new Temperature (name = "name2", value = 2, average3 = 2))
+            tt2.updateFrom (new Temperature (name = "name1", value = Some(1), average3 = Some(1)))
+            tt2.updateFrom (new Temperature (name = "name2", value = Some(2), average3 = Some(2)))
 
             tt2.problemIfUndefinedFor(10 milliseconds).detected  must_==  None
             tt2.problemIfUndefinedFor(10 milliseconds).isGone    must_!=  None
@@ -136,31 +136,31 @@ class TemperatureTrackerTest extends SpecificationWithJUnit ("TemperatureTracker
             problem.detected  must_==  None
             problem.isGone    must_==  None
 
-            tt.updateFrom (new Temperature (name = "name2", value = 1, average3 = 1))
+            tt.updateFrom (new Temperature (name = "name2", value = Some(1), average3 = Some(1)))
             problem.detected  must_==  None
             problem.isGone    must_==  None
 
-            tt.updateFrom (new Temperature (name = "name1", value = 30, average3 = 30))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(30), average3 = Some(30)))
             problem.detected  must_==  None
             problem.isGone    must_==  None
 
-            tt.updateFrom (new Temperature (name = "name1", value = 30, average3 = 31))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(30), average3 = Some(31)))
             problem.detected  must_!=  None
             problem.isGone    must_==  None
 
-            tt.updateFrom (new Temperature (name = "name1", value = 30, average3 = 40))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(30), average3 = Some(40)))
             problem.detected  must_!=  None
             problem.isGone    must_==  None
 
-            tt.updateFrom (new Temperature (name = "name1", value = 30, average3 = 15))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(30), average3 = Some(15)))
             problem.detected  must_==  None
             problem.isGone    must_!=  None
 
-            tt.updateFrom (new Temperature (name = "name1", value = 30, average3 = -30))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(30), average3 = Some(-30)))
             problem.detected  must_==  None
             problem.isGone    must_!=  None
 
-            tt.updateFrom (new Temperature (name = "name1", value = 30, average3 = Double.NaN))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(30), average3 = None))
             problem.detected  must_==  None
             problem.isGone    must_==  None
         }
@@ -172,31 +172,31 @@ class TemperatureTrackerTest extends SpecificationWithJUnit ("TemperatureTracker
             problem.detected  must_==  None
             problem.isGone    must_==  None
 
-            tt.updateFrom (new Temperature (name = "name2", value = 1, average3 = 1))
+            tt.updateFrom (new Temperature (name = "name2", value = Some(1), average3 = Some(1)))
             problem.detected  must_==  None
             problem.isGone    must_==  None
 
-            tt.updateFrom (new Temperature (name = "name1", value = 15, average3 = 15))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(15), average3 = Some(15)))
             problem.detected  must_==  None
             problem.isGone    must_==  None
 
-            tt.updateFrom (new Temperature (name = "name1", value = 14, average3 = 14))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(14), average3 = Some(14)))
             problem.detected  must_!=  None
             problem.isGone    must_==  None
 
-            tt.updateFrom (new Temperature (name = "name1", value = -5, average3 = -5))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(-5), average3 = Some(-5)))
             problem.detected  must_!=  None
             problem.isGone    must_==  None
 
-            tt.updateFrom (new Temperature (name = "name1", value = 30, average3 = 30))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(30), average3 = Some(30)))
             problem.detected  must_==  None
             problem.isGone    must_!=  None
 
-            tt.updateFrom (new Temperature (name = "name1", value = 40, average3 = 40))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(40), average3 = Some(40)))
             problem.detected  must_==  None
             problem.isGone    must_!=  None
 
-            tt.updateFrom (new Temperature (name = "name1", value = 40, average3 = Double.NaN))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(40), average3 = None))
             problem.detected  must_==  None
             problem.isGone    must_==  None
         }
@@ -211,11 +211,11 @@ class TemperatureTrackerTest extends SpecificationWithJUnit ("TemperatureTracker
             tt.problemIfUndefined().detected  must_!=  None
             tt.problemIfUndefined().isGone    must_==  None
 
-            tt.updateFrom (new Temperature (name = "name1", value = 1, average3 = 1))
+            tt.updateFrom (new Temperature (name = "name1", value = Some(1), average3 = Some(1)))
             tt.problemIfUndefined().detected  must_!=  None
             tt.problemIfUndefined().isGone    must_==  None
 
-            tt.updateFrom (new Temperature (name = "name2", value = 2, average3 = 2))
+            tt.updateFrom (new Temperature (name = "name2", value = Some(2), average3 = Some(2)))
             tt.problemIfUndefined().detected  must_==  None
             tt.problemIfUndefined().isGone    must_!=  None
         }

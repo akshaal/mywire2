@@ -7,7 +7,7 @@ package info.akshaal.mywire2
 package utils
 
 import info.akshaal.jacore.utils.ClassUtils
-import domain.StateUpdated
+import domain.{StateUpdated, StateSensed}
 
 class StateTracker [T] (names : String*) (implicit tManifest : ClassManifest[T])
                   extends AbstractTracker[java.lang.Object, T] (names : _*)
@@ -24,13 +24,38 @@ class StateTracker [T] (names : String*) (implicit tManifest : ClassManifest[T])
         val valueClass = ClassUtils.box (valueObj.getClass ())
 
         if (boxedTClass.isAssignableFrom(valueClass)) {
-            update (stateUpdated.name, value.asInstanceOf[T])
+            update (stateUpdated.name, Some(value.asInstanceOf[T]))
         } else {
             if (names contains stateUpdated.name) {
                 errorLazy ("Tracked state object contains value of incompatible type: " + stateUpdated)
             }
 
             false
+        }
+    }
+
+    /**
+     * Updates current state registry by using value from stateUpdated object.
+     * Returns true if value is changed.
+     */
+    def updateFrom (stateSensed : StateSensed) : Boolean = {
+        stateSensed.value match {
+            case Some(value) =>
+                val valueObj = value.asInstanceOf [java.lang.Object]
+                val valueClass = ClassUtils.box (valueObj.getClass ())
+
+                if (boxedTClass.isAssignableFrom(valueClass)) {
+                    update (stateSensed.name, Some(value.asInstanceOf[T]))
+                } else {
+                    if (names contains stateSensed.name) {
+                        errorLazy ("Tracked state object contains value of incompatible type: " + stateSensed)
+                    }
+
+                    false
+                }
+
+            case None =>
+                update (stateSensed.name, None)
         }
     }
 
