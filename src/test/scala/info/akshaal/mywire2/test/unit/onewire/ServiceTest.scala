@@ -14,7 +14,7 @@ import info.akshaal.jacore.actor.Operation
 import onewire.device._
 import onewire.service._
 import strategy.SimpleOnOffStrategy
-import domain.{Temperature, Humidity, StateUpdated}
+import domain.{Temperature, Humidity, StateUpdated, StateSensed}
 import utils.{StateUpdate, TemperatureTracker, Problem}
 
 import unit.UnitTestHelper._
@@ -91,6 +91,48 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                         listener.avg3  must_==  Some((60.2d + 60.2d) / 2.0d)
                         listener.hum  must_==  None
                         listener.recs  must_==  4
+
+                        val lasted = System.currentTimeMillis - started
+                        lasted  must beIn (1200 to 4200)
+                    }
+                }
+            )
+        }
+    }
+
+    "StateMonitoringService" should {
+        "work" in {
+            withStartedActors [TestStateMonitoringServiceListener,
+                               TestStateMonitoringService] (
+                (listener, service) => {
+                    withStartedActor (devices.stateMonitoringServiceMP.switch) {
+                        val started = System.currentTimeMillis
+                        listener.state must_==  None
+                        listener.recs  must_==  0
+                        listener.errors  must_==  0
+
+                        listener.waitForMessageAfter {}
+                        listener.state must_==  Some(true)
+                        listener.recs  must_==  1
+                        listener.errors  must_==  0
+
+                        // It is important that the same value received twice
+                        // Because programs like jrobin wants to have value for every
+                        // point in time.
+                        listener.waitForMessageAfter {}
+                        listener.state must_==  Some(false)
+                        listener.recs  must_==  2
+                        listener.errors  must_==  0
+
+                        listener.waitForMessageAfter {}
+                        listener.state must_==  Some(false)
+                        listener.recs  must_==  3
+                        listener.errors  must_==  0
+
+                        listener.waitForMessageAfter {}
+                        listener.state must_==  None
+                        listener.recs  must_==  4
+                        listener.errors  must_==  0
 
                         val lasted = System.currentTimeMillis - started
                         lasted  must beIn (1200 to 4200)
@@ -263,6 +305,27 @@ object ServiceTest {
             }
         }
 
+        object stateMonitoringServiceMP extends MountPoint ("/tmp/mywire") {
+            object switch extends DS2405 ("abc", deviceEnv) {
+                var n = 0
+
+                override def opGetStateFromFile (file : String) : Operation.WithResult [Boolean] =
+                    new AbstractOperation [Result[Boolean]] {
+                        override def processRequest () = {
+                            val result : Result[Boolean] = n match {
+                                case 0 => Success (true)
+                                case 1 => Success (false)
+                                case 2 => Success (false)
+                                case _ => Failure (new RuntimeException ())
+                            }
+                            n += 1
+
+                            yieldResult (result)
+                        }
+                    }
+            }
+        }
+
         object stateControllingServiceMP extends MountPoint ("/tmp/mywire") {
             object switch extends DS2405 ("abc", deviceEnv) {
                 var n = 0
@@ -353,6 +416,36 @@ object ServiceTest {
                                 actorEnv = TestModule.hiPriorityActorEnv,
                                 humidityDevice = devices.humidityMonitoringServiceMP.hum,
                                 name = "testHumidityMonitoringService",
+                                interval = 1 seconds)
+
+    // State monitoring testing - - - - - - - - - -
+
+    class TestStateMonitoringServiceListener extends TestActor {
+        var state : Option[Boolean] = None
+        var recs = 0
+        var errors = 0
+
+        subscribe [StateSensed]
+
+        override def act () = {
+            case StateSensed ("testStateMonitoringService", None) =>
+                state = None
+                recs += 1
+
+            case StateSensed ("testStateMonitoringService", Some(value : Boolean)) =>
+                state = Some (value)
+                recs += 1
+
+            case StateSensed ("testStateMonitoringService", _) =>
+                errors += 1
+        }
+    }
+
+    class TestStateMonitoringService
+             extends StateMonitoringService (
+                                actorEnv = TestModule.hiPriorityActorEnv,
+                                stateContainer = devices.stateMonitoringServiceMP.switch.Sensed,
+                                name = "testStateMonitoringService",
                                 interval = 1 seconds)
 
     // StateControllingService testing - - - - - - - - - -
