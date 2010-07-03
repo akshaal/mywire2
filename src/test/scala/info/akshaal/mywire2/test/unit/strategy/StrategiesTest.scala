@@ -19,8 +19,14 @@ class StrategiesTest extends SpecificationWithJUnit ("Strategies specification")
                                              offInterval = 30 milliseconds)
 
             // Wait till it is on + 15ms
-            Thread.sleep (80 - System.currentTimeMillis % 80 + 15)
+            val startStateUpdate = s.getStateUpdate
+            if (startStateUpdate.state == false) {
+                Thread.sleep (startStateUpdate.validTime.asMilliseconds + 15)
+            } else {
+                Thread.sleep (startStateUpdate.validTime.asMilliseconds + 15 + 30)
+            }            
 
+            // Do testing
             s.getStateUpdate.state  must_== true
             (!s.getStateUpdate).state  must_== false
 
