@@ -49,12 +49,32 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                         listener.recs  must_==  3
 
                         listener.waitForMessageAfter {}
-                        listener.temp  must_==  None
-                        listener.avg3  must_==  Some((1.0d + 1.0d) / 2.0d)
+                        listener.temp  must_==  Some(2.0)
+                        listener.avg3  must_==  Some((1.0d + 1.0d + 2.0d) / 3.0d)
                         listener.recs  must_==  4
 
+                        listener.waitForMessageAfter {}
+                        listener.temp  must_==  Some(3.0)
+                        listener.avg3  must_==  Some((1.0d + 3.0d + 2.0d) / 3.0d)
+                        listener.recs  must_==  5
+
+                        listener.waitForMessageAfter {}
+                        listener.temp  must_==  None
+                        listener.avg3  must_==  Some((3.0d + 2.0d) / 2.0d)
+                        listener.recs  must_==  6
+
+                        listener.waitForMessageAfter {}
+                        listener.temp  must_==  Some(4.0)
+                        listener.avg3  must_==  Some((4.0d + 3.0d) / 2.0d)
+                        listener.recs  must_==  7
+
+                        listener.waitForMessageAfter {}
+                        listener.temp  must_==  None
+                        listener.avg3  must_==  Some((4.0d) / 1.0d)
+                        listener.recs  must_==  8
+
                         val lasted = System.currentTimeMillis - started
-                        lasted  must beIn (1800 to 4200)
+                        lasted  must beIn (3600 to 8400)
                     }
                 }
             )
@@ -274,6 +294,15 @@ object ServiceTest {
                                 case 0 => Success (36.6)
                                 case 1 => Success (1.0)
                                 case 2 => Success (1.0)
+                                case 3 => Success (85.0)
+                                case 4 => Success (2.0)
+                                case 5 => Success (85.0)
+                                case 6 => Success (85.0)
+                                case 7 => Success (3.0)
+                                case 8 => Success (85.0)
+                                case 9 => Success (85.0)
+                                case 10 => Success (85.0)
+                                case 11 => Success (4.0)
                                 case _ => Failure (new RuntimeException ())
                             }
                             n += 1

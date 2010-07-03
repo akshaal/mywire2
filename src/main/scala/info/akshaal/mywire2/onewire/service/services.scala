@@ -24,10 +24,15 @@ class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
                                     temperatureDevice : DeviceHasTemperature,
                                     name : String,
                                     interval : TimeValue,
-                                    illegalTemperature : Option[Double] = None)
+                                    illegalTemperature : Option[Double] = None,
+                                    maxTries : Int = 3)
                      extends Actor (actorEnv = actorEnv)
 {
+    // Frame to keep average of temperature values
     private val frame = new OptionDoubleValueFrame (3)
+
+    // How many tries we can perform in case of error, None means that no errors happened yet.
+    private var triesLeft : Option[Int] = None
 
     // Local function to bradcast temperature
     private def broadcastTemperature (temperatureValue : Option[Double]) : Unit = {
@@ -39,21 +44,39 @@ class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
         broadcaster.broadcast (temperature)
     }
 
-    schedule every interval executionOf {
+    // Schedule updates
+    schedule every interval executionOf readTemperature()
+
+    // Read temperature
+    protected def readTemperature () : Unit =
         temperatureDevice.opReadTemperature () runMatchingResultAsy {
             case Success (temperatureValue) =>
                 if (Some (temperatureValue) == illegalTemperature) {
                     warn ("Illegal temperature got from " + temperatureDevice + "" + illegalTemperature.get)
-                    broadcastTemperature (None)
+
+                    triesLeft match {
+                        case None =>
+                            triesLeft = Some (maxTries - 1) // First try
+                            readTemperature ()
+
+                        case Some (tries) if tries > 1 =>
+                            triesLeft = Some (tries - 1) // We have some tries left
+                            readTemperature ()
+
+                        case _ =>
+                            triesLeft = None // Can't try anymore
+                            broadcastTemperature (None)
+                    }
                 } else {
+                    triesLeft = None // Everything is fine, no need to try
                     broadcastTemperature (Some (temperatureValue))
                 }
 
             case Failure (exc) =>
+                triesLeft = None // Something is bad, we can't try
                 error ("Error reading temperature of " + temperatureDevice + ": " + exc.getMessage, exc)
                 broadcastTemperature (None)
         }
-    }
 
     override def toString() : String = {
         getClass.getSimpleName + "(name=" + name +
