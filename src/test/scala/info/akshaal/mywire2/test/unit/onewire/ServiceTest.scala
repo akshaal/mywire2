@@ -171,35 +171,35 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                         val started = System.currentTimeMillis
                         
                         listener.waitForMessageAfter {}
-                        listener.changes  must_==  1
+                        listener.changes  must beGreaterThan(0)
                         listener.errors  must_==  0
 
                         listener.waitForMessageAfter {}
-                        listener.changes  must_==  2
+                        listener.changes  must beGreaterThan(1)
                         listener.errors  must_==  0
 
                         listener.waitForMessageAfter {}
-                        listener.changes  must_==  3
+                        listener.changes  must beGreaterThan(2)
                         listener.errors  must_==  0
 
                         listener.waitForMessageAfter {}
-                        listener.changes  must_==  4
+                        listener.changes  must beGreaterThan(3)
                         listener.errors  must_==  0
 
                         listener.waitForMessageAfter {}
-                        listener.changes  must_==  5
+                        listener.changes  must beGreaterThan(4)
                         listener.errors  must_==  0
 
                         listener.waitForMessageAfter {}
-                        listener.changes  must_==  6
+                        listener.changes  must beGreaterThan(5)
                         listener.errors  must_==  0
 
                         listener.waitForMessageAfter {}
-                        listener.changes  must_==  7
+                        listener.changes  must beGreaterThan(6)
                         listener.errors  must_==  0
 
                         listener.waitForMessageAfter {}
-                        listener.changes  must_==  8
+                        listener.changes  must beGreaterThan(7)
                         listener.errors  must_==  0
 
                         devices.stateControllingServiceMP.switch.n must beIn (8 to 24)
