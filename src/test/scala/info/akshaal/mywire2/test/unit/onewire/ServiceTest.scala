@@ -169,7 +169,7 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                 (listener, service) => {
                     withStartedActor (devices.stateControllingServiceMP.switch) {
                         val started = System.currentTimeMillis
-
+                        
                         listener.waitForMessageAfter {}
                         listener.changes  must_==  1
                         listener.errors  must_==  0
@@ -186,11 +186,31 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
                         listener.changes  must_==  4
                         listener.errors  must_==  0
 
-                        devices.stateControllingServiceMP.switch.n must beIn (4 to 12)
-                        (listener.ons - listener.offs)  must_==  0
+                        listener.waitForMessageAfter {}
+                        listener.changes  must_==  5
+                        listener.errors  must_==  0
+
+                        listener.waitForMessageAfter {}
+                        listener.changes  must_==  6
+                        listener.errors  must_==  0
+
+                        listener.waitForMessageAfter {}
+                        listener.changes  must_==  7
+                        listener.errors  must_==  0
+
+                        listener.waitForMessageAfter {}
+                        listener.changes  must_==  8
+                        listener.errors  must_==  0
+
+                        devices.stateControllingServiceMP.switch.n must beIn (8 to 24)
+                        (listener.ons - listener.offs)  must_!=  0
+                        listener.ons  must_!=  0
+                        listener.offs  must_!=  0
 
                         val lasted = System.currentTimeMillis - started
                         lasted  must beIn (180 to 1000)
+
+                        listener.dups  must_!=  0
                     }
                 }
             )
@@ -489,7 +509,16 @@ object ServiceTest {
         val strategy = new SimpleOnOffStrategy (onInterval = 100 milliseconds,
                                                 offInterval = 40 milliseconds)
 
-        protected def getStateUpdate () : StateUpdate[Boolean] = strategy.getStateUpdate
+        protected def getStateUpdate () : StateUpdate[Boolean] = {
+            val st = strategy.getStateUpdate
+
+            // We are going to broadcast set the same value twice.
+            if (st.validTime > (60 milliseconds)) {
+                new StateUpdate (st.state, st.validTime / 2)
+            } else {
+                st
+            }
+        }
 
         override protected val safeState = false
 
@@ -504,6 +533,7 @@ object ServiceTest {
         var ons = 0
         var offs = 0
         var prev : Option[Boolean] = None
+        var dups = 0
 
         subscribe [StateUpdated]
 
@@ -511,7 +541,11 @@ object ServiceTest {
             case StateUpdated ("testStateControllingService", value : Boolean) =>
                 prev foreach (prevValue => {
                     if (prevValue == value) {
-                        errors += 1
+                        if (value) {
+                            dups += 1
+                        } else {
+                            errors += 1
+                        }
                     }
                 })
 

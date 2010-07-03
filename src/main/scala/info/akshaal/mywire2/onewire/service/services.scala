@@ -262,12 +262,8 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
         // Change state
         stateContainer.opSetState (newState) runMatchingResultAsy {
             case Success (_) =>
-                for (state <- previousState) {
-                    if (state != newState) {
-                        val stateUpdated = new StateUpdated (name = name, value = newState)
-                        broadcaster.broadcast (stateUpdated)
-                    }
-                }
+                val stateUpdated = new StateUpdated (name = name, value = newState)
+                broadcaster.broadcast (stateUpdated)
             
                 previousState = Some (newState)
 
