@@ -295,30 +295,31 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
      * Called when a problem detected.
      */
     protected def onProblem (problem : Problem) {
-        error (name + ": Problem detected: " + problem.detected.get)
+        businessLogicProblem (name + ": Problem detected: " + problem.detected.get)
     }
 
     /**
      * Called when a problem is gone.
      */
     protected def onProblemGone (problem : Problem) {
-        info (name + ": Problem gone: " + problem.isGone.get)
+        businessLogicInfo (name + ": Problem gone: " + problem.isGone.get)
     }
 
     /**
      * Called when too many problems detected.
      */
     protected def onTooManyProblems () {
-        error (name + ": Too many problems occured within last " + tooManyProblemsInterval
-               + ". Service will be switched into safe mode for the next "
-               + disableOnTooManyProblemsFor)
+        businessLogicProblem (name + ": Too many problems occured within last "
+                              + tooManyProblemsInterval
+                              + ". Service will be switched into safe mode for the next "
+                              + disableOnTooManyProblemsFor)
     }
 
     /**
      * Called when service is switched back online after too many problems.
      */
     protected def onTooManyProblemsExpired () {
-        info (name + ": Service is back online after too many problems expired")
+        businessLogicInfo (name + ": Service is back online after too many problems expired")
     }
 
     /**
