@@ -8,7 +8,11 @@ import org.apache.log4j.Level
 
 import scala.collection.JavaConversions._
 
+import info.akshaal.jacore.`package`._
+import info.akshaal.jacore.logger.Logger
+
 import domain.LogRecord
+import domain.LogRecordLevel
 
 /**
  * Class used by log4j as a custom appender.
@@ -20,15 +24,17 @@ final class LogServiceAppender extends AppenderSkeleton {
         val nano = System.nanoTime
         val stack = event.getThrowableStrRep
         val stackStr = if (stack == null) "" else stack.mkString("\n")
-        val levelId = levelToLevelId (event.getLevel)
+        val category = event.getLoggerName
+        val level = toLogRecordLevel (event.getLevel, category)
 
-        val logRecord = LogRecord (time      = new Date (event.getTimeStamp),
-                                   nano      = nano,
-                                   levelId   = levelId,
-                                   category  = event.getLoggerName,
-                                   msg       = event.getRenderedMessage,
-                                   thread    = event.getThreadName,
-                                   throwable = stackStr)
+        val logRecord =
+            LogRecord (time      = new Date (event.getTimeStamp),
+                       nano      = nano,
+                       level     = level,
+                       category  = category,
+                       msg       = event.getRenderedMessage,
+                       thread    = event.getThreadName,
+                       throwable = stackStr)
 
         logService match {
             case None =>
@@ -43,11 +49,21 @@ final class LogServiceAppender extends AppenderSkeleton {
     
     override def requiresLayout = false
 
-    private[this] def levelToLevelId (level : Level) = level match {
-        case Level.DEBUG => LogRecord.debugId
-        case Level.INFO  => LogRecord.infoId
-        case Level.WARN  => LogRecord.warnId
-        case Level.ERROR => LogRecord.errorId
+    private[this] def toLogRecordLevel (level : Level, fqcn : String) = level match {
+        case Level.DEBUG => LogRecordLevel.Debug
+
+        case Level.INFO  if Logger.isBusinessLogicFQCN(fqcn) => LogRecordLevel.BusinessLogicInfo
+
+        case Level.INFO  => LogRecordLevel.Info
+
+        case Level.WARN  if Logger.isBusinessLogicFQCN(fqcn) => LogRecordLevel.BusinessLogicWarning
+            
+        case Level.WARN  => LogRecordLevel.Warn
+
+        case Level.ERROR if Logger.isBusinessLogicFQCN(fqcn) => LogRecordLevel.BusinessLogicProblem
+            
+        case Level.ERROR => LogRecordLevel.Error
+
         case level       => throw new IllegalArgumentException ("Unsupported level: " + level)
     }
 }

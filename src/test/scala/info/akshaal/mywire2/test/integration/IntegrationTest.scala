@@ -34,6 +34,7 @@ import info.akshaal.jacore.utils.Prefs
 import daemon.{BaseDaemon, Autostart, Autoregister}
 import module.Module
 import annotation.{LogDB, JmsIntegrationExport}
+import info.akshaal.mywire2.integration.MywireIbatisConfigurer
 
 class IntegrationTest extends SpecificationWithJUnit ("Integration specification") {
     import IntegrationTest._
@@ -209,7 +210,7 @@ object IntegrationTest extends TestHelper {
             // sqlmap
             val dataSource = createPooledDataSource ("jdbc.properties")
             val sqlConfig = createJdbcConfiguration ("integration", dataSource)
-            sqlConfig.parseMapperXmlsInPackages ("info.akshaal.mywire2.sqlmaps")
+            MywireIbatisConfigurer.configure (sqlConfig)
 
             val sqlSessionFactory = createSqlSessionFactory (sqlConfig)
 

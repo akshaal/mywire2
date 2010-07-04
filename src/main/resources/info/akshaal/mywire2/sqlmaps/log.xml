@@ -7,7 +7,7 @@
     <insert id="insertLogRecord" parameterType="info.akshaal.mywire2.domain.LogRecord">
         INSERT DELAYED INTO log SET time            = #{time},
                                     nano            = #{nano},
-                                    log_level_id    = #{levelId},
+                                    log_level_id    = #{level},
                                     category        = #{category},
                                     msg             = #{msg},
                                     thread          = #{thread},

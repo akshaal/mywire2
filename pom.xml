@@ -10,14 +10,14 @@
     <!-- = = = = = = = = = = = = Default properties = = = = = = = = = = -->
     <properties>
         <!-- Versions -->
-        <scala.version>2.8.0.Beta1</scala.version>
+        <scala.version>2.8.0.RC7</scala.version>
         <jetlang.version>0.2.0</jetlang.version>
         <junit.version>4.7</junit.version>
         <daemonhelper.version>1.2</daemonhelper.version>
-        <jacore.version>1.23</jacore.version>
+        <jacore.version>1.26</jacore.version>
         <slf4j.version>1.5.8</slf4j.version>
         <log4j.version>1.2.15</log4j.version>
-        <ibatis.version>3.0-beta-7</ibatis.version>
+        <mybatis.version>3.0.1</mybatis.version>
         <mysql-connector.version>5.1.11</mysql-connector.version>
         <guice.version>2.0</guice.version>
         <mockito.version>1.8.1-rc1</mockito.version>
@@ -135,9 +135,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.ibatis</groupId>
-            <artifactId>ibatis-sqlmap</artifactId>
-            <version>${ibatis.version}</version>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>${mybatis.version}</version>
         </dependency>
 
         <dependency>
