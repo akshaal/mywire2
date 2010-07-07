@@ -301,10 +301,10 @@ class ServiceTest extends SpecificationWithJUnit ("1-wire services specification
 
 object ServiceTest {
     object devices {
-        val deviceEnv = injector.getInstanceOf [DeviceEnv]
+        implicit val deviceEnv = injector.getInstanceOf [DeviceEnv]
 
         object temperatureMonitoringServiceMP extends MountPoint ("/tmp/mywire") {
-            object temp extends DS18S20 ("abc", deviceEnv) {
+            object temp extends DS18S20 ("abc") {
                 var n = 0
 
                 override def opReadTemperature () : Operation.WithResult [Double] =
@@ -334,7 +334,7 @@ object ServiceTest {
         }
 
         object humidityMonitoringServiceMP extends MountPoint ("/tmp/mywire") {
-            object hum extends DS2438 ("abc", deviceEnv) with HIH4000 {
+            object hum extends DS2438 ("abc") with HIH4000 {
                 var n = 0
 
                 override def opReadHumidity () : Operation.WithResult [Double] =
@@ -355,7 +355,7 @@ object ServiceTest {
         }
 
         object stateMonitoringServiceMP extends MountPoint ("/tmp/mywire") {
-            object switch extends DS2405 ("abc", deviceEnv) {
+            object switch extends DS2405 ("abc") {
                 var n = 0
 
                 override def opGetStateFromFile (file : String) : Operation.WithResult [Boolean] =
@@ -376,7 +376,7 @@ object ServiceTest {
         }
 
         object stateControllingServiceMP extends MountPoint ("/tmp/mywire") {
-            object switch extends DS2405 ("abc", deviceEnv) {
+            object switch extends DS2405 ("abc") {
                 var n = 0
 
                 override def opSetStateToFile (file : String, state : Boolean) : Operation.WithResult [Unit] = {
@@ -391,7 +391,7 @@ object ServiceTest {
                 }
             }
 
-            object switch2 extends DS2405 ("cde", deviceEnv) {
+            object switch2 extends DS2405 ("cde") {
                 private var state : Option[Boolean] = None
                 var states : List[Boolean] = Nil
 

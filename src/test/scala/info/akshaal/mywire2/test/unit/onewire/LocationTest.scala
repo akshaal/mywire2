@@ -15,12 +15,12 @@ import info.akshaal.jacore.actor.{ActorEnv, Broadcaster}
 import onewire.device._
 
 class LocationTest extends SpecificationWithJUnit ("1-wire device location spec") with Mockito {
-    val deviceEnv = unit.UnitTestHelper.Mocker.newDeviceEnv
+    implicit val deviceEnv = unit.UnitTestHelper.Mocker.newDeviceEnv
 
     object mountPoint extends MountPoint ("/tmp/test") {
         object aCoupler extends DS2409 ("1234444") {
             object mainBranch extends MainBranch {
-                object temp1 extends DS18S20 ("4a5", deviceEnv)
+                object temp1 extends DS18S20 ("4a5")
             }
 
             object auxBranch extends AuxBranch {

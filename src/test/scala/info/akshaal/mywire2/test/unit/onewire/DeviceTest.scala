@@ -32,12 +32,12 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
                               "/tmp/test/uncached/10.bca/temperature" -> Failure[String](fnf))
             
             withMockedTextFile (readFs) (textFileActor => {
-                val deviceEnv = Mocker.newDeviceEnv
+                implicit val deviceEnv = Mocker.newDeviceEnv
                 deviceEnv.textFile returns textFileActor
 
                 val mp = new MountPoint ("/tmp/test") {
-                    object temp1 extends DS18S20 ("abc", deviceEnv)
-                    object temp2 extends DS18S20 ("bca", deviceEnv)
+                    object temp1 extends DS18S20 ("abc")
+                    object temp2 extends DS18S20 ("bca")
                 }
 
                 withStartedActor (mp.temp1) {
@@ -59,14 +59,14 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
                               "/tmp/test/uncached/05.bcd/PIO" -> Failure[String](fnf))
 
             withMockedTextFile (readFs) (textFileActor => {
-                val deviceEnv = Mocker.newDeviceEnv
+                implicit val deviceEnv = Mocker.newDeviceEnv
                 deviceEnv.textFile returns textFileActor
 
                 val mp = new MountPoint ("/tmp/test") {
-                    object dev1 extends DS2405 ("abc", deviceEnv)
-                    object dev2 extends DS2405 ("abd", deviceEnv)
-                    object dev3 extends DS2405 ("abe", deviceEnv)
-                    object dev4 extends DS2405 ("bcd", deviceEnv)
+                    object dev1 extends DS2405 ("abc")
+                    object dev2 extends DS2405 ("abd")
+                    object dev3 extends DS2405 ("abe")
+                    object dev4 extends DS2405 ("bcd")
                 }
 
                 withStartedActor (mp.dev1) {
@@ -93,12 +93,12 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
             val writeFs = new HashMap[String, String]
 
             withMockedTextFile (writer = writeFs.update) (textFileActor => {
-                val deviceEnv = Mocker.newDeviceEnv
+                implicit val deviceEnv = Mocker.newDeviceEnv
                 deviceEnv.textFile returns textFileActor
 
                 val mp = new MountPoint ("/tmp/test") {
-                    object dev1 extends DS2405 ("abc", deviceEnv)
-                    object dev2 extends DS2405 ("abd", deviceEnv)
+                    object dev1 extends DS2405 ("abc")
+                    object dev2 extends DS2405 ("abd")
                 }
 
                 withStartedActor (mp.dev1) {
@@ -122,14 +122,14 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
                               "/tmp/test/uncached/05.bcd/sensed" -> Failure[String](fnf))
 
             withMockedTextFile (readFs) (textFileActor => {
-                val deviceEnv = Mocker.newDeviceEnv
+                implicit val deviceEnv = Mocker.newDeviceEnv
                 deviceEnv.textFile returns textFileActor
 
                 val mp = new MountPoint ("/tmp/test") {
-                    object dev1 extends DS2405 ("abc", deviceEnv)
-                    object dev2 extends DS2405 ("abd", deviceEnv)
-                    object dev3 extends DS2405 ("abe", deviceEnv)
-                    object dev4 extends DS2405 ("bcd", deviceEnv)
+                    object dev1 extends DS2405 ("abc")
+                    object dev2 extends DS2405 ("abd")
+                    object dev3 extends DS2405 ("abe")
+                    object dev4 extends DS2405 ("bcd")
                 }
 
                 withStartedActor (mp.dev1) {
@@ -159,12 +159,12 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
                               "/tmp/test/uncached/26.3333/temperature" -> Failure[String](fnf))
 
             withMockedTextFile (readFs) (textFileActor => {
-                val deviceEnv = Mocker.newDeviceEnv
+                implicit val deviceEnv = Mocker.newDeviceEnv
                 deviceEnv.textFile returns textFileActor
 
                 val mp = new MountPoint ("/tmp/test") {
-                    object temp1 extends DS2438 ("4445", deviceEnv)
-                    object temp2 extends DS2438 ("3333", deviceEnv)
+                    object temp1 extends DS2438 ("4445")
+                    object temp2 extends DS2438 ("3333")
                 }
 
                 withStartedActor (mp.temp1) {
@@ -185,12 +185,12 @@ class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification")
                                         -> Failure[String] (fnf))
 
             withMockedTextFile (readFs) (textFileActor => {
-                val deviceEnv = Mocker.newDeviceEnv
+                implicit val deviceEnv = Mocker.newDeviceEnv
                 deviceEnv.textFile returns textFileActor
 
                 val mp = new MountPoint ("/tmp/test") {
-                    object temp1 extends DS2438 ("1445", deviceEnv) with HIH4000
-                    object temp2 extends DS2438 ("1333", deviceEnv) with HIH4000
+                    object temp1 extends DS2438 ("1445") with HIH4000
+                    object temp2 extends DS2438 ("1333") with HIH4000
                 }
 
                 withStartedActor (mp.temp1) {

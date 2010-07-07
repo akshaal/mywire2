@@ -185,7 +185,7 @@ trait HIH4000 {
  * @param id unique 1-wire identifier
  * @param deviceEnv device environment
  */
-class DS18S20 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : DeviceLocation)
+class DS18S20 (id : String) (implicit parentDevLoc : DeviceLocation, deviceEnv : DeviceEnv)
                                 extends DeviceActor (id, "10", parentDevLoc, deviceEnv)
                                    with DeviceHasTemperature
 
@@ -195,7 +195,7 @@ class DS18S20 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : Devi
  * @param id unique 1-wire identifier
  * @param deviceEnv device environment
  */
-class DS2438 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : DeviceLocation)
+class DS2438 (id : String) (implicit parentDevLoc : DeviceLocation, deviceEnv : DeviceEnv)
                                 extends DeviceActor (id, "26", parentDevLoc, deviceEnv)
                                    with DeviceHasTemperature
                                    with DeviceHasHumidity
@@ -205,7 +205,7 @@ class DS2438 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : Devic
  * @param id unique 1-wire identifier
  * @param deviceEnv device environment
  */
-class DS2405 (id : String, deviceEnv : DeviceEnv) (implicit parentDevLoc : DeviceLocation)
+class DS2405 (id : String) (implicit parentDevLoc : DeviceLocation, deviceEnv : DeviceEnv)
                                 extends DeviceActor (id, "05", parentDevLoc, deviceEnv)
 {
     /**
