@@ -287,7 +287,7 @@ class ServiceTest extends JacoreSpecWithJUnit ("1-wire services specification") 
                         readState  must_==  Success(Some(false))
 
                         // Check expiration of too many problems
-                        Thread.sleep (300.milliseconds.asMilliseconds)
+                        Thread.sleep (400.milliseconds.asMilliseconds)
                         service.tooMany  must_==  1
                         service.tooManyGone  must_==  1
                         readState  must_==  Success(Some(true))
