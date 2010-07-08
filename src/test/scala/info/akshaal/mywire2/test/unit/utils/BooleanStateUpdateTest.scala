@@ -6,14 +6,14 @@
 package info.akshaal.mywire2
 package test.unit.utils
 
-import org.specs.SpecificationWithJUnit
+import info.akshaal.jacore.test.JacoreSpecWithJUnit
 
 import info.akshaal.jacore.`package`._
 import utils.BooleanStateUpdate
 
 import BooleanStateUpdate._
 
-class BooleanStateUpdateTest extends SpecificationWithJUnit ("BooleanStateUpdate specification") {
+class BooleanStateUpdateTest extends JacoreSpecWithJUnit ("BooleanStateUpdate specification") {
     val true1 = new BooleanStateUpdate (state = true, validTime = 1 milliseconds)
     val true2 = new BooleanStateUpdate (state = true, validTime = 2 milliseconds)
     val true3 = new BooleanStateUpdate (state = true, validTime = 3 milliseconds)

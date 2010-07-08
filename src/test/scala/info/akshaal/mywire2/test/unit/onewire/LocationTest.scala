@@ -7,14 +7,15 @@ package info.akshaal.mywire2
 package test
 package unit.onewire
 
-import org.specs.SpecificationWithJUnit
 import org.specs.mock.Mockito
 
+import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.{ActorEnv, Broadcaster}
+import info.akshaal.jacore.test.JacoreSpecWithJUnit
 
 import onewire.device._
 
-class LocationTest extends SpecificationWithJUnit ("1-wire device location spec") with Mockito {
+class LocationTest extends JacoreSpecWithJUnit ("1-wire device location spec") with Mockito {
     implicit val deviceEnv = unit.UnitTestHelper.Mocker.newDeviceEnv
 
     object mountPoint extends MountPoint ("/tmp/test") {

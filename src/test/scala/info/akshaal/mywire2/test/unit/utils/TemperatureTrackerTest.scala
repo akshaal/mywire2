@@ -6,13 +6,12 @@
 package info.akshaal.mywire2
 package test.unit.utils
 
-import org.specs.SpecificationWithJUnit
-
 import info.akshaal.jacore.`package`._
+import info.akshaal.jacore.test.JacoreSpecWithJUnit
 import utils.TemperatureTracker
 import domain.Temperature
 
-class TemperatureTrackerTest extends SpecificationWithJUnit ("TemperatureTracker specification") {
+class TemperatureTrackerTest extends JacoreSpecWithJUnit ("TemperatureTracker specification") {
     "TemperatureTracker" should {
         "must not be created without temperature names" in {
             new TemperatureTracker () must throwA [IllegalArgumentException]

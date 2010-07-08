@@ -8,14 +8,13 @@ package test.unit.daemon
 
 import java.lang.management.ManagementFactory
 
-import org.specs.SpecificationWithJUnit
-
 import info.akshaal.jacore.jmx.{JmxAttr, JmxOper, SimpleJmx}
+import info.akshaal.jacore.test.JacoreSpecWithJUnit
 
 import module.Module
 import daemon.BaseDaemonJMXClient
 
-class BaseDaemonJMXClientTest extends SpecificationWithJUnit ("Daemon JMX client specification") {
+class BaseDaemonJMXClientTest extends JacoreSpecWithJUnit ("Daemon JMX client specification") {
     import BaseDaemonJMXClientTest._
 
     "BaseDaemonJMXClient" should {

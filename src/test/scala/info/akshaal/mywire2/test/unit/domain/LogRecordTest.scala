@@ -7,13 +7,12 @@ package info.akshaal.mywire2
 package test
 package unit.domain
 
-import org.specs.SpecificationWithJUnit
-
 import info.akshaal.jacore.`package`._
+import info.akshaal.jacore.test.JacoreSpecWithJUnit
 
 import domain.LogRecordLevel
 
-class LogRecordTest extends SpecificationWithJUnit ("LogRecord specification") {
+class LogRecordTest extends JacoreSpecWithJUnit ("LogRecord specification") {
     "LogRecord" should {
         "have correct ids" in {
             LogRecordLevel.Debug.id  must_==  0

@@ -15,8 +15,6 @@ import javax.management.ObjectName
 
 import org.apache.ibatis.session.SqlSessionFactory
 
-import org.specs.SpecificationWithJUnit
-
 import org.apache.activemq.broker.BrokerService
 import org.apache.activemq.ActiveMQConnectionFactory
 import org.apache.activemq.pool.PooledConnectionFactory
@@ -25,6 +23,7 @@ import org.apache.activemq.command.ActiveMQTopic
 import javax.jms.{Connection, Destination}
 
 import info.akshaal.jacore.`package`._
+import info.akshaal.jacore.test.JacoreSpecWithJUnit
 import info.akshaal.jacore.daemon.DaemonStatus
 import info.akshaal.jacore.actor.{Actor, LowPriorityActorEnv, HiPriorityActorEnv}
 import info.akshaal.jacore.test.TestHelper
@@ -36,7 +35,7 @@ import module.Module
 import annotation.{LogDB, JmsIntegrationExport}
 import info.akshaal.mywire2.integration.MywireIbatisConfigurer
 
-class IntegrationTest extends SpecificationWithJUnit ("Integration specification") {
+class IntegrationTest extends JacoreSpecWithJUnit ("Integration specification") {
     import IntegrationTest._
 
     IntegrationTest
@@ -162,7 +161,6 @@ object IntegrationTest extends TestHelper {
 
     val amqConnectionFactory = new ActiveMQConnectionFactory ("vm://localhost")
 
-    override val timeout = 2.seconds
     override val injector = IntegrationDaemon.publicBasicInjector
     val daemonStatus = injector.getInstanceOf [DaemonStatus]
 

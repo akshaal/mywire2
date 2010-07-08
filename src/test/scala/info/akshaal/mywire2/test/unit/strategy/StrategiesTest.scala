@@ -6,13 +6,12 @@
 package info.akshaal.mywire2
 package test.unit.strategy
 
-import org.specs.SpecificationWithJUnit
-
+import info.akshaal.jacore.test.JacoreSpecWithJUnit
 import info.akshaal.jacore.`package`._
 
 import strategy.SimpleOnOffStrategy
 
-class StrategiesTest extends SpecificationWithJUnit ("Strategies specification") {
+class StrategiesTest extends JacoreSpecWithJUnit ("Strategies specification") {
     "SimpleOnOffStrategy" should {
         "work properly" in {
             val s = new SimpleOnOffStrategy (onInterval = 50 milliseconds,

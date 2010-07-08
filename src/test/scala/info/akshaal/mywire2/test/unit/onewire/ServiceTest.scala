@@ -7,10 +7,9 @@ package info.akshaal.mywire2
 package test
 package unit.onewire
 
-import org.specs.SpecificationWithJUnit
-
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.Operation
+import info.akshaal.jacore.test.JacoreSpecWithJUnit
 import onewire.device._
 import onewire.service._
 import strategy.SimpleOnOffStrategy
@@ -19,7 +18,7 @@ import utils.{StateUpdate, TemperatureTracker, Problem}
 
 import unit.UnitTestHelper._
 
-class ServiceTest extends SpecificationWithJUnit ("1-wire services specification") {
+class ServiceTest extends JacoreSpecWithJUnit ("1-wire services specification") {
     import ServiceTest._
 
     "TemperatureMonitoringService" should {

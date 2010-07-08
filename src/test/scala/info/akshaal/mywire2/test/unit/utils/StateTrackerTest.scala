@@ -6,13 +6,13 @@
 package info.akshaal.mywire2
 package test.unit.utils
 
-import org.specs.SpecificationWithJUnit
+import info.akshaal.jacore.test.JacoreSpecWithJUnit
 
 import info.akshaal.jacore.`package`._
 import utils.StateTracker
 import domain.StateUpdated
 
-class StateTrackerTest extends SpecificationWithJUnit ("StateTracker specification") {
+class StateTrackerTest extends JacoreSpecWithJUnit ("StateTracker specification") {
     "StateTracker" should {
         "must not be created without state names" in {
             new StateTracker[Boolean] () must throwA [IllegalArgumentException]

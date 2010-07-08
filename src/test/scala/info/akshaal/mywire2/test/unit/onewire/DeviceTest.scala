@@ -9,19 +9,19 @@ package unit.onewire
 
 import scala.collection.mutable.HashMap
 
-import org.specs.SpecificationWithJUnit
 import org.specs.mock.Mockito
 
 import java.io.File
 
 import info.akshaal.jacore.`package`._
+import info.akshaal.jacore.test.JacoreSpecWithJUnit
 import info.akshaal.jacore.fs.text.TextFile
 import info.akshaal.jacore.actor.Operation
 import onewire.device._
 
 import unit.UnitTestHelper._
 
-class DeviceTest extends SpecificationWithJUnit ("1-wire devices specification") with Mockito {
+class DeviceTest extends JacoreSpecWithJUnit ("1-wire devices specification") with Mockito {
     import DeviceTest._
 
     val fnf = new java.io.FileNotFoundException ("not found")
