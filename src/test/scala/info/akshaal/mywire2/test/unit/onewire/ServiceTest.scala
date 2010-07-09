@@ -10,7 +10,8 @@ package unit.onewire
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.Operation
 import info.akshaal.jacore.test.JacoreSpecWithJUnit
-import onewire.device._
+import device._
+import device.owfs._
 import onewire.service._
 import strategy.SimpleOnOffStrategy
 import domain.{Temperature, Humidity, StateUpdated, StateSensed}
@@ -300,9 +301,9 @@ class ServiceTest extends JacoreSpecWithJUnit ("1-wire services specification") 
 
 object ServiceTest {
     object devices {
-        implicit val deviceEnv = injector.getInstanceOf [DeviceEnv]
+        implicit val deviceEnv = injector.getInstanceOf [OwfsDeviceEnv]
 
-        object temperatureMonitoringServiceMP extends MountPoint ("/tmp/mywire") {
+        object temperatureMonitoringServiceMP extends OwfsMountPoint ("/tmp/mywire") {
             object temp extends DS18S20 ("abc") {
                 var n = 0
 
@@ -332,7 +333,7 @@ object ServiceTest {
             }
         }
 
-        object humidityMonitoringServiceMP extends MountPoint ("/tmp/mywire") {
+        object humidityMonitoringServiceMP extends OwfsMountPoint ("/tmp/mywire") {
             object hum extends DS2438 ("abc") with HIH4000 {
                 var n = 0
 
@@ -353,7 +354,7 @@ object ServiceTest {
             }
         }
 
-        object stateMonitoringServiceMP extends MountPoint ("/tmp/mywire") {
+        object stateMonitoringServiceMP extends OwfsMountPoint ("/tmp/mywire") {
             object switch extends DS2405 ("abc") {
                 var n = 0
 
@@ -374,7 +375,7 @@ object ServiceTest {
             }
         }
 
-        object stateControllingServiceMP extends MountPoint ("/tmp/mywire") {
+        object stateControllingServiceMP extends OwfsMountPoint ("/tmp/mywire") {
             object switch extends DS2405 ("abc") {
                 var n = 0
 
@@ -437,7 +438,7 @@ object ServiceTest {
     class TestTemperatureMonitoringService
              extends TemperatureMonitoringService (
                                 actorEnv = TestModule.hiPriorityActorEnv,
-                                temperatureDevice = devices.temperatureMonitoringServiceMP.temp,
+                                temperatureContainer = devices.temperatureMonitoringServiceMP.temp,
                                 name = "testTemperatureMonitoringService",
                                 interval = 1 seconds,
                                 illegalTemperature = Some(85.0))
@@ -462,7 +463,7 @@ object ServiceTest {
     class TestHumidityMonitoringService
              extends HumidityMonitoringService (
                                 actorEnv = TestModule.hiPriorityActorEnv,
-                                humidityDevice = devices.humidityMonitoringServiceMP.hum,
+                                humidityContainer = devices.humidityMonitoringServiceMP.hum,
                                 name = "testHumidityMonitoringService",
                                 interval = 1 seconds)
 

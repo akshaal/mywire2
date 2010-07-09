@@ -17,7 +17,8 @@ import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.test.JacoreSpecWithJUnit
 import info.akshaal.jacore.fs.text.TextFile
 import info.akshaal.jacore.actor.Operation
-import onewire.device._
+import device._
+import device.owfs._
 
 import unit.UnitTestHelper._
 
@@ -32,10 +33,10 @@ class DeviceTest extends JacoreSpecWithJUnit ("1-wire devices specification") wi
                               "/tmp/test/uncached/10.bca/temperature" -> Failure[String](fnf))
             
             withMockedTextFile (readFs) (textFileActor => {
-                implicit val deviceEnv = Mocker.newDeviceEnv
+                implicit val deviceEnv = Mocker.newOwfsDeviceEnv
                 deviceEnv.textFile returns textFileActor
 
-                val mp = new MountPoint ("/tmp/test") {
+                val mp = new OwfsMountPoint ("/tmp/test") {
                     object temp1 extends DS18S20 ("abc")
                     object temp2 extends DS18S20 ("bca")
                 }
@@ -59,10 +60,10 @@ class DeviceTest extends JacoreSpecWithJUnit ("1-wire devices specification") wi
                               "/tmp/test/uncached/05.bcd/PIO" -> Failure[String](fnf))
 
             withMockedTextFile (readFs) (textFileActor => {
-                implicit val deviceEnv = Mocker.newDeviceEnv
+                implicit val deviceEnv = Mocker.newOwfsDeviceEnv
                 deviceEnv.textFile returns textFileActor
 
-                val mp = new MountPoint ("/tmp/test") {
+                val mp = new OwfsMountPoint ("/tmp/test") {
                     object dev1 extends DS2405 ("abc")
                     object dev2 extends DS2405 ("abd")
                     object dev3 extends DS2405 ("abe")
@@ -93,10 +94,10 @@ class DeviceTest extends JacoreSpecWithJUnit ("1-wire devices specification") wi
             val writeFs = new HashMap[String, String]
 
             withMockedTextFile (writer = writeFs.update) (textFileActor => {
-                implicit val deviceEnv = Mocker.newDeviceEnv
+                implicit val deviceEnv = Mocker.newOwfsDeviceEnv
                 deviceEnv.textFile returns textFileActor
 
-                val mp = new MountPoint ("/tmp/test") {
+                val mp = new OwfsMountPoint ("/tmp/test") {
                     object dev1 extends DS2405 ("abc")
                     object dev2 extends DS2405 ("abd")
                 }
@@ -122,10 +123,10 @@ class DeviceTest extends JacoreSpecWithJUnit ("1-wire devices specification") wi
                               "/tmp/test/uncached/05.bcd/sensed" -> Failure[String](fnf))
 
             withMockedTextFile (readFs) (textFileActor => {
-                implicit val deviceEnv = Mocker.newDeviceEnv
+                implicit val deviceEnv = Mocker.newOwfsDeviceEnv
                 deviceEnv.textFile returns textFileActor
 
-                val mp = new MountPoint ("/tmp/test") {
+                val mp = new OwfsMountPoint ("/tmp/test") {
                     object dev1 extends DS2405 ("abc")
                     object dev2 extends DS2405 ("abd")
                     object dev3 extends DS2405 ("abe")
@@ -159,10 +160,10 @@ class DeviceTest extends JacoreSpecWithJUnit ("1-wire devices specification") wi
                               "/tmp/test/uncached/26.3333/temperature" -> Failure[String](fnf))
 
             withMockedTextFile (readFs) (textFileActor => {
-                implicit val deviceEnv = Mocker.newDeviceEnv
+                implicit val deviceEnv = Mocker.newOwfsDeviceEnv
                 deviceEnv.textFile returns textFileActor
 
-                val mp = new MountPoint ("/tmp/test") {
+                val mp = new OwfsMountPoint ("/tmp/test") {
                     object temp1 extends DS2438 ("4445")
                     object temp2 extends DS2438 ("3333")
                 }
@@ -185,10 +186,10 @@ class DeviceTest extends JacoreSpecWithJUnit ("1-wire devices specification") wi
                                         -> Failure[String] (fnf))
 
             withMockedTextFile (readFs) (textFileActor => {
-                implicit val deviceEnv = Mocker.newDeviceEnv
+                implicit val deviceEnv = Mocker.newOwfsDeviceEnv
                 deviceEnv.textFile returns textFileActor
 
-                val mp = new MountPoint ("/tmp/test") {
+                val mp = new OwfsMountPoint ("/tmp/test") {
                     object temp1 extends DS2438 ("1445") with HIH4000
                     object temp2 extends DS2438 ("1333") with HIH4000
                 }

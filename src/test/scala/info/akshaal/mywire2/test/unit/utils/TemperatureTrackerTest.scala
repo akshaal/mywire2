@@ -97,21 +97,21 @@ class TemperatureTrackerTest extends JacoreSpecWithJUnit ("TemperatureTracker sp
 
         "should detect problem when some of values are undefined for too long" in {
             val tt = new TemperatureTracker ("name1", "name2")
-            tt.problemIfUndefinedFor(10 milliseconds).detected  must_==  None
-            tt.problemIfUndefinedFor(10 milliseconds).isGone    must_!=  None
+            tt.problemIfUndefinedFor(50 milliseconds).detected  must_==  None
+            tt.problemIfUndefinedFor(50 milliseconds).isGone    must_!=  None
 
-            Thread.sleep (15.milliseconds.asMilliseconds)
+            Thread.sleep (55.milliseconds.asMilliseconds)
 
-            tt.problemIfUndefinedFor(10 milliseconds).detected  must_!=  None
-            tt.problemIfUndefinedFor(10 milliseconds).isGone    must_==  None
+            tt.problemIfUndefinedFor(50 milliseconds).detected  must_!=  None
+            tt.problemIfUndefinedFor(50 milliseconds).isGone    must_==  None
 
             tt.updateFrom (new Temperature (name = "name1", value = Some(1), average3 = Some(1)))
-            tt.problemIfUndefinedFor(10 milliseconds).detected  must_!=  None
-            tt.problemIfUndefinedFor(10 milliseconds).isGone    must_==  None
+            tt.problemIfUndefinedFor(50 milliseconds).detected  must_!=  None
+            tt.problemIfUndefinedFor(50 milliseconds).isGone    must_==  None
 
             tt.updateFrom (new Temperature (name = "name2", value = Some(2), average3 = Some(2)))
-            tt.problemIfUndefinedFor(10 milliseconds).detected  must_==  None
-            tt.problemIfUndefinedFor(10 milliseconds).isGone    must_!=  None
+            tt.problemIfUndefinedFor(50 milliseconds).detected  must_==  None
+            tt.problemIfUndefinedFor(50 milliseconds).isGone    must_!=  None
 
             // Everything is good from the beginning
 
@@ -119,13 +119,13 @@ class TemperatureTrackerTest extends JacoreSpecWithJUnit ("TemperatureTracker sp
             tt2.updateFrom (new Temperature (name = "name1", value = Some(1), average3 = Some(1)))
             tt2.updateFrom (new Temperature (name = "name2", value = Some(2), average3 = Some(2)))
 
-            tt2.problemIfUndefinedFor(10 milliseconds).detected  must_==  None
-            tt2.problemIfUndefinedFor(10 milliseconds).isGone    must_!=  None
+            tt2.problemIfUndefinedFor(50 milliseconds).detected  must_==  None
+            tt2.problemIfUndefinedFor(50 milliseconds).isGone    must_!=  None
 
-            Thread.sleep (15.milliseconds.asMilliseconds)
+            Thread.sleep (55.milliseconds.asMilliseconds)
 
-            tt2.problemIfUndefinedFor(10 milliseconds).detected  must_==  None
-            tt2.problemIfUndefinedFor(10 milliseconds).isGone    must_!=  None
+            tt2.problemIfUndefinedFor(50 milliseconds).detected  must_==  None
+            tt2.problemIfUndefinedFor(50 milliseconds).isGone    must_!=  None
         }
 
         "should detect problem when a temperature is greater than limit" in {

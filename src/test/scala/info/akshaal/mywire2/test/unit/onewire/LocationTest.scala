@@ -13,12 +13,13 @@ import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.{ActorEnv, Broadcaster}
 import info.akshaal.jacore.test.JacoreSpecWithJUnit
 
-import onewire.device._
+import device._
+import device.owfs._
 
 class LocationTest extends JacoreSpecWithJUnit ("1-wire device location spec") with Mockito {
-    implicit val deviceEnv = unit.UnitTestHelper.Mocker.newDeviceEnv
+    implicit val deviceEnv = unit.UnitTestHelper.Mocker.newOwfsDeviceEnv
 
-    object mountPoint extends MountPoint ("/tmp/test") {
+    object mountPoint extends OwfsMountPoint ("/tmp/test") {
         object aCoupler extends DS2409 ("1234444") {
             object mainBranch extends MainBranch {
                 object temp1 extends DS18S20 ("4a5")

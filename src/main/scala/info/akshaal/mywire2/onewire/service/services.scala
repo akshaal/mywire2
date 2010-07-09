@@ -12,7 +12,6 @@ import info.akshaal.jacore.actor.{Actor, HiPriorityActorEnv}
 import info.akshaal.jacore.scheduler.ScheduleControl
 import info.akshaal.jacore.utils.OptionDoubleValueFrame
 
-import device.{DeviceHasTemperature, DeviceHasHumidity}
 import domain.{Temperature, Humidity, StateUpdated, StateSensed}
 import utils.{StateUpdate, Problem}
 import utils.container._
@@ -21,7 +20,7 @@ import utils.container._
  * Reads temperature value from device and broadcasts it as exportable object.
  */
 class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
-                                    temperatureDevice : DeviceHasTemperature,
+                                    temperatureContainer : TemperatureContainer,
                                     name : String,
                                     interval : TimeValue,
                                     illegalTemperature : Option[Double] = None,
@@ -49,10 +48,10 @@ class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
 
     // Read temperature
     protected def readTemperature () : Unit =
-        temperatureDevice.opReadTemperature () runMatchingResultAsy {
+        temperatureContainer.opReadTemperature () runMatchingResultAsy {
             case Success (temperatureValue) =>
                 if (Some (temperatureValue) == illegalTemperature) {
-                    warn ("Illegal temperature got from " + temperatureDevice + "" + illegalTemperature.get)
+                    warn ("Illegal temperature got from " + temperatureContainer + "" + illegalTemperature.get)
 
                     triesLeft match {
                         case None =>
@@ -74,13 +73,13 @@ class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
 
             case Failure (exc) =>
                 triesLeft = None // Something is bad, we can't try
-                error ("Error reading temperature of " + temperatureDevice + ": " + exc.getMessage, exc)
+                error ("Error reading temperature of " + temperatureContainer + ": " + exc.getMessage, exc)
                 broadcastTemperature (None)
         }
 
     override def toString() : String = {
         getClass.getSimpleName + "(name=" + name +
-            ", temperatureDevice=" + temperatureDevice + ", interval=" + interval + ")"
+            ", temperatureContainer=" + temperatureContainer + ", interval=" + interval + ")"
     }
 }
 
@@ -88,7 +87,7 @@ class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
  * Read humidity value from device and broadcasts it as exportable object.
  */
 class HumidityMonitoringService (actorEnv : HiPriorityActorEnv,
-                                 humidityDevice : DeviceHasHumidity,
+                                 humidityContainer : HumidityContainer,
                                  name : String,
                                  interval : TimeValue)
                      extends Actor (actorEnv = actorEnv)
@@ -104,19 +103,19 @@ class HumidityMonitoringService (actorEnv : HiPriorityActorEnv,
     }
 
     schedule every interval executionOf {
-        humidityDevice.opReadHumidity () runMatchingResultAsy {
+        humidityContainer.opReadHumidity () runMatchingResultAsy {
             case Success (humidityValue) =>
                 broadcastHumidity (Some (humidityValue))
 
             case Failure (exc) =>
-                error ("Error reading humidity of " + humidityDevice + ": " + exc.getMessage, exc)
+                error ("Error reading humidity of " + humidityContainer + ": " + exc.getMessage, exc)
                 broadcastHumidity (None)
         }
     }
 
     override def toString() : String = {
         getClass.getSimpleName + "(name=" + name +
-            ", humidityDevice=" + humidityDevice + ", interval=" + interval + ")"
+            ", humidityContainer=" + humidityContainer + ", interval=" + interval + ")"
     }
 }
 

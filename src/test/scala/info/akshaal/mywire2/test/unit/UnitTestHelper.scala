@@ -21,7 +21,7 @@ import info.akshaal.jacore.fs.text.TextFile
 import info.akshaal.jacore.test.{TestHelper, Waitable}
 import info.akshaal.jacore.JacoreManager
 
-import info.akshaal.mywire2.onewire.device.DeviceEnv
+import info.akshaal.mywire2.device.owfs.OwfsDeviceEnv
 
 /**
  * Helper methods for convenient testing of actors and stuff depending on actors.
@@ -60,8 +60,8 @@ object UnitTestHelper extends TestHelper {
     }
 
     object Mocker extends MockitoStubs {
-        def newDeviceEnv : DeviceEnv = {
-            val deviceEnv = mock [DeviceEnv]
+        def newOwfsDeviceEnv : OwfsDeviceEnv = {
+            val deviceEnv = mock [OwfsDeviceEnv]
             deviceEnv.actorEnv returns TestModule.hiPriorityActorEnv
             deviceEnv
         }
