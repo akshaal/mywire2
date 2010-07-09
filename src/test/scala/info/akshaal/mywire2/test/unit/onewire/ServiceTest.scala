@@ -12,7 +12,7 @@ import info.akshaal.jacore.actor.Operation
 import info.akshaal.jacore.test.JacoreSpecWithJUnit
 import device._
 import device.owfs._
-import onewire.service._
+import service._
 import strategy.SimpleOnOffStrategy
 import domain.{Temperature, Humidity, StateUpdated, StateSensed}
 import utils.{StateUpdate, TemperatureTracker, Problem}

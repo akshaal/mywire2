@@ -4,152 +4,15 @@
  */
 
 package info.akshaal.mywire2
-package onewire
 package service
 
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.{Actor, HiPriorityActorEnv}
 import info.akshaal.jacore.scheduler.ScheduleControl
-import info.akshaal.jacore.utils.OptionDoubleValueFrame
 
-import domain.{Temperature, Humidity, StateUpdated, StateSensed}
+import domain.StateUpdated
 import utils.{StateUpdate, Problem}
-import utils.container._
-
-/**
- * Reads temperature value from device and broadcasts it as exportable object.
- */
-class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
-                                    temperatureContainer : TemperatureContainer,
-                                    name : String,
-                                    interval : TimeValue,
-                                    illegalTemperature : Option[Double] = None,
-                                    maxTries : Int = 3)
-                     extends Actor (actorEnv = actorEnv)
-{
-    // Frame to keep average of temperature values
-    private val frame = new OptionDoubleValueFrame (3)
-
-    // How many tries we can perform in case of error, None means that no errors happened yet.
-    private var triesLeft : Option[Int] = None
-
-    // Local function to bradcast temperature
-    private def broadcastTemperature (temperatureValue : Option[Double]) : Unit = {
-        frame.put (temperatureValue)
-
-        val temperature = new Temperature (name = name,
-                                           value = temperatureValue,
-                                           average3 = frame.average)
-        broadcaster.broadcast (temperature)
-    }
-
-    // Schedule updates
-    schedule every interval executionOf readTemperature()
-
-    // Read temperature
-    protected def readTemperature () : Unit =
-        temperatureContainer.opReadTemperature () runMatchingResultAsy {
-            case Success (temperatureValue) =>
-                if (Some (temperatureValue) == illegalTemperature) {
-                    warn ("Illegal temperature got from " + temperatureContainer + "" + illegalTemperature.get)
-
-                    triesLeft match {
-                        case None =>
-                            triesLeft = Some (maxTries - 1) // First try
-                            readTemperature ()
-
-                        case Some (tries) if tries > 1 =>
-                            triesLeft = Some (tries - 1) // We have some tries left
-                            readTemperature ()
-
-                        case _ =>
-                            triesLeft = None // Can't try anymore
-                            broadcastTemperature (None)
-                    }
-                } else {
-                    triesLeft = None // Everything is fine, no need to try
-                    broadcastTemperature (Some (temperatureValue))
-                }
-
-            case Failure (exc) =>
-                triesLeft = None // Something is bad, we can't try
-                error ("Error reading temperature of " + temperatureContainer + ": " + exc.getMessage, exc)
-                broadcastTemperature (None)
-        }
-
-    override def toString() : String = {
-        getClass.getSimpleName + "(name=" + name +
-            ", temperatureContainer=" + temperatureContainer + ", interval=" + interval + ")"
-    }
-}
-
-/**
- * Read humidity value from device and broadcasts it as exportable object.
- */
-class HumidityMonitoringService (actorEnv : HiPriorityActorEnv,
-                                 humidityContainer : HumidityContainer,
-                                 name : String,
-                                 interval : TimeValue)
-                     extends Actor (actorEnv = actorEnv)
-{
-    private val frame = new OptionDoubleValueFrame (3)
-
-    // Load function to broadcast humidity
-    private def broadcastHumidity (humidityValue : Option[Double]) : Unit = {
-        frame.put (humidityValue)
-
-        val humidity = new Humidity (name = name, value = humidityValue, average3 = frame.average)
-        broadcaster.broadcast (humidity)
-    }
-
-    schedule every interval executionOf {
-        humidityContainer.opReadHumidity () runMatchingResultAsy {
-            case Success (humidityValue) =>
-                broadcastHumidity (Some (humidityValue))
-
-            case Failure (exc) =>
-                error ("Error reading humidity of " + humidityContainer + ": " + exc.getMessage, exc)
-                broadcastHumidity (None)
-        }
-    }
-
-    override def toString() : String = {
-        getClass.getSimpleName + "(name=" + name +
-            ", humidityContainer=" + humidityContainer + ", interval=" + interval + ")"
-    }
-}
-
-/**
- * Read state value from state container and broadcasts it as exportable object.
- */
-class StateMonitoringService[T] (actorEnv : HiPriorityActorEnv,
-                                 stateContainer : ReadableStateContainer[T],
-                                 name : String,
-                                 interval : TimeValue)
-                     extends Actor (actorEnv = actorEnv)
-{
-    // Load function to broadcast humidity
-    private def broadcastSensed (state : Option[T]) : Unit = {
-        val msg = new StateSensed (name = name, value = state)
-        broadcaster.broadcast (msg)
-    }
-
-    schedule every interval executionOf {
-        stateContainer.opGetState () runMatchingResultAsy {
-            case Success (stateValue) =>
-                broadcastSensed (Some(stateValue))
-
-            case Failure (exc) =>
-                error ("Error reading state of " + stateContainer + ": " + exc.getMessage, exc)
-                broadcastSensed (None)
-        }
-    }
-
-    override def toString() : String = {
-        getClass.getSimpleName + "(name=" + name +
-            ", humidityDevice=" + stateContainer + ", interval=" + interval + ")"
-    }
-}
+import utils.container.WriteableStateContainer
 
 /**
  * A service to control some state.
@@ -166,7 +29,7 @@ class StateMonitoringService[T] (actorEnv : HiPriorityActorEnv,
 abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
                                             stateContainer : WriteableStateContainer [T],
                                             name : String,
-                                            interval : TimeValue = 10 seconds,
+                                            interval : TimeValue,
                                             tooManyProblemsNumber : Int = 5,
                                             tooManyProblemsInterval : TimeValue = 10 minutes,
                                             disableOnTooManyProblemsFor : TimeValue = 15 minutes)
@@ -188,7 +51,7 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
             updateState (onlyIfChanged = true)
         }
     }
-    
+
     /**
      * Update state.
      */
@@ -245,7 +108,7 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
                 getStateUpdate ()
             else
                 new StateUpdate (state = safeState, validTime = interval * 3)
-            
+
         val newState = stateUpdate.state
         val newValidTime = stateUpdate.validTime
 
@@ -263,7 +126,7 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
             case Success (_) =>
                 val stateUpdated = new StateUpdated (name = name, value = newState)
                 broadcaster.broadcast (stateUpdated)
-            
+
                 previousState = Some (newState)
 
             case Failure (exc) =>
