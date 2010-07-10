@@ -5,7 +5,7 @@
 
 package info.akshaal.mywire2
 package test
-package unit.onewire
+package unit.device.owfs
 
 import org.specs.mock.Mockito
 
