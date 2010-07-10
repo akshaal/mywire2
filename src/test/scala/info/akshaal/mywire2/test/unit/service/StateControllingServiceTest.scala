@@ -5,162 +5,22 @@
 
 package info.akshaal.mywire2
 package test
-package unit.onewire
+package unit.service
 
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.Operation
 import info.akshaal.jacore.test.JacoreSpecWithJUnit
 import device._
 import device.owfs._
-import service._
+import service.StateControllingService
 import strategy.SimpleOnOffStrategy
-import domain.{Temperature, Humidity, StateUpdated, StateSensed}
+import domain.{StateUpdated, Temperature}
 import utils.{StateUpdate, TemperatureTracker, Problem}
 
 import unit.UnitTestHelper._
 
-class ServiceTest extends JacoreSpecWithJUnit ("1-wire services specification") {
-    import ServiceTest._
-
-    "TemperatureMonitoringService" should {
-        "work" in {
-            withStartedActors [TestTemperatureMonitoringServiceListener,
-                               TestTemperatureMonitoringService] (
-                (listener, service) => {
-                    withStartedActor (devices.temperatureMonitoringServiceMP.temp) {
-                        val started = System.currentTimeMillis
-
-                        listener.waitForMessageAfter {}
-                        listener.temp  must_==  Some(36.6)
-                        listener.avg3  must_==  Some(36.6)
-                        listener.recs  must_==  1
-
-                        // It is important that the same value received twice
-                        // Because programs like jrobin wants to have value for every
-                        // point in time.
-                        listener.waitForMessageAfter {}
-                        listener.temp  must_==  Some(1.0)
-                        listener.avg3  must_==  Some((36.6d + 1.0d) / 2.0d)
-                        listener.recs  must_==  2
-
-                        listener.waitForMessageAfter {}
-                        listener.temp  must_==  Some(1.0)
-                        listener.avg3  must_==  Some((36.6d + 1.0d + 1.0d) / 3.0d)
-                        listener.recs  must_==  3
-
-                        listener.waitForMessageAfter {}
-                        listener.temp  must_==  Some(2.0)
-                        listener.avg3  must_==  Some((1.0d + 1.0d + 2.0d) / 3.0d)
-                        listener.recs  must_==  4
-
-                        listener.waitForMessageAfter {}
-                        listener.temp  must_==  Some(3.0)
-                        listener.avg3  must_==  Some((1.0d + 3.0d + 2.0d) / 3.0d)
-                        listener.recs  must_==  5
-
-                        listener.waitForMessageAfter {}
-                        listener.temp  must_==  None
-                        listener.avg3  must_==  Some((3.0d + 2.0d) / 2.0d)
-                        listener.recs  must_==  6
-
-                        listener.waitForMessageAfter {}
-                        listener.temp  must_==  Some(4.0)
-                        listener.avg3  must_==  Some((4.0d + 3.0d) / 2.0d)
-                        listener.recs  must_==  7
-
-                        listener.waitForMessageAfter {}
-                        listener.temp  must_==  None
-                        listener.avg3  must_==  Some((4.0d) / 1.0d)
-                        listener.recs  must_==  8
-
-                        val lasted = System.currentTimeMillis - started
-                        lasted  must beIn (3600 to 8400)
-                    }
-                }
-            )
-        }
-    }
-
-    "HumidityMonitoringService" should {
-        "work" in {
-            withStartedActors [TestHumidityMonitoringServiceListener,
-                               TestHumidityMonitoringService] (
-                (listener, service) => {
-                    withStartedActor (devices.humidityMonitoringServiceMP.hum) {
-                        val started = System.currentTimeMillis
-
-                        listener.waitForMessageAfter {}
-                        listener.hum  must_==  Some(70.1)
-                        listener.avg3  must_==  Some(70.1)
-                        listener.recs  must_==  1
-
-                        // It is important that the same value received twice
-                        // Because programs like jrobin wants to have value for every
-                        // point in time.
-                        listener.waitForMessageAfter {}
-                        listener.hum  must_==  Some(60.2)
-                        listener.avg3  must_==  Some((60.2d + 70.1d) / 2.0d)
-                        listener.recs  must_==  2
-
-                        listener.waitForMessageAfter {}
-                        listener.avg3  must_==  Some((60.2d + 60.2d + 70.1d) / 3.0d)
-                        listener.hum  must_==  Some(60.2)
-                        listener.recs  must_==  3
-
-                        listener.waitForMessageAfter {}
-                        listener.avg3  must_==  Some((60.2d + 60.2d) / 2.0d)
-                        listener.hum  must_==  None
-                        listener.recs  must_==  4
-
-                        val lasted = System.currentTimeMillis - started
-                        lasted  must beIn (1200 to 4200)
-                    }
-                }
-            )
-        }
-    }
-
-    "StateMonitoringService" should {
-        "work" in {
-            withStartedActors [TestStateMonitoringServiceListener,
-                               TestStateMonitoringService] (
-                (listener, service) => {
-                    withStartedActor (devices.stateMonitoringServiceMP.switch) {
-                        val started = System.currentTimeMillis
-                        listener.state must_==  None
-                        listener.recs  must_==  0
-                        listener.errors  must_==  0
-
-                        listener.waitForMessageAfter {}
-                        listener.state must_==  Some(true)
-                        listener.recs  must_==  1
-                        listener.errors  must_==  0
-
-                        // It is important that the same value received twice
-                        // Because programs like jrobin wants to have value for every
-                        // point in time.
-                        listener.waitForMessageAfter {}
-                        listener.state must_==  Some(false)
-                        listener.recs  must_==  2
-                        listener.errors  must_==  0
-
-                        listener.waitForMessageAfter {}
-                        listener.state must_==  Some(false)
-                        listener.recs  must_==  3
-                        listener.errors  must_==  0
-
-                        listener.waitForMessageAfter {}
-                        listener.state must_==  None
-                        listener.recs  must_==  4
-                        listener.errors  must_==  0
-
-                        val lasted = System.currentTimeMillis - started
-                        lasted  must beIn (1200 to 4200)
-                    }
-                }
-            )
-        }
-    }
+class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControllingService services specification") {
+    import StateControllingServiceTest._
 
     "StateControllingService" should {
         "work" in {
@@ -169,7 +29,7 @@ class ServiceTest extends JacoreSpecWithJUnit ("1-wire services specification") 
                 (listener, service) => {
                     withStartedActor (devices.stateControllingServiceMP.switch) {
                         val started = System.currentTimeMillis
-                        
+
                         listener.waitForMessageAfter {}
                         listener.changes  must beGreaterThan(0)
                         listener.errors  must_==  0
@@ -299,81 +159,9 @@ class ServiceTest extends JacoreSpecWithJUnit ("1-wire services specification") 
     }
 }
 
-object ServiceTest {
+object StateControllingServiceTest {
     object devices {
         implicit val deviceEnv = injector.getInstanceOf [OwfsDeviceEnv]
-
-        object temperatureMonitoringServiceMP extends OwfsMountPoint ("/tmp/mywire") {
-            object temp extends DS18S20 ("abc") {
-                var n = 0
-
-                override def opReadTemperature () : Operation.WithResult [Double] =
-                    new AbstractOperation [Result[Double]] {
-                        override def processRequest () = {
-                            val result : Result[Double] = n match {
-                                case 0 => Success (36.6)
-                                case 1 => Success (1.0)
-                                case 2 => Success (1.0)
-                                case 3 => Success (85.0)
-                                case 4 => Success (2.0)
-                                case 5 => Success (85.0)
-                                case 6 => Success (85.0)
-                                case 7 => Success (3.0)
-                                case 8 => Success (85.0)
-                                case 9 => Success (85.0)
-                                case 10 => Success (85.0)
-                                case 11 => Success (4.0)
-                                case _ => Failure (new RuntimeException ())
-                            }
-                            n += 1
-
-                            yieldResult (result)
-                        }
-                    }
-            }
-        }
-
-        object humidityMonitoringServiceMP extends OwfsMountPoint ("/tmp/mywire") {
-            object hum extends DS2438 ("abc") with HIH4000 {
-                var n = 0
-
-                override def opReadHumidity () : Operation.WithResult [Double] =
-                    new AbstractOperation [Result[Double]] {
-                        override def processRequest () = {
-                            val result : Result[Double] = n match {
-                                case 0 => Success (70.1)
-                                case 1 => Success (60.2)
-                                case 2 => Success (60.2)
-                                case _ => Failure (new RuntimeException ())
-                            }
-                            n += 1
-
-                            yieldResult (result)
-                        }
-                    }
-            }
-        }
-
-        object stateMonitoringServiceMP extends OwfsMountPoint ("/tmp/mywire") {
-            object switch extends DS2405 ("abc") {
-                var n = 0
-
-                override def opGetStateFromFile (file : String) : Operation.WithResult [Boolean] =
-                    new AbstractOperation [Result[Boolean]] {
-                        override def processRequest () = {
-                            val result : Result[Boolean] = n match {
-                                case 0 => Success (true)
-                                case 1 => Success (false)
-                                case 2 => Success (false)
-                                case _ => Failure (new RuntimeException ())
-                            }
-                            n += 1
-
-                            yieldResult (result)
-                        }
-                    }
-            }
-        }
 
         object stateControllingServiceMP extends OwfsMountPoint ("/tmp/mywire") {
             object switch extends DS2405 ("abc") {
@@ -417,85 +205,6 @@ object ServiceTest {
             }
         }
     }
-
-    // Temperature testing - - - - - - - - - -
-    
-    class TestTemperatureMonitoringServiceListener extends TestActor {
-        var temp : Option[Double] = Some(0.0)
-        var avg3 : Option[Double] = Some(0.0)
-        var recs = 0
-
-        subscribe [Temperature]
-
-        override def act () = {
-            case Temperature ("testTemperatureMonitoringService", value, avg3v) =>
-                temp = value
-                avg3 = avg3v
-                recs += 1
-        }
-    }
-
-    class TestTemperatureMonitoringService
-             extends TemperatureMonitoringService (
-                                actorEnv = TestModule.hiPriorityActorEnv,
-                                temperatureContainer = devices.temperatureMonitoringServiceMP.temp,
-                                name = "testTemperatureMonitoringService",
-                                interval = 1 seconds,
-                                illegalTemperature = Some(85.0))
-
-    // Humidity testing - - - - - - - - - -
-
-    class TestHumidityMonitoringServiceListener extends TestActor {
-        var hum : Option[Double] = Some(0.0)
-        var avg3 : Option[Double] = Some(0.0)
-        var recs = 0
-
-        subscribe [Humidity]
-
-        override def act () = {
-            case Humidity ("testHumidityMonitoringService", value, avg3v) =>
-                hum = value
-                avg3 = avg3v
-                recs += 1
-        }
-    }
-
-    class TestHumidityMonitoringService
-             extends HumidityMonitoringService (
-                                actorEnv = TestModule.hiPriorityActorEnv,
-                                humidityContainer = devices.humidityMonitoringServiceMP.hum,
-                                name = "testHumidityMonitoringService",
-                                interval = 1 seconds)
-
-    // State monitoring testing - - - - - - - - - -
-
-    class TestStateMonitoringServiceListener extends TestActor {
-        var state : Option[Boolean] = None
-        var recs = 0
-        var errors = 0
-
-        subscribe [StateSensed]
-
-        override def act () = {
-            case StateSensed ("testStateMonitoringService", None) =>
-                state = None
-                recs += 1
-
-            case StateSensed ("testStateMonitoringService", Some(value : Boolean)) =>
-                state = Some (value)
-                recs += 1
-
-            case StateSensed ("testStateMonitoringService", _) =>
-                errors += 1
-        }
-    }
-
-    class TestStateMonitoringService
-             extends StateMonitoringService (
-                                actorEnv = TestModule.hiPriorityActorEnv,
-                                stateContainer = devices.stateMonitoringServiceMP.switch.Sensed,
-                                name = "testStateMonitoringService",
-                                interval = 1 seconds)
 
     // StateControllingService testing - - - - - - - - - -
 
@@ -554,7 +263,7 @@ object ServiceTest {
                 } else {
                     offs += 1
                 }
-                
+
                 changes += 1
 
                 prev = Some (value)
