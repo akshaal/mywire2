@@ -98,7 +98,7 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
         lazy val foundSilentProblems = possibleSilentProblems.find(_.detected != None)
         if (isDebugEnabled) {
             for (silentProblem <- foundSilentProblems) {
-                debug ("Found silent problem: " + silentProblem.detected)
+                debug ("Found silent problem" +:+ silentProblem.detected)
             }
         }
 
@@ -129,8 +129,8 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
 
                 previousState = Some (newState)
 
-            case Failure (exc) =>
-                error ("Error setting state " + newState + " of " + stateContainer + ": " + exc.getMessage, exc)
+            case Failure (msg, excOpt) =>
+                error ("Error setting state " + newState + " of " + stateContainer +:+ msg +:+ excOpt, excOpt.orNull)
         }
 
         // Schedule next state update
@@ -157,21 +157,21 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
      * Called when a problem detected.
      */
     protected def onProblem (problem : Problem) {
-        businessLogicProblem (name + ": Problem detected: " + problem.detected.get)
+        businessLogicProblem (name +:+ "Problem detected" +:+ problem.detected.get)
     }
 
     /**
      * Called when a problem is gone.
      */
     protected def onProblemGone (problem : Problem) {
-        businessLogicInfo (name + ": Problem gone: " + problem.isGone.get)
+        businessLogicInfo (name +:+ "Problem gone" +:+ problem.isGone.get)
     }
 
     /**
      * Called when too many problems detected.
      */
     protected def onTooManyProblems () {
-        businessLogicProblem (name + ": Too many problems occured within last "
+        businessLogicProblem (name +:+ "Too many problems occured within last "
                               + tooManyProblemsInterval
                               + ". Service will be switched into safe mode for the next "
                               + disableOnTooManyProblemsFor)
@@ -181,7 +181,7 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
      * Called when service is switched back online after too many problems.
      */
     protected def onTooManyProblemsExpired () {
-        businessLogicInfo (name + ": Service is back online after too many problems expired")
+        businessLogicInfo (name +:+ "Service is back online after too many problems expired")
     }
 
     /**

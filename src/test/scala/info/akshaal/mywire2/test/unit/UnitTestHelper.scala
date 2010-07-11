@@ -94,11 +94,6 @@ object UnitTestHelper extends TestHelper {
                              writer : (String, String) => Unit)
                     extends TestActor with TextFile
     {
-        override def writeFileAsy (file : File, content : String, payload : Any) : Unit =
-        {
-            throw new RuntimeException ("NYI")
-        }
-
         override def opWriteFile (file : File, content : String) : Operation.WithResult [Unit] = {
             new AbstractOperation [Result [Unit]] {
                 override def processRequest () {
@@ -106,11 +101,6 @@ object UnitTestHelper extends TestHelper {
                     yieldResult (null)
                 }
             }
-        }
-
-        override def readFileAsy (file : File, payload : Any, size : Option[Int] = None) : Unit =
-        {
-            throw new RuntimeException ("NYI")
         }
 
         override def opReadFile (file : File, size : Option[Int] = None) : Operation.WithResult [String] = {

@@ -6,6 +6,7 @@
 package info.akshaal.mywire2
 package utils
 
+import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.utils.ClassUtils
 import domain.{StateUpdated, StateSensed}
 
@@ -27,7 +28,7 @@ class StateTracker [T] (names : String*) (implicit tManifest : ClassManifest[T])
             update (stateUpdated.name, Some(value.asInstanceOf[T]))
         } else {
             if (names contains stateUpdated.name) {
-                errorLazy ("Tracked state object contains value of incompatible type: " + stateUpdated)
+                errorLazy ("Tracked state object contains value of incompatible type" +:+ stateUpdated)
             }
 
             false
@@ -48,7 +49,7 @@ class StateTracker [T] (names : String*) (implicit tManifest : ClassManifest[T])
                     update (stateSensed.name, Some(value.asInstanceOf[T]))
                 } else {
                     if (names contains stateSensed.name) {
-                        errorLazy ("Tracked state object contains value of incompatible type: " + stateSensed)
+                        errorLazy ("Tracked state object contains value of incompatible type" +:+ stateSensed)
                     }
 
                     false

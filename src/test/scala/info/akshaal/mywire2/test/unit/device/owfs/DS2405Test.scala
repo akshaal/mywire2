@@ -24,7 +24,7 @@ class DS2405Test extends JacoreSpecWithJUnit ("DS2405 devices specification") wi
             val readFs = Map ("/tmp/test/uncached/05.abc/PIO" -> Success("0"),
                               "/tmp/test/uncached/05.abd/PIO" -> Success("1"),
                               "/tmp/test/uncached/05.abe/PIO" -> Success(""),
-                              "/tmp/test/uncached/05.bcd/PIO" -> Failure[String](fnf))
+                              "/tmp/test/uncached/05.bcd/PIO" -> Failure[String]("x", Some(fnf)))
 
             withMockedTextFile (readFs) (textFileActor => {
                 implicit val deviceEnv = Mocker.newOwfsDeviceEnv
@@ -47,12 +47,12 @@ class DS2405Test extends JacoreSpecWithJUnit ("DS2405 devices specification") wi
 
                 withStartedActor (mp.dev3) {
                     mp.dev3.PIO.opGetState ().runWithFutureAsy().get  must beLike {
-                        case Failure(exc) => exc.isInstanceOf[NumberFormatException]
+                        case Failure(_, None) => true
                     }
                 }
 
                 withStartedActor (mp.dev4) {
-                    mp.dev4.PIO.opGetState ().runWithFutureAsy().get  must_==  Failure[Boolean](fnf)
+                    mp.dev4.PIO.opGetState ().runWithFutureAsy().get  must_==  Failure[Boolean]("x", Some(fnf))
                 }
             })
         }
@@ -87,7 +87,7 @@ class DS2405Test extends JacoreSpecWithJUnit ("DS2405 devices specification") wi
             val readFs = Map ("/tmp/test/uncached/05.abc/sensed" -> Success("1"),
                               "/tmp/test/uncached/05.abd/sensed" -> Success("0"),
                               "/tmp/test/uncached/05.abe/sensed" -> Success(""),
-                              "/tmp/test/uncached/05.bcd/sensed" -> Failure[String](fnf))
+                              "/tmp/test/uncached/05.bcd/sensed" -> Failure[String]("z", Some(fnf)))
 
             withMockedTextFile (readFs) (textFileActor => {
                 implicit val deviceEnv = Mocker.newOwfsDeviceEnv
@@ -110,12 +110,12 @@ class DS2405Test extends JacoreSpecWithJUnit ("DS2405 devices specification") wi
 
                 withStartedActor (mp.dev3) {
                     mp.dev3.Sensed.opGetState ().runWithFutureAsy().get  must beLike {
-                        case Failure(exc) => exc.isInstanceOf[NumberFormatException]
+                        case Failure(_, None) => true
                     }
                 }
 
                 withStartedActor (mp.dev4) {
-                    mp.dev4.Sensed.opGetState ().runWithFutureAsy().get  must_==  Failure[Boolean](fnf)
+                    mp.dev4.Sensed.opGetState ().runWithFutureAsy().get  must_==  Failure[Boolean]("z", Some(fnf))
                 }
             })
         }

@@ -68,9 +68,10 @@ class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
                     broadcastTemperature (Some (temperatureValue))
                 }
 
-            case Failure (exc) =>
+            case Failure (msg, excOpt) =>
                 triesLeft = None // Something is bad, we can't try
-                error ("Error reading temperature of " + temperatureContainer + ": " + exc.getMessage, exc)
+                val errorMsg = "Error reading temperature of " + temperatureContainer +:+ msg +:+ excOpt
+                error (errorMsg, excOpt.orNull)
                 broadcastTemperature (None)
         }
 

@@ -105,7 +105,7 @@ object TemperatureMonitoringServiceTest {
                                 case 9 => Success (85.0)
                                 case 10 => Success (85.0)
                                 case 11 => Success (4.0)
-                                case _ => Failure (new RuntimeException ())
+                                case _ => Failure ("123", Some(new RuntimeException ()))
                             }
                             n += 1
 

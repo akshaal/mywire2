@@ -32,8 +32,8 @@ class StateMonitoringService[T] (actorEnv : HiPriorityActorEnv,
             case Success (stateValue) =>
                 broadcastSensed (Some(stateValue))
 
-            case Failure (exc) =>
-                error ("Error reading state of " + stateContainer + ": " + exc.getMessage, exc)
+            case Failure (msg, excOpt) =>
+                error ("Error reading state of " + stateContainer +:+ msg +:+ excOpt, excOpt.orNull)
                 broadcastSensed (None)
         }
     }

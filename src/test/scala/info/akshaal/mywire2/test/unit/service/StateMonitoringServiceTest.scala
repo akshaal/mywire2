@@ -78,7 +78,7 @@ object StateMonitoringServiceTest {
                                 case 0 => Success (true)
                                 case 1 => Success (false)
                                 case 2 => Success (false)
-                                case _ => Failure (new RuntimeException ())
+                                case _ => Failure ("ff", Some(new RuntimeException ()))
                             }
                             n += 1
 

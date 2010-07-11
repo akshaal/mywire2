@@ -21,7 +21,7 @@ class DS18S20Test extends JacoreSpecWithJUnit ("DS18S20 specification") with Moc
     "DS18S20" should {
         "read temperature" in {
             val readFs = Map ("/tmp/test/uncached/10.abc/temperature" -> Success("23.44"),
-                              "/tmp/test/uncached/10.bca/temperature" -> Failure[String](fnf))
+                              "/tmp/test/uncached/10.bca/temperature" -> Failure[String]("g", Some(fnf)))
 
             withMockedTextFile (readFs) (textFileActor => {
                 implicit val deviceEnv = Mocker.newOwfsDeviceEnv
@@ -37,7 +37,7 @@ class DS18S20Test extends JacoreSpecWithJUnit ("DS18S20 specification") with Moc
                 }
 
                 withStartedActor (mp.temp2) {
-                    mp.temp2.opReadTemperature ().runWithFutureAsy().get  must_==  Failure[String](fnf)
+                    mp.temp2.opReadTemperature ().runWithFutureAsy().get  must_==  Failure[String]("g", Some(fnf))
                 }
             })
         }

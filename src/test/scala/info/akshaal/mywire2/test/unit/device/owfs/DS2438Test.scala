@@ -21,7 +21,7 @@ class DS2438Test extends JacoreSpecWithJUnit ("DS2438 devices specification") wi
     "DS2438" should {
         "read temperature" in {
             val readFs = Map ("/tmp/test/uncached/26.4445/temperature" -> Success("11.43"),
-                              "/tmp/test/uncached/26.3333/temperature" -> Failure[String](fnf))
+                              "/tmp/test/uncached/26.3333/temperature" -> Failure[String]("123", Some(fnf)))
 
             withMockedTextFile (readFs) (textFileActor => {
                 implicit val deviceEnv = Mocker.newOwfsDeviceEnv
@@ -37,7 +37,7 @@ class DS2438Test extends JacoreSpecWithJUnit ("DS2438 devices specification") wi
                 }
 
                 withStartedActor (mp.temp2) {
-                    mp.temp2.opReadTemperature ().runWithFutureAsy ().get  must_==  Failure[String](fnf)
+                    mp.temp2.opReadTemperature ().runWithFutureAsy ().get  must_==  Failure[String]("123", Some(fnf))
                 }
             })
         }
@@ -47,7 +47,7 @@ class DS2438Test extends JacoreSpecWithJUnit ("DS2438 devices specification") wi
                                         -> Success("75"),
 
                               "/tmp/test/uncached/26.1333/HIH4000/humidity"
-                                        -> Failure[String] (fnf))
+                                        -> Failure[String] ("x", Some(fnf)))
 
             withMockedTextFile (readFs) (textFileActor => {
                 implicit val deviceEnv = Mocker.newOwfsDeviceEnv
@@ -63,7 +63,7 @@ class DS2438Test extends JacoreSpecWithJUnit ("DS2438 devices specification") wi
                 }
 
                 withStartedActor (mp.temp2) {
-                    mp.temp2.opReadHumidity ().runWithFutureAsy ().get  must_==  Failure[String](fnf)
+                    mp.temp2.opReadHumidity ().runWithFutureAsy ().get  must_==  Failure[String]("x", Some(fnf))
                 }
             })
         }

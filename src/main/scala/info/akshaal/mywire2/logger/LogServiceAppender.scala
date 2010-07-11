@@ -64,7 +64,7 @@ final class LogServiceAppender extends AppenderSkeleton {
             
         case Level.ERROR => LogRecordLevel.Error
 
-        case level       => throw new IllegalArgumentException ("Unsupported level: " + level)
+        case level       => throw new IllegalArgumentException ("Unsupported level" +:+ level)
     }
 }
 

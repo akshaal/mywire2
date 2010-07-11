@@ -43,7 +43,7 @@ private[mywire2] final class NativeThreadPriorityChanger @Inject() (
         } catch {
             case e : OSException =>
                 warn ("Failed to get priority for the current thread "
-                      + identifier + ": " + e.getMessage, e)
+                      + identifier +:+ e, e)
         }
 
         try {
@@ -55,7 +55,7 @@ private[mywire2] final class NativeThreadPriorityChanger @Inject() (
             case e : OSException =>
                 warn ("Failed to set priority to " + osPriority
                       + " for thread " + identifier
-                      + ": " + e.getMessage, e)
+                      +:+ e, e)
         }
     }
 }

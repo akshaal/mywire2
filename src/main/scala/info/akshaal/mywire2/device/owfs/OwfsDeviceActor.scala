@@ -65,13 +65,13 @@ abstract class OwfsDeviceActor (id : String,
                                             Success (parser (content))
                                         } catch {
                                             case exc : NumberFormatException =>
-                                                Failure (exc)
+                                                Failure ("can't parse" +:+ content)
                                         }
 
                                     yieldResult (result)
 
-                                case Failure (exc) =>
-                                    yieldResult (Failure (exc))
+                                case Failure (msg, exc) =>
+                                    yieldResult (Failure (msg, exc))
                             }
             }
         }

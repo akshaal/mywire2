@@ -8,6 +8,8 @@ import java.util.HashMap
 import javax.management.{ObjectName, MBeanServerConnection}
 import javax.management.remote.{JMXServiceURL, JMXConnectorFactory}
 
+import info.akshaal.jacore.`package`._
+
 import module.Module
 
 /**
@@ -25,7 +27,7 @@ abstract class BaseDaemonJMXClient (module : Module) {
     // private static final String CONTROL_ROLE = "controlRole";
 
     protected def show (str : String) : Unit = {
-        println (getClass.getSimpleName + ": " + str)
+        println (getClass.getSimpleName +:+ str)
     }
 
     def run () : Unit = {
@@ -35,8 +37,8 @@ abstract class BaseDaemonJMXClient (module : Module) {
         // Old version
         val oldVersion = getServer ().getAttribute (daemon, "version").asInstanceOf [String]
         
-        show ("Currently remotly running version: " + oldVersion)
-        show ("Version we are installing: " + module.version)
+        show ("Currently remotly running version" +:+ oldVersion)
+        show ("Version we are installing" +:+ module.version)
         if (oldVersion == module.version) {
             show ("FAILURE: Versions are the same. Do nothing!")
             return

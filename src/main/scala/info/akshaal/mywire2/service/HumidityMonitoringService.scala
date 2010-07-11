@@ -37,8 +37,8 @@ class HumidityMonitoringService (actorEnv : HiPriorityActorEnv,
             case Success (humidityValue) =>
                 broadcastHumidity (Some (humidityValue))
 
-            case Failure (exc) =>
-                error ("Error reading humidity of " + humidityContainer + ": " + exc.getMessage, exc)
+            case Failure (msg, excOpt) =>
+                error ("Error reading humidity of " + humidityContainer +:+ msg +:+ excOpt, excOpt.orNull)
                 broadcastHumidity (None)
         }
     }

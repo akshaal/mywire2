@@ -76,7 +76,7 @@ object HumidityMonitoringServiceTest {
                                 case 0 => Success (70.1)
                                 case 1 => Success (60.2)
                                 case 2 => Success (60.2)
-                                case _ => Failure (new RuntimeException ())
+                                case _ => Failure ("x", Some(new RuntimeException ()))
                             }
                             n += 1
 

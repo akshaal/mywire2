@@ -30,7 +30,7 @@ abstract class AbstractTracker[T, B] (names : String*) extends Logging {
 
         val result = map.get (name)
         if (result == null) {
-            throw new IllegalArgumentException ("No value available for name: " + name)
+            throw new IllegalArgumentException ("No value available for name" +:+ name)
         } else {
             return result.asInstanceOf [B]
         }

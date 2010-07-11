@@ -39,7 +39,7 @@ class DS2405 (id : String) (implicit parentDevLoc : DeviceLocation, deviceEnv : 
 
             case "1" => true
 
-            case x => throw new NumberFormatException ("Unknown state: " + x)
+            case x => throw new NumberFormatException ("Unknown state" +:+ x)
         }
 
     /**

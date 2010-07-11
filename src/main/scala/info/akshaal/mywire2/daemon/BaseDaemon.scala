@@ -120,7 +120,7 @@ abstract class BaseDaemon (module : Module,
             debug ("Memory has been locked");
         } catch {
             case e : OSException =>
-                warn ("Failed to lock memory for thread " + ": " + e.getMessage, e);
+                warn ("Failed to lock memory for thread " +:+ e.getMessage, e);
         }
 
         /**
@@ -128,7 +128,7 @@ abstract class BaseDaemon (module : Module,
          * actors from scala object (modules).
          */
         object additionalModule extends AbstractModule {
-            debugLazy ("All additional actor classes: " + allAdditionalActorClasses)
+            debugLazy ("All additional actor classes" +:+ allAdditionalActorClasses)
 
             // Separate actor object classes from actor classes
             for (clazz <- allAdditionalActorClasses) {
@@ -138,8 +138,8 @@ abstract class BaseDaemon (module : Module,
                 }
             }
 
-            debugLazy ("Set of additional actors after instantion by MODULE$: "
-                       + allAdditionalActors)
+            debugLazy ("Set of additional actors after instantion by MODULE$"
+                       +:+ allAdditionalActors)
 
             def configure () : Unit = {
                 for (actor <- allAdditionalActors if actor.isInstanceOf [Autoregister]) {
@@ -166,11 +166,11 @@ abstract class BaseDaemon (module : Module,
         mainInjector = Some (injector)
 
         // Instantiate actor classes by guice
-        debugLazy ("Actor classes to be instantiated by Guice: " + actorClassesForGuice)        
+        debugLazy ("Actor classes to be instantiated by Guice" +:+ actorClassesForGuice)        
         allAdditionalActors ++= actorClassesForGuice.map (injector.getInstance (_))
 
         // Debug
-        debugLazy ("All additional actors: " + allAdditionalActors)
+        debugLazy ("All additional actors" +:+ allAdditionalActors)
     }
 
     /**
