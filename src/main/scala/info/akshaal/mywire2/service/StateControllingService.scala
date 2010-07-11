@@ -33,7 +33,7 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
                                             tooManyProblemsNumber : Int = 5,
                                             tooManyProblemsInterval : TimeValue = 10 minutes,
                                             disableOnTooManyProblemsFor : TimeValue = 15 minutes)
-                            extends Actor (actorEnv = actorEnv)
+                            extends AbstractControllingService (actorEnv = actorEnv)
 {
     private var earlyUpdateControl : Option[ScheduleControl] = None
     private var previousState : Option[T] = None
@@ -50,6 +50,10 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
         postponed {
             updateState (onlyIfChanged = true)
         }
+    }
+
+    protected override def onTrackedMessageHandled () : Unit = {
+        updateStateIfChanged ()
     }
 
     /**
@@ -87,7 +91,7 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
             }
 
             if (currentProblem == None) {
-                for (newProblem <- possibleProblems.find (_.detected != None)) {
+                for (newProblem <- (commonPossibleProblems ++ possibleProblems).find (_.detected != None)) {
                     onProblem (newProblem)
                     currentProblem = Some (newProblem)
                 }
@@ -95,7 +99,9 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
         }
 
         // Check for silent problems
-        lazy val foundSilentProblems = possibleSilentProblems.find(_.detected != None)
+        lazy val foundSilentProblems =
+            (commonPossibleSilentProblems ++ possibleSilentProblems).find(_.detected != None)
+
         if (isDebugEnabled) {
             for (silentProblem <- foundSilentProblems) {
                 debug ("Found silent problem" +:+ silentProblem.detected)
@@ -197,11 +203,11 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
     /**
      * List of possible problems.
      */
-    protected def possibleProblems : List [Problem]
+    protected def possibleProblems : List [Problem] = Nil
 
     /**
      * List of possible problem that don't generate any error messages, but just
      * switches device to the safe mode.
      */
-    protected def possibleSilentProblems : List[Problem]
+    protected def possibleSilentProblems : List[Problem] = Nil
 }

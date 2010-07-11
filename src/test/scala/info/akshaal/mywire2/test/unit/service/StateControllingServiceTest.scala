@@ -281,7 +281,9 @@ object StateControllingServiceTest {
                                 tooManyProblemsInterval = 200 milliseconds,
                                 disableOnTooManyProblemsFor = 300 milliseconds)
     {
-        private lazy val trackedTemperature = new TemperatureTracker ("temp")
+        protected override val trackedTemperatureNames = "temp" :: Nil
+        protected override val problemIfUndefinedFor = 50 milliseconds
+
         var problems = 0
         var problemGones = 0
         var tooMany = 0
@@ -293,18 +295,10 @@ object StateControllingServiceTest {
         override protected val safeState = false
 
         override protected val possibleProblems =
-           trackedTemperature.problemIfNaN ::
-           trackedTemperature.problemIfUndefinedFor (50 milliseconds) ::
-           trackedTemperature.problemIf ("temp").greaterThan (30, backOn=15) :: Nil
-
-        override protected val possibleSilentProblems : List[Problem] =
-           trackedTemperature.problemIfUndefined :: Nil
+           temperature.problemIf ("temp").greaterThan (30, backOn=15) :: Nil
 
         def updateTemp (temp : Option[Double]) = {
-            postponed {
-                trackedTemperature.updateFrom (new Temperature ("temp", value=temp, average3=temp))
-                updateStateIfChanged ()
-            }
+            this ! new Temperature ("temp", value = temp, average3 = temp)
         }
 
         override def onProblem (problem : Problem) = {
