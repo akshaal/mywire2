@@ -6,6 +6,8 @@
 package info.akshaal.mywire2
 package service
 
+import scala.collection.immutable.{Map => ImmutableMap}
+
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.{Actor, HiPriorityActorEnv}
 import info.akshaal.jacore.scheduler.ScheduleControl
@@ -35,26 +37,133 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
                                             disableOnTooManyProblemsFor : TimeValue = 15 minutes)
                             extends AbstractControllingService (actorEnv = actorEnv)
 {
+    // ===========================================================================
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Private state
+
     private var earlyUpdateControl : Option[ScheduleControl] = None
     private var previousState : Option[T] = None
     private var currentProblem : Option[Problem] = None
     private var problemEndHistory : List[TimeValue] = Nil
     private var disabledUntil : Option[TimeValue] = None
 
-    schedule every interval executionOf updateState()
+    // ===========================================================================
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Customization of behavior
+
+    /**
+     * List of possible problems.
+     */
+    protected val possibleProblems : List [Problem] = Nil
+
+    /**
+     * List of possible problem that don't generate any error messages, but just
+     * switches device to the safe mode.
+     */
+    protected val possibleSilentProblems : List [Problem] = Nil
+
+    /**
+     * Get new state.
+     */
+    protected def getStateUpdate () : StateUpdate[T]
+
+    /**
+     * Returns state that is considered safe for human environment.
+     */
+    protected val safeState : T
+
+    /**
+     * Messages to be logged when a state is changed to some new state.
+     * Value must be mapping from the new state to a message to log.
+     */
+    protected val transitionMessages : ImmutableMap [T, String] = ImmutableMap ()
+
+    // ===========================================================================
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Public interface
 
     /**
      * Update state if state is changed.
      */
-    def updateStateIfChanged () : Unit = {
+    def updateStateIfChangedAsy () : Unit = {
         postponed {
             updateState (onlyIfChanged = true)
         }
     }
 
-    protected override def onTrackedMessageHandled () : Unit = {
-        updateStateIfChanged ()
+    /**
+     * Override method from Actor class. This is used to update state immediately
+     * after actor is started.
+     */
+    override def start () : Boolean = {
+        val started = super.start ()
+
+        if (started) {
+            updateStateIfChangedAsy ()
+        }
+
+        started
     }
+
+    // ===========================================================================
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Reactions on events on actions
+
+    /**
+     * Method from AbstractControllingService. This method is called, when a
+     * tracked message received. This method is used to initiate update process
+     * for the state.
+     */
+    protected override def onTrackedMessageHandled () : Unit = {
+        updateStateIfChangedAsy ()
+    }
+
+    /**
+     * Called when a problem detected.
+     */
+    protected def onProblem (problem : Problem) : Unit = {
+        businessLogicProblem (name +:+ "Problem detected" +:+ problem.detected.get)
+    }
+
+    /**
+     * Called when a problem is gone.
+     */
+    protected def onProblemGone (problem : Problem) : Unit = {
+        businessLogicInfo (name +:+ "Problem gone" +:+ problem.isGone.get)
+    }
+
+    /**
+     * Called when too many problems detected.
+     */
+    protected def onTooManyProblems () : Unit = {
+        businessLogicProblem (name +:+ "Too many problems occured within last "
+                              + tooManyProblemsInterval
+                              + ". Service will be switched into safe mode for the next "
+                              + disableOnTooManyProblemsFor)
+    }
+
+    /**
+     * Called when service is switched back online after too many problems.
+     */
+    protected def onTooManyProblemsExpired () : Unit = {
+        businessLogicInfo (name +:+ "Service is back online after too many problems expired")
+    }
+
+    /**
+     * Called when state is changed (updated). Default implementation
+     * logs message defined in transitionMessages map.
+     */
+    protected def onNewState (oldState : Option[T], newState : T) : Unit = {
+        for (msg <- transitionMessages.get (newState)) {
+            businessLogicInfo (msg)
+        }
+    }
+
+    // ===========================================================================
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Internals
+
+    schedule every interval executionOf updateState()
 
     /**
      * Update state.
@@ -132,6 +241,9 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
             case Success (_) =>
                 val stateUpdated = new StateUpdated (name = name, value = newState)
                 broadcaster.broadcast (stateUpdated)
+                if (previousState != Some (newState)) {
+                    onNewState (previousState, newState)
+                }
 
                 previousState = Some (newState)
 
@@ -146,68 +258,4 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
             earlyUpdateControl = None
         }
     }
-
-    override def start () : Boolean = {
-        val started = super.start ()
-
-        if (started) {
-            postponed {
-                updateState ()
-            }
-        }
-
-        started
-    }
-
-    /**
-     * Called when a problem detected.
-     */
-    protected def onProblem (problem : Problem) {
-        businessLogicProblem (name +:+ "Problem detected" +:+ problem.detected.get)
-    }
-
-    /**
-     * Called when a problem is gone.
-     */
-    protected def onProblemGone (problem : Problem) {
-        businessLogicInfo (name +:+ "Problem gone" +:+ problem.isGone.get)
-    }
-
-    /**
-     * Called when too many problems detected.
-     */
-    protected def onTooManyProblems () {
-        businessLogicProblem (name +:+ "Too many problems occured within last "
-                              + tooManyProblemsInterval
-                              + ". Service will be switched into safe mode for the next "
-                              + disableOnTooManyProblemsFor)
-    }
-
-    /**
-     * Called when service is switched back online after too many problems.
-     */
-    protected def onTooManyProblemsExpired () {
-        businessLogicInfo (name +:+ "Service is back online after too many problems expired")
-    }
-
-    /**
-     * Get new state.
-     */
-    protected def getStateUpdate () : StateUpdate[T]
-
-    /**
-     * Returns state that is considered safe for human environment.
-     */
-    protected def safeState : T
-
-    /**
-     * List of possible problems.
-     */
-    protected def possibleProblems : List [Problem] = Nil
-
-    /**
-     * List of possible problem that don't generate any error messages, but just
-     * switches device to the safe mode.
-     */
-    protected def possibleSilentProblems : List[Problem] = Nil
 }

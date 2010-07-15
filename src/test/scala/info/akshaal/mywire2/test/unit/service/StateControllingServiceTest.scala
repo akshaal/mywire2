@@ -7,6 +7,8 @@ package info.akshaal.mywire2
 package test
 package unit.service
 
+import scala.collection.immutable.{Map => ImmutableMap}
+
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.Operation
 import info.akshaal.jacore.test.JacoreSpecWithJUnit
@@ -88,6 +90,7 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
                         service.problemGones  must_==  0
                         service.tooMany  must_==  0
                         service.tooManyGone  must_==  0
+                        service.stateChanges  must_==  1
 
                         // This is because of silent problem
                         devices.stateControllingServiceMP.switch2
@@ -95,7 +98,7 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
 
                         // This should trigger 'unavailable temperature' problem
                         Thread.sleep (50.milliseconds.asMilliseconds)
-                        service.updateStateIfChanged ()
+                        service.updateStateIfChangedAsy ()
                         Thread.sleep (10.milliseconds.asMilliseconds)
 
                         readState  must_==  Success(Some(false))
@@ -112,6 +115,7 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
                         service.problemGones  must_==  1
                         service.tooMany  must_==  0
                         service.tooManyGone  must_==  0
+                        service.stateChanges  must_==  2
 
                         // This must check temp problem and trigger too many problems case
                         for (i <- 1 to 4) {
@@ -135,13 +139,13 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
                         service.tooMany  must_==  1
                         service.tooManyGone  must_==  0
 
-                        service.updateStateIfChanged ()
+                        service.updateStateIfChangedAsy ()
                         Thread.sleep (50.milliseconds.asMilliseconds)
                         service.tooMany  must_==  1
                         service.tooManyGone  must_==  0
                         readState  must_==  Success(Some(false))
 
-                        service.updateStateIfChanged ()
+                        service.updateStateIfChangedAsy ()
                         Thread.sleep (10.milliseconds.asMilliseconds)
                         service.tooMany  must_==  1
                         service.tooManyGone  must_==  0
@@ -283,11 +287,14 @@ object StateControllingServiceTest {
     {
         protected override val trackedTemperatureNames = "temp" :: Nil
         protected override val problemIfUndefinedFor = 50 milliseconds
+        protected override val transitionMessages = ImmutableMap (true -> "set to true",
+                                                                  false -> "set to false")
 
         var problems = 0
         var problemGones = 0
         var tooMany = 0
         var tooManyGone = 0
+        var stateChanges = 0
 
         override protected def getStateUpdate () : StateUpdate[Boolean] =
                 new StateUpdate (state = true, validTime = 1 minutes)
@@ -315,6 +322,11 @@ object StateControllingServiceTest {
 
         override protected def onTooManyProblemsExpired () {
             tooManyGone += 1
+        }
+
+        override protected def onNewState (oldState : Option[Boolean], newState : Boolean) {
+            super.onNewState (oldState, newState)
+            stateChanges += 1
         }
     }
 }
