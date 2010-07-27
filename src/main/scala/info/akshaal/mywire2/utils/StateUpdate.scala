@@ -3,7 +3,8 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.utils
+package info.akshaal.mywire2
+package utils
 
 import info.akshaal.jacore.`package`._
 
@@ -13,7 +14,7 @@ import info.akshaal.jacore.`package`._
  * @param state new state
  * @param validTime how this state is valid
  */
-class StateUpdate[T] (val state : T, val validTime : TimeValue) {
+class StateUpdate[T] (val state : T, val validTime : TimeValue) extends AbstractStateUpdate[T] {
     /**
      * Rerturns true if other object can be equal to this one.
      */

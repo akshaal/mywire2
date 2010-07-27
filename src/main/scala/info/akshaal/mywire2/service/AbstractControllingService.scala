@@ -18,21 +18,52 @@ import domain.{StateUpdated, StateSensed, Temperature}
 abstract class AbstractControllingService (actorEnv : HiPriorityActorEnv)
                                             extends Actor (actorEnv = actorEnv)
 {
+    /**
+     * State for boolean sensed states.
+     */
     protected final lazy val booleanSensedState =
             new StateTracker[Boolean] (trackedBooleanSensedStateNames : _*)
 
+    /**
+     * State for boolean updated states.
+     */
     protected final lazy val booleanUpdatedState =
             new StateTracker[Boolean] (trackedBooleanUpdatedStateNames : _*)
 
+    /**
+     * State for temperatures.
+     */
     protected final lazy val temperature =
             new TemperatureTracker (trackedTemperatureNames : _*)
 
+    /**
+     * List of boolean sensed state names to track. Controlling service must
+     * override this list if some states needs to be tracked.
+     */
     protected def trackedBooleanSensedStateNames : List[String] = Nil
+
+    /**
+     * List of boolean updated state names to track. Controlling service must
+     * override this list if some states needs to be tracked.
+     */
     protected def trackedBooleanUpdatedStateNames : List[String] = Nil
+
+    /**
+     * List of temperature names to track. Controlling service must
+     * override this list if some temperatures needs to be tracked.
+     */
     protected def trackedTemperatureNames : List[String] = Nil
 
+    /**
+     * Amount of time that is allowed to pass after a tracker is created
+     * and before values for tracked state/temperature/... is gathered.
+     */
     protected def problemIfUndefinedFor = 5 minutes
 
+    /**
+     * Called when messages for the actor arrives.
+     * This implementation handles tracked messages.
+     */
     protected override def act() = {
         case stateMsg : StateUpdated =>
             if (booleanUpdatedState.updateFrom (stateMsg)) {
@@ -50,9 +81,16 @@ abstract class AbstractControllingService (actorEnv : HiPriorityActorEnv)
             }
     }
 
+    /**
+     * This method is invoked when a tracked message is handled.
+     */
     protected def onTrackedMessageHandled () : Unit = {
     }
 
+    /**
+     * Start the actor (controlling service).
+     * Default implementation subscribes to the tracked messages.
+     */
     override def start () : Boolean = {
         val started = super.start ()
 
@@ -69,6 +107,8 @@ abstract class AbstractControllingService (actorEnv : HiPriorityActorEnv)
 
                     commonPossibleProblems =
                         tracker.problemIfUndefinedFor (problemIfUndefinedFor) :: commonPossibleProblems
+
+                    code
                 }
             }
 
