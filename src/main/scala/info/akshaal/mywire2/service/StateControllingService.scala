@@ -13,7 +13,7 @@ import info.akshaal.jacore.actor.{Actor, HiPriorityActorEnv}
 import info.akshaal.jacore.scheduler.ScheduleControl
 
 import domain.StateUpdated
-import utils.{StateUpdate, Problem}
+import utils.{AbstractStateUpdate, StateUpdate, StateUpdateScript, Problem}
 import utils.container.WriteableStateContainer
 
 /**
@@ -45,7 +45,7 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
     private var previousState : Option[T] = None
     private var currentProblem : Option[Problem] = None
     private var problemEndHistory : List[TimeValue] = Nil
-    private var disabledUntil : Option[TimeValue] = None
+    private var disabled = false
 
     // ===========================================================================
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -65,7 +65,7 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
     /**
      * Get new state.
      */
-    protected def getStateUpdate () : StateUpdate[T]
+    protected def getStateUpdate () : AbstractStateUpdate[T]
 
     /**
      * Returns state that is considered safe for human environment.
@@ -166,64 +166,145 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
     schedule every interval executionOf updateState()
 
     /**
-     * Update state.
+     * Cancels early update. Early update is update that is scheduled to occur before
+     * regular update occurs.
+     *
+     * For example, if regular updates occur with interval of 5 seconds. Then an early
+     * update can be scheduled to occur in 1 second (that is before regular update).
+     * And if actual update will happen even before early update, then early update
+     * must be canceled. Also, this method is supposed to be called before any update
+     * is processed.
+     *
+     * If early update is already cancelled or not scheduled at all, this method does nothing.
      */
-    private def updateState (onlyIfChanged : Boolean = false) : Unit = {
+    private def cancelEarlyUpdate () : Unit = {
         earlyUpdateControl foreach (_.cancel ())
         earlyUpdateControl = None
+    }
 
-        // Check if we are disabled
-        for (time <- disabledUntil) {
-            if (System.nanoTime.nanoseconds > time) {
-                onTooManyProblemsExpired ()
-                disabledUntil = None
-            }
+    /**
+     * Disable updates for the given period of time.
+     */
+    private def disable (period : TimeValue, onEnable : => Unit) : Unit = {
+        if (disabled) {
+            error ("The service is already disabled!")
         }
 
-        // If not disabled, check for problems
-        if (disabledUntil == None) {
-            for (problem <- currentProblem) {
-                // Problem was detected previous time, so just check if it is disappeared
-                for (goneMsg <- problem.isGone) {
-                    onProblemGone (problem)
-                    currentProblem = None
+        // Remember that we are disabled
+        disabled = true
 
-                    // We have to check if too many problems occured within interval
-                    problemEndHistory = System.nanoTime.nanoseconds :: problemEndHistory
-                    problemEndHistory = problemEndHistory.filter(_ + tooManyProblemsInterval > System.nanoTime.nanoseconds)
-                    if (problemEndHistory.size >= tooManyProblemsNumber) {
-                        onTooManyProblems ()
-                        disabledUntil = Some (System.nanoTime.nanoseconds + disableOnTooManyProblemsFor)
-                        schedule in disableOnTooManyProblemsFor executionOf updateState()
-                    }
-                }
-            }
+        // Schedule some code to enable this service again after period is ended
+        schedule in period executionOf {
+            // Notify about end of disabled period
+            onEnable
 
-            if (currentProblem == None) {
-                for (newProblem <- (commonPossibleProblems ++ possibleProblems).find (_.detected != None)) {
-                    onProblem (newProblem)
-                    currentProblem = Some (newProblem)
+            // Reset flag
+            disabled = false
+
+            // Set new state
+            updateState()
+        }
+    }
+
+    /**
+     * Checks if previously detected problem has disappeared.
+     *
+     * This method does nothing if no problem is previously detected.
+     */
+    private def detectProblemDisappearance () : Unit = {
+        if (disabled) {
+            return
+        }
+
+        for (problem <- currentProblem) {
+            // Problem was detected previous time, so just check if it is disappeared
+            for (goneMsg <- problem.isGone) {
+                onProblemGone (problem)
+                currentProblem = None
+
+                // We have to check if too many problems occured within interval
+                problemEndHistory = System.nanoTime.nanoseconds :: problemEndHistory
+                problemEndHistory = problemEndHistory.filter(_ + tooManyProblemsInterval > System.nanoTime.nanoseconds)
+
+                if (problemEndHistory.size >= tooManyProblemsNumber) {
+                    onTooManyProblems ()
+
+                    disable (disableOnTooManyProblemsFor,
+                             onEnable = onTooManyProblemsExpired ())
                 }
             }
         }
+    }
 
-        // Check for silent problems
-        lazy val foundSilentProblems =
-            (commonPossibleSilentProblems ++ possibleSilentProblems).find(_.detected != None)
+    /**
+     * Detect problems.
+     *
+     * This method does nothing if a problem is already detected.
+     */
+    private def detectProblem () : Unit = {
+        if (disabled) {
+            return
+        }
+
+        if (currentProblem == None) {
+            for (newProblem <- (commonPossibleProblems ++ possibleProblems).find (_.detected != None)) {
+                onProblem (newProblem)
+                currentProblem = Some (newProblem)
+            }
+        }
+    }
+
+    /**
+     * Find silent problem.
+     */
+    private def findSilentProblem : Option[Problem] = {
+        val allPossibleSilentProblems = commonPossibleSilentProblems ++ possibleSilentProblems
+        val silentProblem = allPossibleSilentProblems.find (_.detected != None)
 
         if (isDebugEnabled) {
-            for (silentProblem <- foundSilentProblems) {
+            for (silentProblem <- silentProblem) {
                 debug ("Found silent problem" +:+ silentProblem.detected)
             }
         }
 
-        // Get new state
-        val stateUpdate =
-            if (currentProblem == None && disabledUntil == None && foundSilentProblems == None)
-                getStateUpdate ()
-            else
-                new StateUpdate (state = safeState, validTime = interval * 3)
+        silentProblem
+    }
 
+    /**
+     * Update state.
+     */
+    private def updateState (onlyIfChanged : Boolean = false) : Unit = {
+        cancelEarlyUpdate ()
+        detectProblemDisappearance ()
+        detectProblem ()
+        
+        // Check for silent problems
+        lazy val foundSilentProblems = findSilentProblem
+
+        // Depending on the detected problems, update state
+        if (currentProblem == None && !disabled && foundSilentProblems == None) {
+            // Everything is good, continuing with update
+            getStateUpdate() match {
+                case scriptStateUpdate : StateUpdateScript[_] =>
+                    // Request to run script
+                    doUpdateUsing (scriptStateUpdate, onlyIfChanged)
+
+                case stateUpdate : StateUpdate[_] =>
+                    // Request to set some specific state
+                    doUpdateUsing (stateUpdate, onlyIfChanged)
+            }
+        } else {
+            doUpdateUsing (new StateUpdate (state = safeState, validTime = interval * 3),
+                           onlyIfChanged)
+        }
+    }
+
+    /**
+     * Update state using StateUpdate request.
+     */
+    private def doUpdateUsing (stateUpdate : StateUpdate[T],
+                               onlyIfChanged : Boolean) : Unit =
+    {
         val newState = stateUpdate.state
         val newValidTime = stateUpdate.validTime
 
@@ -248,14 +329,26 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
                 previousState = Some (newState)
 
             case Failure (msg, excOpt) =>
-                error ("Error setting state " + newState + " of " + stateContainer +:+ msg +:+ excOpt, excOpt.orNull)
+                error ("Error setting state " + newState + " of " + stateContainer
+                       +:+ msg +:+ excOpt,
+                       excOpt.orNull)
         }
 
         // Schedule next state update
-        if (newValidTime > (0 nanoseconds) && newValidTime < (interval * 2)) {
-            earlyUpdateControl = Some (schedule in newValidTime executionOf updateState())
-        } else {
-            earlyUpdateControl = None
-        }
+        earlyUpdateControl =
+            if (newValidTime > (0 nanoseconds) && newValidTime < (interval * 2)) {
+                Some (schedule in newValidTime executionOf updateState())
+            } else {
+                None
+            }
+    }
+
+    /**
+     * Update state.
+     */
+    private def doUpdateUsing (script : StateUpdateScript[T],
+                               onlyIfChanged : Boolean) : Unit =
+    {
+        error ("NOT IMPLEMENTED YET")
     }
 }
