@@ -318,21 +318,7 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
         }
 
         // Change state
-        stateContainer.opSetState (newState) runMatchingResultAsy {
-            case Success (_) =>
-                val stateUpdated = new StateUpdated (name = name, value = newState)
-                broadcaster.broadcast (stateUpdated)
-                if (previousState != Some (newState)) {
-                    onNewState (previousState, newState)
-                }
-
-                previousState = Some (newState)
-
-            case Failure (msg, excOpt) =>
-                error ("Error setting state " + newState + " of " + stateContainer
-                       +:+ msg +:+ excOpt,
-                       excOpt.orNull)
-        }
+        setStateAsy (newState) (_ => ())
 
         // Schedule next state update
         earlyUpdateControl =
@@ -341,6 +327,33 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
             } else {
                 None
             }
+    }
+
+    /**
+     * Set state asynchronously.
+     */
+    private def setStateAsy (newState : T)
+                            (additionalHandler : Result[Unit] => Unit) : Unit =
+    {
+        stateContainer.opSetState (newState) runMatchingResultAsy {
+            case result @ Success (_) =>
+                val stateUpdated = new StateUpdated (name = name, value = newState)
+                broadcaster.broadcast (stateUpdated)
+                if (previousState != Some (newState)) {
+                    onNewState (previousState, newState)
+                }
+
+                previousState = Some (newState)
+
+                additionalHandler (result)
+
+            case result @ Failure (msg, excOpt) =>
+                error ("Error setting state " + newState + " of " + stateContainer
+                       +:+ msg +:+ excOpt,
+                       excOpt.orNull)
+                
+                additionalHandler (result)
+        }
     }
 
     /**
