@@ -17,7 +17,9 @@ import device.owfs._
 import service.StateControllingService
 import strategy.SimpleOnOffStrategy
 import domain.{StateUpdated, Temperature}
-import utils.{StateUpdate, TemperatureTracker, Problem}
+import utils.ProblemDetector
+import utils.stupdate.StateUpdate
+import utils.tracker.TemperatureTracker
 
 import unit.UnitTestHelper._
 
@@ -235,9 +237,9 @@ object StateControllingServiceTest {
 
         override protected val safeState = false
 
-        override protected val possibleProblems : List[Problem] = Nil
+        override protected val problemDetectors : List[ProblemDetector] = Nil
 
-        override protected val possibleSilentProblems : List[Problem] = Nil
+        override protected val silentProblemDetectors : List[ProblemDetector] = Nil
     }
 
     class TestStateControllingServiceListener extends TestActor {
@@ -287,8 +289,9 @@ object StateControllingServiceTest {
     {
         protected override val trackedTemperatureNames = "temp" :: Nil
         protected override val problemIfUndefinedFor = 50 milliseconds
-        protected override val transitionMessages = ImmutableMap (true -> "set to true",
-                                                                  false -> "set to false")
+        protected override val transitionMessages =
+            ImmutableMap (true -> "set to true",
+                          false -> "set to false")
 
         var problems = 0
         var problemGones = 0
@@ -301,18 +304,18 @@ object StateControllingServiceTest {
 
         override protected val safeState = false
 
-        override protected val possibleProblems =
+        override protected val problemDetectors =
            temperature.problemIf ("temp").greaterThan (30, backOn=15) :: Nil
 
         def updateTemp (temp : Option[Double]) = {
             this ! new Temperature ("temp", value = temp, average3 = temp)
         }
 
-        override def onProblem (problem : Problem) = {
+        override def onProblem (problem : ProblemDetector) = {
             problems += 1
         }
 
-        override def onProblemGone (problem : Problem) = {
+        override def onProblemGone (problem : ProblemDetector) = {
             problemGones += 1
         }
 

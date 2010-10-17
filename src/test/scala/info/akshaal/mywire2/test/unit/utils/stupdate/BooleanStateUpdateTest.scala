@@ -4,12 +4,12 @@
  */
 
 package info.akshaal.mywire2
-package test.unit.utils
+package test.unit.utils.stupdate
 
 import info.akshaal.jacore.test.JacoreSpecWithJUnit
 
 import info.akshaal.jacore.`package`._
-import utils.BooleanStateUpdate
+import utils.stupdate.BooleanStateUpdate
 
 import BooleanStateUpdate._
 

@@ -5,11 +5,13 @@
 
 package info.akshaal.mywire2
 package utils
+package stupdate
 
 import info.akshaal.jacore.`package`._
 
 /**
  * Abstract state update.
- * @param T type of state.
+ *
+ * @tparam T type of state.
  */
 private[mywire2] abstract class AbstractStateUpdate[T]

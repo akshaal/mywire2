@@ -3,7 +3,9 @@
  * and open the template in the editor.
  */
 
-package info.akshaal.mywire2.utils
+package info.akshaal.mywire2
+package utils
+package stupdate
 
 import info.akshaal.jacore.`package`._
 

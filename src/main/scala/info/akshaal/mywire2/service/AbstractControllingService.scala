@@ -9,11 +9,14 @@ package service
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.{Actor, HiPriorityActorEnv}
 
-import utils.{StateTracker, TemperatureTracker, AbstractTracker, Problem}
+import utils.ProblemDetector
+import utils.tracker.{StateTracker, TemperatureTracker, AbstractTracker}
 import domain.{StateUpdated, StateSensed, Temperature}
 
 /**
  * An abstract implementation of a service that is supposed to control something.
+ *
+ * @param actorEnv environment for this actor
  */
 abstract class AbstractControllingService (actorEnv : HiPriorityActorEnv)
                                             extends Actor (actorEnv = actorEnv)
@@ -95,18 +98,31 @@ abstract class AbstractControllingService (actorEnv : HiPriorityActorEnv)
         val started = super.start ()
 
         if (started) {
-            commonPossibleProblems = Nil
-            commonPossibleSilentProblems = Nil
+            basicProblemDetectors = Nil
+            basicSilentProblemDetectors = Nil
 
-            def prepare [T] (list : List[String], tracker : => AbstractTracker[_, _]) (code : => Unit) (implicit m : ClassManifest[T]) {
+            /**
+             * Starts tracking specific kind of events, using tracker. Populate common problems
+             * that a tracker provides.
+             *
+             * @tparam T type of messages to subscribe on
+             * @param list list of names for the messages of the given type
+             * @param tracker tracker that is used to track this kind of messages
+             */
+            def prepare [T] (list : List [String], tracker : => AbstractTracker [_, _])
+                            (code : => Unit)
+                            (implicit m : ClassManifest [T])
+            {
                 if (list != Nil) {
                     subscribe [T] (m)
 
-                    commonPossibleSilentProblems =
-                        tracker.problemIfUndefined :: commonPossibleSilentProblems
+                    // If a tracked value is undefined, then there is nothing good, but
+                    // nothing terrible, just going to safe mode
+                    basicSilentProblemDetectors ::= tracker.problemIfUndefined
 
-                    commonPossibleProblems =
-                        tracker.problemIfUndefinedFor (problemIfUndefinedFor) :: commonPossibleProblems
+                    // But if a value is unavailable for too long, then this is a problem!
+                    basicProblemDetectors ::=
+                        tracker.problemIfUndefinedFor (problemIfUndefinedFor)
 
                     code
                 }
@@ -116,8 +132,7 @@ abstract class AbstractControllingService (actorEnv : HiPriorityActorEnv)
             prepare [StateUpdated] (trackedBooleanUpdatedStateNames, booleanUpdatedState) ()
 
             prepare [Temperature] (trackedTemperatureNames, temperature) {
-                commonPossibleProblems =
-                    temperature.problemIfNaN :: commonPossibleProblems
+                basicProblemDetectors ::= temperature.problemIfNaN
             }
         }
 
@@ -125,13 +140,13 @@ abstract class AbstractControllingService (actorEnv : HiPriorityActorEnv)
     }
 
     /**
-     * List of possible problems.
+     * List of basic problem detectors.
      */
-    protected var commonPossibleProblems : List [Problem] = Nil
+    protected var basicProblemDetectors : List [ProblemDetector] = Nil
 
     /**
-     * List of possible problem that don't generate any error messages, but just
+     * List of basic problem detectors that don't generate any error messages, but just
      * switches device to the safe mode.
      */
-    protected var commonPossibleSilentProblems : List[Problem] = Nil
+    protected var basicSilentProblemDetectors : List[ProblemDetector] = Nil
 }

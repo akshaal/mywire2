@@ -5,6 +5,7 @@
 
 package info.akshaal.mywire2
 package utils
+package stupdate
 
 import scala.util.continuations._
 
@@ -25,7 +26,7 @@ import info.akshaal.jacore.logger.Logging
  *
  * Such approach helps to keep scripts simple and non-blocking.
  *
- * @param T type of state.
+ * @tparam T type of state.
  */
 abstract class StateUpdateScript[T] extends AbstractStateUpdate[T] with Logging {
     // Overral state types of script

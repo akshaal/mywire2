@@ -4,71 +4,75 @@
  */
 
 package info.akshaal.mywire2
-package test.unit.utils
+package test.unit.utils.stupdate
 
 import scala.util.continuations._
 
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.test.JacoreSpecWithJUnit
 
-import utils.StateUpdateScript
+import utils.stupdate.StateUpdateScript
 
 class StateUpdateScriptTest extends JacoreSpecWithJUnit ("StateUpdateScript specification") {
     // If this is placed in some other place, like in "... in {}" clause, then scala
     // is not able to compile it. So all scripts are placed here.
-    val scriptA = new StateUpdateScript[Boolean] {
-        var p1 = 0
-        var p2 = 0
-        var p3 = 0
-        var p4 = 0
 
-        protected override def run () : Unit @suspendable = {
-            p1 += 1
-            set (true)
-            p2 += 1
-            wait (1 minutes)
-            p3 += 1
-            set (false)
-            p4 += 1
-        }
-    }
+    val scriptA =
+        new StateUpdateScript[Boolean] {
+            var p1 = 0
+            var p2 = 0
+            var p3 = 0
+            var p4 = 0
 
-    val scriptB = new StateUpdateScript[Boolean] {
-        var p1 = 0
-        var p2 = 0
-        var di = 0
-
-        protected override def run () : Unit @suspendable = {
-            p1 += 1
-            set (true)
-            p2 += 1
+            protected override def run () : Unit @suspendable = {
+                p1 += 1
+                set (true)
+                p2 += 1
+                wait (1 minutes)
+                p3 += 1
+                set (false)
+                p4 += 1
+            }
         }
 
-        protected override def defaultOnInterrupt () {
-            di += 1
-        }
-    }
+    val scriptB =
+        new StateUpdateScript[Boolean] {
+            var p1 = 0
+            var p2 = 0
+            var di = 0
 
-    val scriptC = new StateUpdateScript[Boolean] {
-        var p1 = 0
-        var p2 = 0
-        var di = 0
-        var i1 = 0
-
-        protected override def run () : Unit @suspendable = {
-            p1 += 1
-
-            setOrFail (true) {
-                i1 += 1
+            protected override def run () : Unit @suspendable = {
+                p1 += 1
+                set (true)
+                p2 += 1
             }
 
-            p2 += 1
+            protected override def defaultOnInterrupt () {
+                di += 1
+            }
         }
 
-        protected override def defaultOnInterrupt () {
-            di += 1
+    val scriptC =
+        new StateUpdateScript[Boolean] {
+            var p1 = 0
+            var p2 = 0
+            var di = 0
+            var i1 = 0
+
+            protected override def run () : Unit @suspendable = {
+                p1 += 1
+
+                setOrFail (true) {
+                    i1 += 1
+                }
+
+                p2 += 1
+            }
+
+            protected override def defaultOnInterrupt () {
+                di += 1
+            }
         }
-    }
 
     "StateUpdateScript" should {
         "execute scripts with suspentions on some methods" in {

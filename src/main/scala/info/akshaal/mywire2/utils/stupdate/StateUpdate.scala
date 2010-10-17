@@ -5,12 +5,14 @@
 
 package info.akshaal.mywire2
 package utils
+package stupdate
 
 import info.akshaal.jacore.`package`._
 
 /**
  * Update for a state. Used to keep state update with additional information.
- * @param T type of state
+ * 
+ * @tparam T type of state
  * @param state new state
  * @param validTime how this state is valid
  */

@@ -8,12 +8,13 @@ package strategy
 
 import info.akshaal.jacore.`package`._
 
-import utils.{StateUpdate, BooleanStateUpdate}
+import utils.stupdate.{StateUpdate, BooleanStateUpdate}
 
 import java.util.Calendar
 
 /**
  * Strategy interface for obtaining a state updates.
+ *
  * @param T type of state
  */
 trait Strategy [T] {
@@ -25,6 +26,7 @@ trait Strategy [T] {
 
 /**
  * Simple strategy for a boolean state.
+ *
  * @param onInternal interval to keep state as True (On)
  * @param offInternal interval to keep state as False (Off)
  * @param offset to shift intervals in time

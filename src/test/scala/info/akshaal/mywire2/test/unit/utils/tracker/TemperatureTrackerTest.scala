@@ -4,11 +4,11 @@
  */
 
 package info.akshaal.mywire2
-package test.unit.utils
+package test.unit.utils.tracker
 
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.test.JacoreSpecWithJUnit
-import utils.TemperatureTracker
+import utils.tracker.TemperatureTracker
 import domain.Temperature
 
 class TemperatureTrackerTest extends JacoreSpecWithJUnit ("TemperatureTracker specification") {

@@ -4,12 +4,12 @@
  */
 
 package info.akshaal.mywire2
-package test.unit.utils
+package test.unit.utils.tracker
 
 import info.akshaal.jacore.test.JacoreSpecWithJUnit
 
 import info.akshaal.jacore.`package`._
-import utils.StateTracker
+import utils.tracker.StateTracker
 import domain.StateUpdated
 
 class StateTrackerTest extends JacoreSpecWithJUnit ("StateTracker specification") {

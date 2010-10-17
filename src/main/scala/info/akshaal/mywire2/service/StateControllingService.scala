@@ -9,15 +9,17 @@ package service
 import scala.collection.immutable.{Map => ImmutableMap}
 
 import info.akshaal.jacore.`package`._
-import info.akshaal.jacore.actor.{Actor, HiPriorityActorEnv}
+import info.akshaal.jacore.actor.HiPriorityActorEnv
 import info.akshaal.jacore.scheduler.ScheduleControl
 
 import domain.StateUpdated
-import utils.{AbstractStateUpdate, StateUpdate, StateUpdateScript, Problem}
+import utils.ProblemDetector
 import utils.container.WriteableStateContainer
+import utils.stupdate.{AbstractStateUpdate, StateUpdate, StateUpdateScript}
 
 /**
  * A service to control some state.
+ * 
  * @param actorEnv actor environment
  * @param stateContainer state container
  * @param name name
@@ -41,10 +43,19 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Private state
 
+    // reference to scheduled update due to timeout of currently set state
     private var earlyUpdateControl : Option[ScheduleControl] = None
+
+    // a state we set last time
     private var previousState : Option[T] = None
-    private var currentProblem : Option[Problem] = None
+
+    // reference to a problem detector that has detected a problem (and the problem is not yet gone)
+    private var currentProblemDetector : Option[ProblemDetector] = None
+
+    // each time a problem disappears, a current time is added to the list
     private var problemEndHistory : List[TimeValue] = Nil
+
+    // flag is true when state chaning is disabled due to frequent error or something
     private var disabled = false
 
     // ===========================================================================
@@ -52,15 +63,15 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
     // Customization of behavior
 
     /**
-     * List of possible problems.
+     * List of problem detectors.
      */
-    protected val possibleProblems : List [Problem] = Nil
+    protected val problemDetectors : List [ProblemDetector] = Nil
 
     /**
-     * List of possible problem that don't generate any error messages, but just
+     * List of problem detectors that don't generate any error messages, but just
      * switches device to the safe mode.
      */
-    protected val possibleSilentProblems : List [Problem] = Nil
+    protected val silentProblemDetectors : List [ProblemDetector] = Nil
 
     /**
      * Get new state.
@@ -94,6 +105,8 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
     /**
      * Override method from Actor class. This is used to update state immediately
      * after actor is started.
+     *
+     * @return true if started, or false if not
      */
     override def start () : Boolean = {
         val started = super.start ()
@@ -120,16 +133,20 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
 
     /**
      * Called when a problem detected.
+     *
+     * @param problemDetector problem detector that has detected a problem
      */
-    protected def onProblem (problem : Problem) : Unit = {
-        businessLogicProblem (name +:+ "Problem detected" +:+ problem.detected.get)
+    protected def onProblem (problemDetector : ProblemDetector) : Unit = {
+        businessLogicProblem (name +:+ "Problem detected" +:+ problemDetector.detected.get)
     }
 
     /**
      * Called when a problem is gone.
+     *
+     * @param problemDetector problem detector that detected the problem that is currently gone
      */
-    protected def onProblemGone (problem : Problem) : Unit = {
-        businessLogicInfo (name +:+ "Problem gone" +:+ problem.isGone.get)
+    protected def onProblemGone (problemDetector : ProblemDetector) : Unit = {
+        businessLogicInfo (name +:+ "Problem gone" +:+ problemDetector.isGone.get)
     }
 
     /**
@@ -152,6 +169,9 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
     /**
      * Called when state is changed (updated). Default implementation
      * logs message defined in transitionMessages map.
+     *
+     * @param oldState old state (or None if state is changed first time)
+     * @param newState new state
      */
     protected def onNewState (oldState : Option[T], newState : T) : Unit = {
         for (msg <- transitionMessages.get (newState)) {
@@ -184,6 +204,9 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
 
     /**
      * Disable updates for the given period of time.
+     *
+     * @param period disable any updates for the given amount of time
+     * @param onEnable code to run when it is time to enable updates
      */
     private def disable (period : TimeValue, onEnable : => Unit) : Unit = {
         if (disabled) {
@@ -192,7 +215,7 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
 
         // Remember that we are disabled
         disabled = true
-
+ 
         // Schedule some code to enable this service again after period is ended
         schedule in period executionOf {
             // Notify about end of disabled period
@@ -202,7 +225,7 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
             disabled = false
 
             // Set new state
-            updateState()
+            updateState ()
         }
     }
 
@@ -216,21 +239,21 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
             return
         }
 
-        for (problem <- currentProblem) {
+        for (problemDetector <- currentProblemDetector) {
             // Problem was detected previous time, so just check if it is disappeared
-            for (goneMsg <- problem.isGone) {
-                onProblemGone (problem)
-                currentProblem = None
+            for (goneMsg <- problemDetector.isGone) {
+                onProblemGone (problemDetector)
+                currentProblemDetector = None
 
                 // We have to check if too many problems occured within interval
-                problemEndHistory = System.nanoTime.nanoseconds :: problemEndHistory
-                problemEndHistory = problemEndHistory.filter(_ + tooManyProblemsInterval > System.nanoTime.nanoseconds)
+                problemEndHistory ::= System.nanoTime.nanoseconds
+                problemEndHistory =
+                    problemEndHistory.filter(_ + tooManyProblemsInterval > System.nanoTime.nanoseconds)
 
                 if (problemEndHistory.size >= tooManyProblemsNumber) {
                     onTooManyProblems ()
 
-                    disable (disableOnTooManyProblemsFor,
-                             onEnable = onTooManyProblemsExpired ())
+                    disable (disableOnTooManyProblemsFor, onEnable = onTooManyProblemsExpired ())
                 }
             }
         }
@@ -246,32 +269,39 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
             return
         }
 
-        if (currentProblem == None) {
-            for (newProblem <- (commonPossibleProblems ++ possibleProblems).find (_.detected != None)) {
-                onProblem (newProblem)
-                currentProblem = Some (newProblem)
+        if (currentProblemDetector.isEmpty) {
+            val allProblemDetectors = basicProblemDetectors ++ problemDetectors
+            
+            for (newProblemDetector <- allProblemDetectors.find (_.detected.isDefined)) {
+                onProblem (newProblemDetector)
+                currentProblemDetector = Some (newProblemDetector)
             }
         }
     }
 
     /**
      * Find silent problem.
+     *
+     * @return problem detector that detected a silent problem or None if everything is fine
      */
-    private def findSilentProblem : Option[Problem] = {
-        val allPossibleSilentProblems = commonPossibleSilentProblems ++ possibleSilentProblems
-        val silentProblem = allPossibleSilentProblems.find (_.detected != None)
+    private def findSilentProblem : Option [ProblemDetector] = {
+        val allSilentProblemDetectors = basicSilentProblemDetectors ++ silentProblemDetectors
+        val silentProblemDetectorOption = allSilentProblemDetectors.find (_.detected.isDefined)
 
         if (isDebugEnabled) {
-            for (silentProblem <- silentProblem) {
-                debug ("Found silent problem" +:+ silentProblem.detected)
+            for (silentProblemDetector <- silentProblemDetectorOption) {
+                debug ("Found silent problem" +:+ silentProblemDetector.detected)
             }
         }
 
-        silentProblem
+        silentProblemDetectorOption
     }
 
     /**
-     * Update state.
+     * Find out new state, check for problems and may be update state.
+     *
+     * @param onlyIfChanged if true, don't update underlaying state controller when new state
+     *        is the same as current.
      */
     private def updateState (onlyIfChanged : Boolean = false) : Unit = {
         cancelEarlyUpdate ()
@@ -282,9 +312,9 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
         lazy val foundSilentProblems = findSilentProblem
 
         // Depending on the detected problems, update state
-        if (currentProblem == None && !disabled && foundSilentProblems == None) {
+        if (currentProblemDetector == None && !disabled && foundSilentProblems.isEmpty) {
             // Everything is good, continuing with update
-            getStateUpdate() match {
+            getStateUpdate () match {
                 case scriptStateUpdate : StateUpdateScript[_] =>
                     // Request to run script
                     doUpdateUsing (scriptStateUpdate, onlyIfChanged)
@@ -300,7 +330,11 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
     }
 
     /**
-     * Update state using StateUpdate request.
+     * Update state using the given state update object.
+     *
+     * @param stateUpdate object to be used to update state
+     * @param onlyIfchanged if true, don't update underlaying state controller when new state
+     *        is the same as current.
      */
     private def doUpdateUsing (stateUpdate : StateUpdate[T],
                                onlyIfChanged : Boolean) : Unit =
@@ -308,29 +342,28 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
         val newState = stateUpdate.state
         val newValidTime = stateUpdate.validTime
 
-        // Exit from method if onlyIfChanged flag set and state is not changed
-        if (onlyIfChanged) {
-            for (state <- previousState) {
-                if (state == newState) {
-                    return
+        // Schedule next state update, we must do this, because we probably canceled previous one
+        if (earlyUpdateControl.isEmpty) {
+            earlyUpdateControl =
+                if (newValidTime > (0 nanoseconds) && newValidTime < (interval * 2)) {
+                    Some (schedule in newValidTime executionOf updateState())
+                } else {
+                    None
                 }
-            }
         }
 
-        // Change state
-        setStateAsy (newState) (_ => ())
-
-        // Schedule next state update
-        earlyUpdateControl =
-            if (newValidTime > (0 nanoseconds) && newValidTime < (interval * 2)) {
-                Some (schedule in newValidTime executionOf updateState())
-            } else {
-                None
-            }
+        // Update only if changed or onlyIfChanged flag is false
+        if (!onlyIfChanged || Some (newState) != previousState) {
+            // Change state
+            setStateAsy (newState) (_ => ())
+        }
     }
 
     /**
      * Set state asynchronously.
+     *
+     * @param newState state to set in the underlying state container
+     * @param additionalHandler a handler to be invoked when set operation is over
      */
     private def setStateAsy (newState : T)
                             (additionalHandler : Result[Unit] => Unit) : Unit =
@@ -339,25 +372,31 @@ abstract class StateControllingService [T] (actorEnv : HiPriorityActorEnv,
             case result @ Success (_) =>
                 val stateUpdated = new StateUpdated (name = name, value = newState)
                 broadcaster.broadcast (stateUpdated)
-                if (previousState != Some (newState)) {
+
+                val newStateOption = Some (newState)
+                if (previousState != newStateOption) {
                     onNewState (previousState, newState)
                 }
 
-                previousState = Some (newState)
+                previousState = newStateOption
 
                 additionalHandler (result)
 
-            case result @ Failure (msg, excOpt) =>
+            case result @ Failure (msg, excOption) =>
                 error ("Error setting state " + newState + " of " + stateContainer
-                       +:+ msg +:+ excOpt,
-                       excOpt.orNull)
+                       +:+ msg +:+ excOption,
+                       excOption.orNull)
                 
                 additionalHandler (result)
         }
     }
 
     /**
-     * Update state.
+     * Update state using script.
+     *
+     * @param script script to be used to update state
+     * @param onlyIfChanged if true, don't update underlaying state controller when new state
+     *        is the same as current.
      */
     private def doUpdateUsing (script : StateUpdateScript[T],
                                onlyIfChanged : Boolean) : Unit =
