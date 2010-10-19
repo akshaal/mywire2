@@ -49,7 +49,8 @@ abstract class StateUpdateScript[T] extends AbstractStateUpdate[T] with Logging 
 
     /**
      * Run or continue script execution and return state update.
-     * 
+     * If execution is over, then End instruction is returned.
+     *
      * @return next Instruction
      */
     private[mywire2] def nextInstruction () : Instruction = {
@@ -98,7 +99,10 @@ abstract class StateUpdateScript[T] extends AbstractStateUpdate[T] with Logging 
     protected def run () : Unit @suspendable
 
     /**
-     * Suspend current execution. The result of suspension is instruction.
+     * Suspend current execution. The result of suspension is instruction in the variable.
+     *
+     * @param instruction instruction to set for lastStepResult
+     * @param onInterrupt code to be invoked if script is aborted during execution of the instruction
      */
     private def suspend (instruction : Instruction, onInterrupt : () => Unit) : Unit @suspendable = {
         shift ((k : (Unit => Unit)) => {
@@ -109,7 +113,7 @@ abstract class StateUpdateScript[T] extends AbstractStateUpdate[T] with Logging 
     }
 
     /**
-     * Default callback for interrupt during script execution.
+     * Default callback for interruption during script execution.
      */
     protected def defaultOnInterrupt () {
     }
@@ -120,14 +124,20 @@ abstract class StateUpdateScript[T] extends AbstractStateUpdate[T] with Logging 
     /**
      * Set new state.
      * This method is to be called from run method.
+     *
+     * @param state state to set
      */
     protected final def set (state : T) : Unit @suspendable = {
         setOrFail (state) {defaultOnInterrupt}
     }
 
     /**
-     * Set new state.
+     * Set new state. If script is inturrupted while stat is being set, then
+     * onInterrupt code is executed.
      * This method is to be called from run method.
+     *
+     * @param state state to set
+     * @param onInterrupt code to run in case of interruption of the script
      */
     protected final def setOrFail (state : T) (onInterrupt : => Unit) : Unit @suspendable = {
         suspend (SetState (state), () => onInterrupt)
@@ -137,6 +147,8 @@ abstract class StateUpdateScript[T] extends AbstractStateUpdate[T] with Logging 
      * Wait for the given time. This is safe to use in rum method, because
      * this method will not block the thread.
      * This method is to be called from run method only.
+     *
+     * @param time time to wait before proceeding with script execution
      */
     protected final def wait (time : TimeValue) : Unit @suspendable = {
         waitOrFail (time) {defaultOnInterrupt}
@@ -146,6 +158,9 @@ abstract class StateUpdateScript[T] extends AbstractStateUpdate[T] with Logging 
      * Wait for the given time. This is safe to use in rum method, because
      * this method will not block the thread.
      * This method is to be called from run method only.
+     *
+     * @param time time to wait before proceeding with script execution
+     * @param onInterrupt code to run in case of interruption of the script
      */
     protected final def waitOrFail (time : TimeValue) (onInterrupt : => Unit) : Unit @suspendable = {
         suspend (Wait (time), () => onInterrupt)
