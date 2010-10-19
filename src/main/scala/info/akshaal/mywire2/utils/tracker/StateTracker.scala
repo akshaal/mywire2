@@ -8,7 +8,7 @@ package utils
 package tracker
 
 import info.akshaal.jacore.`package`._
-import info.akshaal.jacore.utils.ClassUtils
+import info.akshaal.jacore.utils.io.ClassUtils
 import domain.{StateUpdated, StateSensed}
 
 /**

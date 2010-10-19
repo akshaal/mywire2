@@ -8,7 +8,7 @@ package service
 
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.{Actor, HiPriorityActorEnv}
-import info.akshaal.jacore.utils.OptionDoubleValueFrame
+import info.akshaal.jacore.utils.frame.OptionDoubleValueFrame
 
 import domain.Humidity
 import utils.container.HumidityContainer

@@ -17,7 +17,8 @@ import module.Module
 
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.Actor
-import info.akshaal.jacore.utils.{ClassUtils, GuiceUtils}
+import info.akshaal.jacore.utils.GuiceUtils
+import info.akshaal.jacore.utils.io.ClassUtils
 import info.akshaal.jacore.logger.Logging
 import info.akshaal.jacore.jmx.{SimpleJmx, JmxOper, JmxAttr}
 

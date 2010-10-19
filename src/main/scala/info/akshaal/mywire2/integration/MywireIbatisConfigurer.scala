@@ -9,7 +9,7 @@ package integration
 import org.apache.ibatis.session.Configuration
 
 import info.akshaal.jacore.`package`._
-import info.akshaal.jacore.utils.IbatisUtils._
+import info.akshaal.jacore.utils.io.IbatisUtils._
 
 import domain.LogRecordLevel
 

@@ -27,8 +27,8 @@ import info.akshaal.jacore.test.JacoreSpecWithJUnit
 import info.akshaal.jacore.daemon.DaemonStatus
 import info.akshaal.jacore.actor.{Actor, LowPriorityActorEnv, HiPriorityActorEnv}
 import info.akshaal.jacore.test.TestHelper
-import info.akshaal.jacore.utils.IbatisUtils._
-import info.akshaal.jacore.utils.Prefs
+import info.akshaal.jacore.utils.io.IbatisUtils._
+import info.akshaal.jacore.utils.io.Prefs
 
 import daemon.{BaseDaemon, Autostart, Autoregister}
 import module.Module
