@@ -58,7 +58,7 @@ abstract class BaseDaemon (module : Module,
             for (pkg <- additionalAutostartActorPackages) {
                 val classes =
                         ClassUtils.findClasses (pkg,
-                                                Thread.currentThread.getContextClassLoader,
+                                                defaultClassLoader,
                                                 classOf [Autostart].isAssignableFrom (_))
 
                 all ++= classes.asInstanceOf [List [Class [Actor]]]
