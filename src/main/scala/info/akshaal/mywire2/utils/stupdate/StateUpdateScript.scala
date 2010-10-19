@@ -29,7 +29,7 @@ import info.akshaal.jacore.logger.Logging
  * @tparam T type of state.
  */
 abstract class StateUpdateScript[T] extends AbstractStateUpdate[T] with Logging {
-    // Overral state types of script
+    // States of the script
     private sealed abstract class ScriptState
     private case object NotStarted extends ScriptState
     private case class Suspended (cont : Unit => Unit) extends ScriptState
@@ -38,22 +38,23 @@ abstract class StateUpdateScript[T] extends AbstractStateUpdate[T] with Logging 
 
     // Instructions produced by script
     private[mywire2] abstract sealed class Instruction
-    private[mywire2] case object Nop extends Instruction
+    private[mywire2] case object End extends Instruction
     private[mywire2] case class SetState (state : T) extends Instruction
     private[mywire2] case class Wait (time : TimeValue) extends Instruction
 
     // Current state of script
     private var scriptState : ScriptState = NotStarted
-    private var lastStepResult : Instruction = Nop
+    private var lastStepResult : Instruction = End
     private var onInterrupt = () => {defaultOnInterrupt}
 
     /**
      * Run or continue script execution and return state update.
+     * 
      * @return next Instruction
      */
     private[mywire2] def nextInstruction () : Instruction = {
-        // By default instruction is Nop, but may be overriden in the script
-        lastStepResult = Nop
+        // By default instruction is End, but may be overriden in the script
+        lastStepResult = End
 
         // Execute script
         scriptState match {
@@ -72,8 +73,8 @@ abstract class StateUpdateScript[T] extends AbstractStateUpdate[T] with Logging 
                 cont ()
         }
 
-        // If instruction is Nop then script has finished its job
-        if (lastStepResult == Nop) {
+        // If instruction is End then script has finished its job
+        if (lastStepResult == End) {
             scriptState = Finished
         }
 

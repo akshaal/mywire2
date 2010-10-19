@@ -102,7 +102,7 @@ class StateUpdateScriptTest extends JacoreSpecWithJUnit ("StateUpdateScript spec
             scriptA.p3  must_==  1
             scriptA.p4  must_==  0
 
-            scriptA.nextInstruction()  must_==  scriptA.Nop
+            scriptA.nextInstruction()  must_==  scriptA.End
 
             scriptA.p1  must_==  1
             scriptA.p2  must_==  1
