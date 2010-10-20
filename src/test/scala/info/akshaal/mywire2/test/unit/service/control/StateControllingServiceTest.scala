@@ -5,7 +5,7 @@
 
 package info.akshaal.mywire2
 package test
-package unit.service
+package unit.service.control
 
 import scala.collection.immutable.{Map => ImmutableMap}
 
@@ -14,7 +14,7 @@ import info.akshaal.jacore.actor.Operation
 import info.akshaal.jacore.test.JacoreSpecWithJUnit
 import device._
 import device.owfs._
-import service.StateControllingService
+import service.control.StateControllingService
 import strategy.SimpleOnOffStrategy
 import domain.{StateUpdated, Temperature}
 import utils.ProblemDetector
@@ -215,10 +215,10 @@ object StateControllingServiceTest {
     // StateControllingService testing - - - - - - - - - -
 
     class TestStateControllingService
-            extends StateControllingService (
+            extends StateControllingService [Boolean] (
                                 actorEnv = TestModule.hiPriorityActorEnv,
                                 stateContainer = devices.stateControllingServiceMP.switch.PIO,
-                                name = "testStateControllingService",
+                                serviceName = "testStateControllingService",
                                 interval = 170 seconds)
     {
         val strategy = new SimpleOnOffStrategy (onInterval = 100 milliseconds,
@@ -282,7 +282,7 @@ object StateControllingServiceTest {
             extends StateControllingService (
                                 actorEnv = TestModule.hiPriorityActorEnv,
                                 stateContainer = devices.stateControllingServiceMP.switch2.PIO,
-                                name = "testStateControllingService",
+                                serviceName = "testStateControllingService",
                                 interval = 170 seconds,
                                 tooManyProblemsInterval = 200 milliseconds,
                                 disableOnTooManyProblemsFor = 300 milliseconds)

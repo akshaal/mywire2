@@ -4,7 +4,7 @@
  */
 
 package info.akshaal.mywire2
-package service
+package service.control
 
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.{Actor, HiPriorityActorEnv}

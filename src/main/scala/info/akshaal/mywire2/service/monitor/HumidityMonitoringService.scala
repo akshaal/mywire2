@@ -4,7 +4,7 @@
  */
 
 package info.akshaal.mywire2
-package service
+package service.monitor
 
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.{Actor, HiPriorityActorEnv}
@@ -18,7 +18,7 @@ import utils.container.HumidityContainer
  */
 class HumidityMonitoringService (actorEnv : HiPriorityActorEnv,
                                  humidityContainer : HumidityContainer,
-                                 name : String,
+                                 serviceName : String,
                                  interval : TimeValue)
                      extends Actor (actorEnv = actorEnv)
 {
@@ -28,7 +28,9 @@ class HumidityMonitoringService (actorEnv : HiPriorityActorEnv,
     private def broadcastHumidity (humidityValue : Option[Double]) : Unit = {
         frame.put (humidityValue)
 
-        val humidity = new Humidity (name = name, value = humidityValue, average3 = frame.average)
+        val humidity =
+            new Humidity (name = serviceName, value = humidityValue, average3 = frame.average)
+
         broadcaster.broadcast (humidity)
     }
 
@@ -38,13 +40,15 @@ class HumidityMonitoringService (actorEnv : HiPriorityActorEnv,
                 broadcastHumidity (Some (humidityValue))
 
             case Failure (msg, excOpt) =>
-                error ("Error reading humidity of " + humidityContainer +:+ msg +:+ excOpt, excOpt.orNull)
+                error (serviceName +:+ "Error reading humidity of "
+                       + humidityContainer +:+ msg +:+ excOpt,
+                       excOpt.orNull)
                 broadcastHumidity (None)
         }
     }
 
     override def toString() : String = {
-        getClass.getSimpleName + "(name=" + name +
+        getClass.getSimpleName + "(name=" + serviceName +
             ", humidityContainer=" + humidityContainer + ", interval=" + interval + ")"
     }
 }

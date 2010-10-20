@@ -4,7 +4,7 @@
  */
 
 package info.akshaal.mywire2
-package service
+package service.monitor
 
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.{Actor, HiPriorityActorEnv}
@@ -17,13 +17,13 @@ import utils.container.ReadableStateContainer
  */
 class StateMonitoringService[T] (actorEnv : HiPriorityActorEnv,
                                  stateContainer : ReadableStateContainer[T],
-                                 name : String,
+                                 serviceName : String,
                                  interval : TimeValue)
                      extends Actor (actorEnv = actorEnv)
 {
     // Load function to broadcast humidity
     private def broadcastSensed (state : Option[T]) : Unit = {
-        val msg = new StateSensed (name = name, value = state)
+        val msg = new StateSensed (name = serviceName, value = state)
         broadcaster.broadcast (msg)
     }
 
@@ -33,13 +33,15 @@ class StateMonitoringService[T] (actorEnv : HiPriorityActorEnv,
                 broadcastSensed (Some(stateValue))
 
             case Failure (msg, excOpt) =>
-                error ("Error reading state of " + stateContainer +:+ msg +:+ excOpt, excOpt.orNull)
+                error (serviceName +:+ "Error reading state of " + stateContainer
+                       +:+ msg +:+ excOpt,
+                       excOpt.orNull)
                 broadcastSensed (None)
         }
     }
 
     override def toString() : String = {
-        getClass.getSimpleName + "(name=" + name +
+        getClass.getSimpleName + "(name=" + serviceName +
             ", humidityDevice=" + stateContainer + ", interval=" + interval + ")"
     }
 }

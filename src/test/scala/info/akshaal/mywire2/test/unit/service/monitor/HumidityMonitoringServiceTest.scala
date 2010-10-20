@@ -5,7 +5,7 @@
 
 package info.akshaal.mywire2
 package test
-package unit.service
+package unit.service.monitor
 
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.Operation
@@ -13,7 +13,7 @@ import info.akshaal.jacore.test.JacoreSpecWithJUnit
 
 import device._
 import device.owfs._
-import service.HumidityMonitoringService
+import service.monitor.HumidityMonitoringService
 import domain.Humidity
 
 import unit.UnitTestHelper._
@@ -106,6 +106,6 @@ object HumidityMonitoringServiceTest {
              extends HumidityMonitoringService (
                                 actorEnv = TestModule.hiPriorityActorEnv,
                                 humidityContainer = devices.humidityMonitoringServiceMP.hum,
-                                name = "testHumidityMonitoringService",
+                                serviceName = "testHumidityMonitoringService",
                                 interval = 1 seconds)
 }

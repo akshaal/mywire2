@@ -5,7 +5,7 @@
 
 package info.akshaal.mywire2
 package test
-package unit.service
+package unit.service.monitor
 
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.Operation
@@ -14,7 +14,7 @@ import info.akshaal.jacore.test.JacoreSpecWithJUnit
 import device._
 import device.owfs._
 import domain.Temperature
-import service.TemperatureMonitoringService
+import service.monitor.TemperatureMonitoringService
 
 import unit.UnitTestHelper._
 
@@ -137,7 +137,7 @@ object TemperatureMonitoringServiceTest {
              extends TemperatureMonitoringService (
                                 actorEnv = TestModule.hiPriorityActorEnv,
                                 temperatureContainer = devices.temperatureMonitoringServiceMP.temp,
-                                name = "testTemperatureMonitoringService",
+                                serviceName = "testTemperatureMonitoringService",
                                 interval = 1 seconds,
                                 illegalTemperature = Some(85.0))
 }

@@ -4,7 +4,7 @@
  */
 
 package info.akshaal.mywire2
-package service
+package service.monitor
 
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.{Actor, HiPriorityActorEnv}
@@ -18,7 +18,7 @@ import utils.container.TemperatureContainer
  */
 class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
                                     temperatureContainer : TemperatureContainer,
-                                    name : String,
+                                    serviceName : String,
                                     interval : TimeValue,
                                     illegalTemperature : Option[Double] = None,
                                     maxTries : Int = 3)
@@ -34,7 +34,7 @@ class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
     private def broadcastTemperature (temperatureValue : Option[Double]) : Unit = {
         frame.put (temperatureValue)
 
-        val temperature = new Temperature (name = name,
+        val temperature = new Temperature (name = serviceName,
                                            value = temperatureValue,
                                            average3 = frame.average)
         broadcaster.broadcast (temperature)
@@ -48,7 +48,8 @@ class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
         temperatureContainer.opReadTemperature () runMatchingResultAsy {
             case Success (temperatureValue) =>
                 if (Some (temperatureValue) == illegalTemperature) {
-                    warn ("Illegal temperature got from " + temperatureContainer + "" + illegalTemperature.get)
+                    warn (serviceName +:+ "Illegal temperature got from "
+                          + temperatureContainer + "" + illegalTemperature.get)
 
                     triesLeft match {
                         case None =>
@@ -76,7 +77,7 @@ class TemperatureMonitoringService (actorEnv : HiPriorityActorEnv,
         }
 
     override def toString() : String = {
-        getClass.getSimpleName + "(name=" + name +
+        getClass.getSimpleName + "(name=" + serviceName +
             ", temperatureContainer=" + temperatureContainer + ", interval=" + interval + ")"
     }
 }

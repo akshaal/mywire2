@@ -5,14 +5,14 @@
 
 package info.akshaal.mywire2
 package test
-package unit.service
+package unit.service.monitor
 
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.Operation
 import info.akshaal.jacore.test.JacoreSpecWithJUnit
 import device._
 import device.owfs._
-import service.StateMonitoringService
+import service.monitor.StateMonitoringService
 import domain.StateSensed
 
 import unit.UnitTestHelper._
@@ -114,6 +114,6 @@ object StateMonitoringServiceTest {
              extends StateMonitoringService (
                                 actorEnv = TestModule.hiPriorityActorEnv,
                                 stateContainer = devices.stateMonitoringServiceMP.switch.Sensed,
-                                name = "testStateMonitoringService",
+                                serviceName = "testStateMonitoringService",
                                 interval = 1 seconds)
 }
