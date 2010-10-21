@@ -26,6 +26,9 @@ import info.akshaal.jacore.logger.Logging
  *
  * Such approach helps to keep scripts simple and non-blocking.
  *
+ * Note that two scripts instances are considered equal iff they both are instance of the same
+ * class.
+ *
  * @tparam T type of state.
  */
 abstract class StateUpdateScript[T] extends AbstractStateUpdate[T] with Logging {
@@ -46,6 +49,26 @@ abstract class StateUpdateScript[T] extends AbstractStateUpdate[T] with Logging 
     private var scriptState : ScriptState = NotStarted
     private var lastStepResult : Instruction = End
     private var onInterrupt = () => {defaultOnInterrupt}
+
+    /**
+     * Equality is only based on class!
+     *
+     * @param other object to compare to
+     * @return true if equal
+     */
+    final override def equals (other : Any) : Boolean = {
+        other match {
+            case that : StateUpdateScript[_] => that.getClass == this.getClass
+            case _ => false
+        }
+    }
+
+    /**
+     * Hashcode of any script is equal to the hashCode of its class.
+     *
+     * @return hashcode
+     */
+    final override def hashCode = this.getClass.hashCode
 
     /**
      * Run or continue script execution and return state update.

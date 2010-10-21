@@ -74,7 +74,37 @@ class StateUpdateScriptTest extends JacoreSpecWithJUnit ("StateUpdateScript spec
             }
         }
 
+    // - - - - - - - - - - - - - - - - - - - - - - - -- - - - - - - - -  -- - - - - - - - -
+    // The following two scripts are used to test equality. These scripts must be considered
+    // inequal! Note that, those are defs and they return new object on each invokation!
+
+    def scriptD () =
+        new StateUpdateScript[Boolean] {
+            def run () = {}
+        }
+
+    def scriptD2 (x : Int) =
+        new StateUpdateScript[Boolean] {
+            val y = x
+
+            def run () = {}
+        }
+
+    // - - - - - - - - - - - - - - - - - - - - - - - -- - - - - - - - -  -- - - - - - - - -
+    // Tests
+
     "StateUpdateScript" should {
+        "not be equal to any other script of different class" in {
+            scriptD ()  must_!=  scriptD2 (2)
+        }
+
+        "should be equal to any script instance of the same class" in {
+            scriptD ()  must_==  scriptD ()
+            scriptD2 (1)  must_==  scriptD2 (2)
+            scriptD2 (1).hashCode  must_==  scriptD2 (2).hashCode
+            (scriptD2 (1).y+1)  must_==  scriptD2 (2).y
+        }
+
         "execute scripts with suspentions on some methods" in {
             scriptA.p1  must_==  0
             scriptA.p2  must_==  0
