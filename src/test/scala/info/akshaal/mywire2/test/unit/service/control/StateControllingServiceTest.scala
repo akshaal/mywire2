@@ -9,6 +9,8 @@ package unit.service.control
 
 import scala.collection.immutable.{Map => ImmutableMap}
 
+import scala.util.continuations._
+
 import info.akshaal.jacore.`package`._
 import info.akshaal.jacore.actor.Operation
 import info.akshaal.jacore.test.JacoreSpecWithJUnit
@@ -18,7 +20,7 @@ import service.control.StateControllingService
 import strategy.SimpleOnOffStrategy
 import domain.{StateUpdated, Temperature}
 import utils.ProblemDetector
-import utils.stupdate.StateUpdate
+import utils.stupdate.{StateUpdate, StateUpdateScript}
 import utils.tracker.TemperatureTracker
 
 import unit.UnitTestHelper._
@@ -26,12 +28,14 @@ import unit.UnitTestHelper._
 class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControllingService services specification") {
     import StateControllingServiceTest._
 
+    val mp = devices.stateControllingServiceMP
+
     "StateControllingService" should {
         "work" in {
             withStartedActors [TestStateControllingServiceListener,
                                TestStateControllingService] (
                 (listener, service) => {
-                    withStartedActor (devices.stateControllingServiceMP.switch) {
+                    withStartedActor (mp.switch) {
                         val started = System.currentTimeMillis
 
                         listener.waitForMessageAfter {}
@@ -66,7 +70,7 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
                         listener.changes  must beGreaterThan(7)
                         listener.errors  must_==  0
 
-                        devices.stateControllingServiceMP.switch.n must beIn (8 to 24)
+                        mp.switch.n must beIn (8 to 24)
                         (listener.ons - listener.offs)  must_!=  0
                         listener.ons  must_!=  0
                         listener.offs  must_!=  0
@@ -80,12 +84,50 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
             )
         }
 
+        "be able to run scripts" in {
+            withStartedActor [TestStateControllingServiceScript1] (
+                service => {
+                    withStartedActor (mp.switch3) {
+                        def readState () = mp.switch3.opReadState.runWithFutureAsy.get
+
+                        service.scriptRunning     must_==  false
+                        service.scriptEnded       must_==  false
+                        service.scriptInterrupted must_==  false
+
+                        // Run script
+                        service.scriptMode = true
+                        Thread.sleep (150.milliseconds.asMilliseconds)
+
+                        // At this moment, script should be running
+                        service.scriptRunning     must_==  true
+                        service.scriptEnded       must_==  false
+                        service.scriptInterrupted must_==  false
+
+                        // Get rid of script (interrupt it)
+                        service.scriptMode = false
+                        Thread.sleep (150.milliseconds.asMilliseconds)
+
+                        service.scriptRunning     must_==  false
+                        service.scriptEnded       must_==  false
+                        service.scriptInterrupted must_==  true
+
+                        // Run script again
+                        service.scriptMode = true
+                        Thread.sleep (150.milliseconds.asMilliseconds)
+
+                        service.scriptRunning     must_==  true
+                        service.scriptEnded       must_==  false
+                        service.scriptInterrupted must_==  false
+                    }
+                }
+            )
+        }
+
         "be safe" in {
             withStartedActor [TestStateControllingService2] (
                 service => {
-                    withStartedActor (devices.stateControllingServiceMP.switch2) {
-                        def readState () =
-                            devices.stateControllingServiceMP.switch2.opReadState.runWithFutureAsy.get
+                    withStartedActor (mp.switch2) {
+                        def readState () = mp.switch2.opReadState.runWithFutureAsy.get
 
                         Thread.sleep (10.milliseconds.asMilliseconds)
                         service.problems  must_==  0
@@ -95,7 +137,7 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
                         service.stateChanges  must_==  1
 
                         // This is because of silent problem
-                        devices.stateControllingServiceMP.switch2
+                        mp.switch2
                                .opReadState.runWithFutureAsy.get  must_==  Success(Some(false))
 
                         // This should trigger 'unavailable temperature' problem
@@ -169,6 +211,9 @@ object StateControllingServiceTest {
     object devices {
         implicit val deviceEnv = injector.getInstanceOf [OwfsDeviceEnv]
 
+        // ------------------------------------------------------------------------
+        // Mount point for tests
+
         object stateControllingServiceMP extends OwfsMountPoint ("/tmp/mywire") {
             object switch extends DS2405 ("abc") {
                 var n = 0
@@ -196,7 +241,7 @@ object StateControllingServiceTest {
                                 state = Some (st)
                                 states = st :: states
                             }
-                            yieldResult (Success(null))
+                            yieldResult (Success (null))
                         }
                     }
                 }
@@ -204,7 +249,32 @@ object StateControllingServiceTest {
                 def opReadState () : Operation.WithResult [Option[Boolean]] = {
                     new AbstractOperation [Result[Option[Boolean]]] {
                         override def processRequest () = {
-                            yieldResult (Success(state))
+                            yieldResult (Success (state))
+                        }
+                    }
+                }
+            }
+
+            // Switch 3. Used to test scripts
+            object switch3 extends DS2405 ("script1") {
+                var curStateOption : Option[Boolean] = None
+
+                override def opSetStateToFile (file : String, state : Boolean) : Operation.WithResult [Unit] = {
+                    new AbstractOperation [Result[Unit]] {
+                        override def processRequest () = {
+                            if (file == "PIO") {
+                                curStateOption = Some (state)
+                            }
+
+                            yieldResult (Success (null))
+                        }
+                    }
+                }
+
+                def opReadState () : Operation.WithResult [Option[Boolean]] = {
+                    new AbstractOperation [Result[Option[Boolean]]] {
+                        override def processRequest () = {
+                            yieldResult (Success (curStateOption))
                         }
                     }
                 }
@@ -331,5 +401,47 @@ object StateControllingServiceTest {
             super.onNewState (oldState, newState)
             stateChanges += 1
         }
+    }
+
+    // StateControllingService testing - - - - - - - - - -
+
+    class TestStateControllingServiceScript1
+            extends StateControllingService (
+                                actorEnv = TestModule.hiPriorityActorEnv,
+                                stateContainer = devices.stateControllingServiceMP.switch3.PIO,
+                                serviceName = "testStateControllingServiceScript1",
+                                interval = 100 milliseconds,
+                                tooManyProblemsInterval = 200 milliseconds,
+                                disableOnTooManyProblemsFor = 300 milliseconds)
+    {
+        var scriptMode = false
+        var scriptRunning = false
+        var scriptEnded = false
+        var scriptInterrupted = false
+
+        override protected val safeState = false
+
+        override protected def getStateUpdate () =
+            if (scriptMode) {
+                new StateUpdateScript [Boolean] {
+                    protected override def run () : Unit @suspendable = {
+                        scriptRunning = true
+                        scriptEnded = false
+                        scriptInterrupted = false
+
+                        wait (1 minutes)
+
+                        scriptEnded = true
+                        scriptRunning = false
+                    }
+
+                    protected override def defaultOnInterrupt () {
+                        scriptInterrupted = true
+                        scriptRunning = false
+                    }
+                }
+            } else {
+                new StateUpdate (state = false, validTime = 1 minutes)
+            }
     }
 }

@@ -41,16 +41,20 @@ abstract class StateControllingService [T] (
           extends AbstractControllingService (actorEnv = actorEnv)
           with StateControllingServiceProblemManager [T]
           with StateControllingServiceDisabler [T]
+          with StateControllingServiceScriptExecutor [T]
 {
     // ===========================================================================
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Private state
 
     // reference to scheduled update due to timeout of currently set state
-    private var earlyUpdateControl : Option[ScheduleControl] = None
+    private var earlyUpdateControlOption : Option [ScheduleControl] = None
 
     // a state we set last time
-    private var previousState : Option[T] = None
+    private var previousStateOption : Option [T] = None
+
+    // currently running script (if any)
+    private var currentScriptOption : Option [StateUpdateScript[T]] = None
 
     // ===========================================================================
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -115,6 +119,38 @@ abstract class StateControllingService [T] (
     }
 
     /**
+     * Called when a script is finished its execution no matter normally or abnormally (interrupted).
+     *
+     * @param script script that has finished its execution
+     * @param interrupted true if script was interrupted
+     */
+    private[control] override def onScriptFinished (script : StateUpdateScript[T],
+                                                    interrupted : Boolean) : Unit =
+    {
+        if (currentScriptOption.isEmpty) {
+            error ("Incorrect state controlling service workflow."
+                   + " A script is finished its work, but it seems that at this moment"
+                   + " we don't track this script! The script: " + script)
+        }
+
+        currentScriptOption = None
+
+        // We ignored updates while script was running. Now script is finished its work
+        // and we likely must update state with a new one. Lets initiate state update.
+        // But now now.
+        updateStateIfChangedAsy ()
+
+        // Debug
+        if (isDebugEnabled) {
+            if (interrupted) {
+                debugLazy ("Script has been interrupted: " + script)
+            } else {
+                debugLazy ("Script has finished its work: " + script)
+            }
+        }
+    }
+
+    /**
      * Called when state is changed (updated). Default implementation
      * logs message defined in transitionMessages map.
      *
@@ -144,8 +180,8 @@ abstract class StateControllingService [T] (
      * If early update is already cancelled or not scheduled at all, this method does nothing.
      */
     private def cancelEarlyUpdate () : Unit = {
-        earlyUpdateControl foreach (_.cancel ())
-        earlyUpdateControl = None
+        earlyUpdateControlOption foreach (_.cancel ())
+        earlyUpdateControlOption = None
     }
 
     /**
@@ -188,12 +224,14 @@ abstract class StateControllingService [T] (
     private def doUpdateUsing (stateUpdate : StateUpdate[T],
                                onlyIfChanged : Boolean) : Unit =
     {
+        cancelCurrentScriptIfAny ()
+
         val newState = stateUpdate.state
         val newValidTime = stateUpdate.validTime
 
         // Schedule next state update, we must do this, because we probably canceled previous one
-        if (earlyUpdateControl.isEmpty) {
-            earlyUpdateControl =
+        if (earlyUpdateControlOption.isEmpty) {
+            earlyUpdateControlOption =
                 if (newValidTime > (0 nanoseconds) && newValidTime < (interval * 2)) {
                     Some (schedule in newValidTime executionOf updateState())
                 } else {
@@ -202,41 +240,9 @@ abstract class StateControllingService [T] (
         }
 
         // Update only if changed or onlyIfChanged flag is false
-        if (!onlyIfChanged || Some (newState) != previousState) {
+        if (!onlyIfChanged || Some (newState) != previousStateOption) {
             // Change state
             setStateAsy (newState) (_ => ())
-        }
-    }
-
-    /**
-     * Set state asynchronously.
-     *
-     * @param newState state to set in the underlying state container
-     * @param additionalHandler a handler to be invoked when set operation is over
-     */
-    private def setStateAsy (newState : T)
-                            (additionalHandler : Result[Unit] => Unit) : Unit =
-    {
-        stateContainer.opSetState (newState) runMatchingResultAsy {
-            case result @ Success (_) =>
-                val stateUpdated = new StateUpdated (name = serviceName, value = newState)
-                broadcaster.broadcast (stateUpdated)
-
-                val newStateOption = Some (newState)
-                if (previousState != newStateOption) {
-                    onNewState (previousState, newState)
-                }
-
-                previousState = newStateOption
-
-                additionalHandler (result)
-
-            case result @ Failure (msg, excOption) =>
-                error ("Error setting state " + newState + " of " + stateContainer
-                       +:+ msg +:+ excOption,
-                       excOption.orNull)
-                
-                additionalHandler (result)
         }
     }
 
@@ -250,6 +256,68 @@ abstract class StateControllingService [T] (
     private def doUpdateUsing (script : StateUpdateScript[T],
                                onlyIfChanged : Boolean) : Unit =
     {
-        error ("NOT IMPLEMENTED YET")
+        // Check if we are already running scripts and act accordingly
+        val scriptOption = Some (script)
+
+        currentScriptOption match {
+            case None =>
+                currentScriptOption = scriptOption
+
+            case Some (currentScript) =>
+                if (script == currentScript) {
+                    debug ("Script is already running")
+                    return
+                } else {
+                    debug ("Requested to run a new script")
+                    cancelCurrentScriptIfAny ()
+                    currentScriptOption = scriptOption
+                }
+        }
+
+        // Starting script execution
+        debugLazy ("About to start execution of script: " + script)
+        
+        startScript (script)
+    }
+
+    /**
+     * Properly interrupt script if there is a running one.
+     */
+    private def cancelCurrentScriptIfAny () {
+        debug ("About to interrupt script if any")
+
+        currentScriptOption foreach stopScript
+    }
+
+    /**
+     * Set state asynchronously.
+     *
+     * @param newState state to set in the underlying state container
+     * @param additionalHandler a handler to be invoked when set operation is over
+     */
+    private[control] def setStateAsy (newState : T)
+                                     (additionalHandler : Result[Unit] => Unit) : Unit =
+    {
+        stateContainer.opSetState (newState) runMatchingResultAsy {
+            case result @ Success (_) =>
+                val stateUpdated = new StateUpdated (name = serviceName, value = newState)
+                broadcaster.broadcast (stateUpdated)
+
+                val newStateOption = Some (newState)
+                if (previousStateOption != newStateOption) {
+                    onNewState (previousStateOption, newState)
+                }
+
+                previousStateOption = newStateOption
+
+                additionalHandler (result)
+
+            case result @ Failure (msg, excOption) =>
+                error ("Error setting state " + newState + " of " + stateContainer
+                       +:+ msg +:+ excOption,
+                       excOption.orNull)
+
+                additionalHandler (result)
+        }
     }
 }

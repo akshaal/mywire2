@@ -4,6 +4,6 @@ rm -rf target/jacore
 rm -f target/test-log4j.log
 rm -rf target/cglib
 
-j7 mvn -o test || exit
+j7 mvn -o test "$@" || exit
 
 dot -T png target/jacore/integration-module.dot > target/jacore/integration-module.png
