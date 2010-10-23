@@ -31,11 +31,14 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
     val mp = devices.stateControllingServiceMP
 
     "StateControllingService" should {
+        // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
+        // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
+        // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
         "work" in {
-            withStartedActors [TestStateControllingServiceListener,
-                               TestStateControllingService] (
+            withStartedActors [WorkTestStateControllingServiceListener,
+                               WorkTestStateControllingService] (
                 (listener, service) => {
-                    withStartedActor (mp.switch) {
+                    withStartedActor (mp.workSwitch) {
                         val started = System.currentTimeMillis
 
                         listener.waitForMessageAfter {}
@@ -70,7 +73,7 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
                         listener.changes  must beGreaterThan(7)
                         listener.errors  must_==  0
 
-                        mp.switch.n must beIn (8 to 24)
+                        mp.workSwitch.n must beIn (8 to 24)
                         (listener.ons - listener.offs)  must_!=  0
                         listener.ons  must_!=  0
                         listener.offs  must_!=  0
@@ -84,11 +87,14 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
             )
         }
 
+        // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
+        // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
+        // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
         "be able to run scripts" in {
-            withStartedActor [TestStateControllingServiceScript1] (
+            withStartedActor [RunScriptTestStateControllingService] (
                 service => {
-                    withStartedActor (mp.switch3) {
-                        def readState () = mp.switch3.opReadState.runWithFutureAsy.get
+                    withStartedActor (mp.runScriptSwitch) {
+                        def readState () = mp.runScriptSwitch.opReadState.runWithFutureAsy.get
 
                         service.scriptRunning     must_==  false
                         service.scriptEnded       must_==  false
@@ -123,29 +129,31 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
             )
         }
 
+        // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
+        // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
+        // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
         "be safe" in {
-            withStartedActor [TestStateControllingService2] (
+            withStartedActor [BeSafeTestStateControllingService] (
                 service => {
-                    withStartedActor (mp.switch2) {
-                        def readState () = mp.switch2.opReadState.runWithFutureAsy.get
-
-                        Thread.sleep (10.milliseconds.asMilliseconds)
+                    withStartedActor (mp.beSafeSwitch) {
+                        def readState () = mp.beSafeSwitch.opReadState.runWithFutureAsy.get
+                        
+                        Thread.sleep (50.milliseconds.asMilliseconds)
                         service.problems  must_==  0
                         service.problemGones  must_==  0
                         service.tooMany  must_==  0
                         service.tooManyGone  must_==  0
-                        service.stateChanges  must_==  1
+                        service.stateChanges  must_==  1 // service changes it at startup
 
                         // This is because of silent problem
-                        mp.switch2
-                               .opReadState.runWithFutureAsy.get  must_==  Success(Some(false))
+                        readState ()  must_==  Success (Some(false))
 
                         // This should trigger 'unavailable temperature' problem
                         Thread.sleep (50.milliseconds.asMilliseconds)
                         service.updateStateIfChangedAsy ()
-                        Thread.sleep (10.milliseconds.asMilliseconds)
+                        Thread.sleep (30.milliseconds.asMilliseconds)
 
-                        readState  must_==  Success(Some(false))
+                        readState  must_==  Success (Some (false))
                         service.problems  must_==  1
                         service.problemGones  must_==  0
                         service.tooMany  must_==  0
@@ -154,7 +162,8 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
                         // This should remove 'unavasilable temperature' problem
                         service.updateTemp (Some(25))
                         Thread.sleep (50.milliseconds.asMilliseconds)
-                        readState  must_==  Success(Some(true))
+
+                        readState  must_==  Success (Some (true))
                         service.problems  must_==  1
                         service.problemGones  must_==  1
                         service.tooMany  must_==  0
@@ -164,7 +173,7 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
                         // This must check temp problem and trigger too many problems case
                         for (i <- 1 to 4) {
                             service.updateTemp (Some(40))
-                            Thread.sleep (10.milliseconds.asMilliseconds)
+                            Thread.sleep (50.milliseconds.asMilliseconds)
                             readState  must_==  Success(Some(false))
                             service.problems  must_==  1 + i
                             service.problemGones  must_==  1 + i - 1
@@ -172,7 +181,7 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
                             service.tooManyGone  must_==  0
 
                             service.updateTemp (Some(10))
-                            Thread.sleep (10.milliseconds.asMilliseconds)
+                            Thread.sleep (50.milliseconds.asMilliseconds)
                             readState  must_==  Success(Some(i != 4))
                             service.problems  must_==  1 + i
                             service.problemGones  must_==  i + 1
@@ -190,7 +199,7 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
                         readState  must_==  Success(Some(false))
 
                         service.updateStateIfChangedAsy ()
-                        Thread.sleep (10.milliseconds.asMilliseconds)
+                        Thread.sleep (40.milliseconds.asMilliseconds)
                         service.tooMany  must_==  1
                         service.tooManyGone  must_==  0
                         readState  must_==  Success(Some(false))
@@ -207,15 +216,24 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
     }
 }
 
+// ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+// Stuff used in tests
+
 object StateControllingServiceTest {
     object devices {
         implicit val deviceEnv = injector.getInstanceOf [OwfsDeviceEnv]
 
         // ------------------------------------------------------------------------
+        // ------------------------------------------------------------------------
+        // ------------------------------------------------------------------------
         // Mount point for tests
 
         object stateControllingServiceMP extends OwfsMountPoint ("/tmp/mywire") {
-            object switch extends DS2405 ("abc") {
+            // ------------------------------------------------------------
+            // Switch. Used to test 'work'   - - - - - -  - - - - - - - - -
+            object workSwitch extends DS2405 ("abc") {
                 var n = 0
 
                 override def opSetStateToFile (file : String, state : Boolean) : Operation.WithResult [Unit] = {
@@ -230,7 +248,9 @@ object StateControllingServiceTest {
                 }
             }
 
-            object switch2 extends DS2405 ("cde") {
+            // ------------------------------------------------------------
+            // beSafeSwitch - - -  - - -  - - - -  - - - - - -  - - - - - - - - -
+            object beSafeSwitch extends DS2405 ("cde") {
                 private var state : Option[Boolean] = None
                 var states : List[Boolean] = Nil
 
@@ -255,8 +275,9 @@ object StateControllingServiceTest {
                 }
             }
 
-            // Switch 3. Used to test scripts
-            object switch3 extends DS2405 ("script1") {
+            // ----------------------------------------------------------------
+            // Used to test scripts - - -  - - - - - - - - -  - - -  -- -  - -
+            object runScriptSwitch extends DS2405 ("script1") {
                 var curStateOption : Option[Boolean] = None
 
                 override def opSetStateToFile (file : String, state : Boolean) : Operation.WithResult [Unit] = {
@@ -282,12 +303,15 @@ object StateControllingServiceTest {
         }
     }
 
-    // StateControllingService testing - - - - - - - - - -
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // StateControllingService testing: "work" property - - - - - - - - - -
 
-    class TestStateControllingService
+    class WorkTestStateControllingService
             extends StateControllingService [Boolean] (
                                 actorEnv = TestModule.hiPriorityActorEnv,
-                                stateContainer = devices.stateControllingServiceMP.switch.PIO,
+                                stateContainer = devices.stateControllingServiceMP.workSwitch.PIO,
                                 serviceName = "testStateControllingService",
                                 interval = 170 seconds)
     {
@@ -312,7 +336,7 @@ object StateControllingServiceTest {
         override protected val silentProblemDetectors : List[ProblemDetector] = Nil
     }
 
-    class TestStateControllingServiceListener extends TestActor {
+    class WorkTestStateControllingServiceListener extends TestActor {
         var changes = 0
         var errors = 0
         var ons = 0
@@ -346,19 +370,22 @@ object StateControllingServiceTest {
         }
     }
 
-    // StateControllingService testing - - - - - - - - - -
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // StateControllingService testing "be safe" property - - - - - - - - -
 
-    class TestStateControllingService2
+    class BeSafeTestStateControllingService
             extends StateControllingService (
                                 actorEnv = TestModule.hiPriorityActorEnv,
-                                stateContainer = devices.stateControllingServiceMP.switch2.PIO,
+                                stateContainer = devices.stateControllingServiceMP.beSafeSwitch.PIO,
                                 serviceName = "testStateControllingService",
                                 interval = 170 seconds,
-                                tooManyProblemsInterval = 200 milliseconds,
+                                tooManyProblemsInterval = 550 milliseconds,
                                 disableOnTooManyProblemsFor = 300 milliseconds)
     {
         protected override val trackedTemperatureNames = "temp" :: Nil
-        protected override val problemIfUndefinedFor = 50 milliseconds
+        protected override val problemIfUndefinedFor = 100 milliseconds
         protected override val transitionMessages =
             ImmutableMap (true -> "set to true",
                           false -> "set to false")
@@ -403,15 +430,18 @@ object StateControllingServiceTest {
         }
     }
 
-    // StateControllingService testing - - - - - - - - - -
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // StateControllingService testing "run scripts" property - - - - - - -
 
-    class TestStateControllingServiceScript1
+    class RunScriptTestStateControllingService
             extends StateControllingService (
                                 actorEnv = TestModule.hiPriorityActorEnv,
-                                stateContainer = devices.stateControllingServiceMP.switch3.PIO,
-                                serviceName = "testStateControllingServiceScript1",
+                                stateContainer = devices.stateControllingServiceMP.runScriptSwitch.PIO,
+                                serviceName = "RunScriptTestStateControllingService",
                                 interval = 100 milliseconds,
-                                tooManyProblemsInterval = 200 milliseconds,
+                                tooManyProblemsInterval = 300 milliseconds,
                                 disableOnTooManyProblemsFor = 300 milliseconds)
     {
         var scriptMode = false
