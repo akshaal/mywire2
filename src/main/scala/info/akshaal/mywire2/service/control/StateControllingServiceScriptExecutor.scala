@@ -39,9 +39,13 @@ private[control] trait StateControllingServiceScriptExecutor [T] {
      * @param script script to stop
      */
     private[control] def stopScript (script : StateUpdateScript[T]) {
-        script.interrupt ()
-        
-        onScriptFinished (script, true)
+        if (script.isInterrupted) {
+            debug ("Script is already interrupted, nothing to stop..")
+        } else {
+            script.interrupt ()
+
+            onScriptFinished (script, true)
+        }
     }
 
     /**
@@ -73,7 +77,13 @@ private[control] trait StateControllingServiceScriptExecutor [T] {
                 onScriptFinished (script, false)
 
             case script.SetState (state) =>
-                // TODO
+                setStateAsy (state) {
+                    case result @ Success (_) =>
+                        executeScriptInstruction (script)
+
+                    case result @ Failure (msg, excOption) =>
+                        stopScript (script)
+                }
 
             case script.Wait (time) =>
                 schedule in time executionOf {

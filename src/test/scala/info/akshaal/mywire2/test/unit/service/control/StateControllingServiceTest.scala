@@ -153,6 +153,48 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
         // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
         // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
         // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
+        "support set method in scripts" in {
+            withStartedActor [SetStateScriptTestStateControllingService] (
+                service => {
+                    withStartedActor (mp.setStateScriptSwitch) {
+                        def readState () = mp.setStateScriptSwitch.opReadState.runWithFutureAsy.get
+
+                        Thread.sleep (50.milliseconds.asMilliseconds)
+
+                        service.scriptRunning             must_==  1
+                        service.scriptEnded               must_==  0
+                        service.scriptInterrupted         must_==  0
+                        readState ()                      must_==  Success(None)
+
+                        // in 100 milliseconds we must be in the middle of wait(100)
+                        // but state must be already true
+                        Thread.sleep (100.milliseconds.asMilliseconds)
+                        service.scriptRunning             must_==  1
+                        service.scriptEnded               must_==  0
+                        service.scriptInterrupted         must_==  0
+                        readState ()                      must_==  Success(Some (true))
+
+                        // in next 100 milliseconds we must be in the middle of next wait(100).
+                        // state must be already false
+                        Thread.sleep (100.milliseconds.asMilliseconds)
+                        service.scriptRunning             must_==  1
+                        service.scriptEnded               must_==  0
+                        service.scriptInterrupted         must_==  0
+                        readState ()                      must_==  Success(Some (false))
+
+                        // Let the script finish
+                        Thread.sleep (100.milliseconds.asMilliseconds)
+                        service.scriptRunning     must_==  2
+                        service.scriptEnded       must_==  1
+                        service.scriptInterrupted must_==  0
+                    }
+                }
+            )
+        }
+
+        // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
+        // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
+        // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
         "be safe" in {
             withStartedActor [BeSafeTestStateControllingService] (
                 service => {
@@ -299,6 +341,32 @@ object StateControllingServiceTest {
             // ----------------------------------------------------------------
             // Used to test scripts - - -  - - - - - - - - -  - - -  -- -  - -
             object runScriptSwitch extends DS2405 ("script1") {
+                var curStateOption : Option[Boolean] = None
+
+                override def opSetStateToFile (file : String, state : Boolean) : Operation.WithResult [Unit] = {
+                    new AbstractOperation [Result[Unit]] {
+                        override def processRequest () = {
+                            if (file == "PIO") {
+                                curStateOption = Some (state)
+                            }
+
+                            yieldResult (Success (null))
+                        }
+                    }
+                }
+
+                def opReadState () : Operation.WithResult [Option[Boolean]] = {
+                    new AbstractOperation [Result[Option[Boolean]]] {
+                        override def processRequest () = {
+                            yieldResult (Success (curStateOption))
+                        }
+                    }
+                }
+            }
+
+            // ----------------------------------------------------------------
+            // Used to test scripts with setState - - - - - -  - - -  -- -  - -
+            object setStateScriptSwitch extends DS2405 ("stateStateScriptSwitch") {
                 var curStateOption : Option[Boolean] = None
 
                 override def opSetStateToFile (file : String, state : Boolean) : Operation.WithResult [Unit] = {
@@ -501,6 +569,48 @@ object StateControllingServiceTest {
                 }
             } else {
                 new StateUpdate (state = false, validTime = 1 minutes)
+            }
+    }
+
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // StateControllingService testing "scripts with setState" property - - - - - - -
+
+    class SetStateScriptTestStateControllingService
+            extends StateControllingService (
+                                actorEnv = TestModule.hiPriorityActorEnv,
+                                stateContainer = devices.stateControllingServiceMP.setStateScriptSwitch.PIO,
+                                serviceName = "RunScriptTestStateControllingService",
+                                interval = 50 milliseconds,
+                                tooManyProblemsInterval = 300 milliseconds,
+                                disableOnTooManyProblemsFor = 300 milliseconds)
+    {
+        var scriptRunning = 0
+        var scriptEnded = 0
+        var scriptInterrupted = 0
+
+        override protected val safeState = false
+
+        override protected def getStateUpdate () =
+            new StateUpdateScript [Boolean] {
+                protected override def run () : Unit @suspendable = {
+                    // On start
+                    scriptRunning += 1
+
+                    wait (100 milliseconds)
+                    set (true)
+                    wait (100 milliseconds)
+                    set (false)
+                    wait (100 milliseconds)
+
+                    // On finish, this is unreachable
+                    scriptEnded += 1
+                }
+
+                protected override def defaultOnInterrupt () {
+                    scriptInterrupted += 1
+                }
             }
     }
 }
