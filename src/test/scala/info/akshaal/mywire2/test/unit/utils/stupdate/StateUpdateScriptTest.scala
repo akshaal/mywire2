@@ -156,6 +156,7 @@ class StateUpdateScriptTest extends JacoreSpecWithJUnit ("StateUpdateScript spec
             scriptB.p1  must_==  1
             scriptB.p2  must_==  0
             scriptB.di  must_==  1
+            scriptB.isInterrupted  must_==  true
         }
 
         "execute scripts with custom handler for invokation if interrupted" in {
@@ -177,6 +178,7 @@ class StateUpdateScriptTest extends JacoreSpecWithJUnit ("StateUpdateScript spec
             scriptC.p2  must_==  0
             scriptC.di  must_==  0
             scriptC.i1  must_==  1
+            scriptC.isInterrupted  must_==  true
         }
     }
 }

@@ -84,9 +84,11 @@ abstract class StateUpdateScript[T] extends AbstractStateUpdate[T] with Logging 
         scriptState match {
             case Finished =>
                 warn ("The script is already finished execution!")
+                return End
 
             case Interrupted =>
                 warn ("The script is already interrupted!")
+                return End
 
             case NotStarted =>
                 reset {
@@ -114,6 +116,12 @@ abstract class StateUpdateScript[T] extends AbstractStateUpdate[T] with Logging 
         this.scriptState = Interrupted
         onInterrupt ()
     }
+
+    /**
+     * Check script state for interruption event.
+     * @return true if this script was interrupted
+     */
+    private[mywire2] def isInterrupted () : Boolean = this.scriptState == Interrupted
 
     /**
      * This method is invoked in order to evaluate script.

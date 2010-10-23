@@ -54,11 +54,16 @@ private[control] trait StateControllingServiceScriptExecutor [T] {
                                            interrupted : Boolean) : Unit
 
     /**
-     * Make one step in script.
+     * Make one step in script. This method does nothing is the script is interrupted.
      *
      * @param script script to run
      */
     private def executeScriptInstruction (script : StateUpdateScript[T]) {
+        if (script.isInterrupted) {
+            debug ("Script is interrupted. Do nothing")
+            return
+        }
+
         val instruction = script.nextInstruction ()
 
         debugLazy ("Current instruction to run: " + instruction)
@@ -71,7 +76,9 @@ private[control] trait StateControllingServiceScriptExecutor [T] {
                 // TODO
 
             case script.Wait (time) =>
-                // TODO
+                schedule in time executionOf {
+                    executeScriptInstruction (script)
+                }
         }
     }
 }

@@ -96,34 +96,55 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
                     withStartedActor (mp.runScriptSwitch) {
                         def readState () = mp.runScriptSwitch.opReadState.runWithFutureAsy.get
 
-                        service.scriptRunning     must_==  false
-                        service.scriptEnded       must_==  false
-                        service.scriptInterrupted must_==  false
+                        service.scriptRunning             must_==  0
+                        service.scriptEnded               must_==  0
+                        service.scriptInterrupted         must_==  0
 
                         // Run script
                         service.scriptMode = true
                         Thread.sleep (150.milliseconds.asMilliseconds)
 
                         // At this moment, script should be running
-                        service.scriptRunning     must_==  true
-                        service.scriptEnded       must_==  false
-                        service.scriptInterrupted must_==  false
+                        service.scriptRunning             must_==  1
+                        service.scriptEnded               must_==  0
+                        service.scriptInterrupted         must_==  0
+
+                        // Check that wait method works
+                        service.scriptStartedWait300      must_==  true
+                        service.scriptEndedWait300        must_==  false
+
+                        Thread.sleep (310.milliseconds.asMilliseconds)
+
+                        service.scriptStartedWait300      must_==  false
+                        service.scriptEndedWait300        must_==  true
 
                         // Get rid of script (interrupt it)
                         service.scriptMode = false
                         Thread.sleep (150.milliseconds.asMilliseconds)
 
-                        service.scriptRunning     must_==  false
-                        service.scriptEnded       must_==  false
-                        service.scriptInterrupted must_==  true
+                        service.scriptRunning             must_==  1
+                        service.scriptEnded               must_==  0
+                        service.scriptInterrupted         must_==  1
+
+                        Thread.sleep (400.milliseconds.asMilliseconds)
+
+                        service.scriptRunning             must_==  1
+                        service.scriptEnded               must_==  0
+                        service.scriptInterrupted         must_==  1
 
                         // Run script again
                         service.scriptMode = true
                         Thread.sleep (150.milliseconds.asMilliseconds)
 
-                        service.scriptRunning     must_==  true
-                        service.scriptEnded       must_==  false
-                        service.scriptInterrupted must_==  false
+                        service.scriptRunning     must_==  2
+                        service.scriptEnded       must_==  0
+                        service.scriptInterrupted must_==  1
+
+                        // Let the script finish
+                        Thread.sleep (900.milliseconds.asMilliseconds)
+                        service.scriptRunning     must_==  3
+                        service.scriptEnded       must_==  1
+                        service.scriptInterrupted must_==  1
                     }
                 }
             )
@@ -445,9 +466,11 @@ object StateControllingServiceTest {
                                 disableOnTooManyProblemsFor = 300 milliseconds)
     {
         var scriptMode = false
-        var scriptRunning = false
-        var scriptEnded = false
-        var scriptInterrupted = false
+        var scriptRunning = 0
+        var scriptEnded = 0
+        var scriptInterrupted = 0
+        var scriptStartedWait300 = false
+        var scriptEndedWait300 = false
 
         override protected val safeState = false
 
@@ -455,19 +478,25 @@ object StateControllingServiceTest {
             if (scriptMode) {
                 new StateUpdateScript [Boolean] {
                     protected override def run () : Unit @suspendable = {
-                        scriptRunning = true
-                        scriptEnded = false
-                        scriptInterrupted = false
+                        // On start
+                        scriptRunning += 1
 
-                        wait (1 minutes)
+                        // Test wait method
+                        scriptStartedWait300 = true
+                        scriptEndedWait300 = false
+                        wait (300 milliseconds)
+                        scriptStartedWait300 = false
+                        scriptEndedWait300 = true
 
-                        scriptEnded = true
-                        scriptRunning = false
+                        // During this wait, script is supposed to be interrupted
+                        wait (400 milliseconds)
+
+                        // On finish, this is unreachable
+                        scriptEnded += 1
                     }
 
                     protected override def defaultOnInterrupt () {
-                        scriptInterrupted = true
-                        scriptRunning = false
+                        scriptInterrupted += 1
                     }
                 }
             } else {
