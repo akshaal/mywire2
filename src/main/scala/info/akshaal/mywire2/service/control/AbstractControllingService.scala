@@ -91,55 +91,6 @@ abstract class AbstractControllingService (actorEnv : HiPriorityActorEnv)
     }
 
     /**
-     * Start the actor (controlling service).
-     * Default implementation subscribes to the tracked messages.
-     */
-    override def start () : Boolean = {
-        val started = super.start ()
-
-        if (started) {
-            basicProblemDetectors = Nil
-            basicSilentProblemDetectors = Nil
-
-            /**
-             * Starts tracking specific kind of events, using tracker. Populate common problems
-             * that a tracker provides.
-             *
-             * @tparam T type of messages to subscribe on
-             * @param list list of names for the messages of the given type
-             * @param tracker tracker that is used to track this kind of messages
-             */
-            def prepare [T] (list : List [String], tracker : => AbstractTracker [_, _])
-                            (code : => Unit)
-                            (implicit m : ClassManifest [T])
-            {
-                if (list != Nil) {
-                    subscribe [T] (m)
-
-                    // If a tracked value is undefined, then there is nothing good, but
-                    // nothing terrible, just going to safe mode
-                    basicSilentProblemDetectors ::= tracker.problemIfUndefined
-
-                    // But if a value is unavailable for too long, then this is a problem!
-                    basicProblemDetectors ::=
-                        tracker.problemIfUndefinedFor (problemIfUndefinedFor)
-
-                    code
-                }
-            }
-
-            prepare [StateSensed] (trackedBooleanSensedStateNames, booleanSensedState) ()
-            prepare [StateUpdated] (trackedBooleanUpdatedStateNames, booleanUpdatedState) ()
-
-            prepare [Temperature] (trackedTemperatureNames, temperature) {
-                basicProblemDetectors ::= temperature.problemIfNaN
-            }
-        }
-
-        started
-    }
-
-    /**
      * List of basic problem detectors.
      */
     protected var basicProblemDetectors : List [ProblemDetector] = Nil
@@ -149,4 +100,48 @@ abstract class AbstractControllingService (actorEnv : HiPriorityActorEnv)
      * switches device to the safe mode.
      */
     protected var basicSilentProblemDetectors : List[ProblemDetector] = Nil
+
+    // ================================================================================
+    // Internal
+
+    /**
+     * Subscribes to the tracked messages. Called right before start of actor.
+     */
+    protected override def beforeStart () : Unit = {
+        super.beforeStart ()
+
+        /**
+         * Starts tracking specific kind of events, using tracker. Populate common problems
+         * that a tracker provides.
+         *
+         * @tparam T type of messages to subscribe on
+         * @param list list of names for the messages of the given type
+         * @param tracker tracker that is used to track this kind of messages
+         */
+        def prepare [T] (list : List [String], tracker : => AbstractTracker [_, _])
+                        (code : => Unit)
+                        (implicit m : ClassManifest [T])
+        {
+            if (list != Nil) {
+                subscribe [T] (m)
+
+                // If a tracked value is undefined, then there is nothing good, but
+                // nothing terrible, just going to safe mode
+                basicSilentProblemDetectors ::= tracker.problemIfUndefined
+
+                // But if a value is unavailable for too long, then this is a problem!
+                basicProblemDetectors ::=
+                    tracker.problemIfUndefinedFor (problemIfUndefinedFor)
+
+                code
+            }
+        }
+
+        prepare [StateSensed] (trackedBooleanSensedStateNames, booleanSensedState) ()
+        prepare [StateUpdated] (trackedBooleanUpdatedStateNames, booleanUpdatedState) ()
+
+        prepare [Temperature] (trackedTemperatureNames, temperature) {
+            basicProblemDetectors ::= temperature.problemIfNaN
+        }
+    }
 }

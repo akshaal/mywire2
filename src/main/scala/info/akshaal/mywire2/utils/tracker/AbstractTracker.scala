@@ -84,16 +84,18 @@ abstract class AbstractTracker[T, B] (names : String*) extends Logging {
         new ProblemDetector {
             /**
              * Check all names we track and find one that has no value for too long.
-             * If [[perion]] has not passed yet or all values are defined, then returns None.
+             * If [[period]] has not passed yet or all values are defined, then returns None.
              *
              * @return name of undefined value or None if everything is fine for now
              */
             private def findUndefined : Option[String] = {
-                if (System.nanoTime.nanoseconds - createdAt > period) {
+                val curT = System.nanoTime.nanoseconds
+
+                if (curT - createdAt >= period) {
                     for (name <- names) {
                         if (!(map contains name)) {
                             val lastUpdate = updatedAt.get (name)
-                            if (lastUpdate == null || System.nanoTime.nanoseconds - lastUpdate > period) {
+                            if (lastUpdate == null || curT - lastUpdate >= period) {
                                 return Some (name)
                             }
                         }

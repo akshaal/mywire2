@@ -226,6 +226,8 @@ abstract class StateControllingService [T] (
     {
         cancelCurrentScriptIfAny ()
 
+        debugLazy ("Asked to update using state: " + stateUpdate)
+
         val newState = stateUpdate.state
         val newValidTime = stateUpdate.validTime
 
@@ -256,6 +258,8 @@ abstract class StateControllingService [T] (
     private def doUpdateUsing (script : StateUpdateScript[T],
                                onlyIfChanged : Boolean) : Unit =
     {
+        debugLazy ("Asked to update using script: " + script)
+
         // Check if we are already running scripts and act accordingly
         val scriptOption = Some (script)
 

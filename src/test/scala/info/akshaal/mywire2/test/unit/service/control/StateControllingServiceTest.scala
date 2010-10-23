@@ -195,6 +195,89 @@ class StateControllingServiceTest extends JacoreSpecWithJUnit ("StateControlling
         // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
         // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
         // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
+        "keep scripts safe" in {
+            withStartedActor [ScriptSafetyTestStateControllingService] (
+                service => {
+                    withStartedActor (mp.scriptSafetySwitch) {
+                        def readState () = mp.scriptSafetySwitch.opReadState.runWithFutureAsy.get
+
+                        service.updateTemp (Some(25))
+                        Thread.sleep (50.milliseconds.asMilliseconds)
+
+                        service.scriptRunning             must_==  1
+                        service.scriptEnded               must_==  0
+                        service.scriptInterrupted         must_==  0
+
+                        // false - that is there was a silent problem before we set temperature
+                        readState ()                      must_==  Success (Some(false))
+
+                        // in 100 milliseconds we must be in the middle of wait(100)
+                        // but state must be already true
+                        Thread.sleep (100.milliseconds.asMilliseconds)
+                        service.scriptRunning             must_==  1
+                        service.scriptEnded               must_==  0
+                        service.scriptInterrupted         must_==  0
+                        readState ()                      must_==  Success(Some (true))
+
+                        // Make problem
+                        service.updateTemp (Some(65))
+
+                        // in next 100 milliseconds we must be in the middle of next wait(100).
+                        // state must be already false because of problem
+                        Thread.sleep (100.milliseconds.asMilliseconds)
+                        service.scriptRunning             must_==  1
+                        service.scriptEnded               must_==  0
+                        service.scriptInterrupted         must_==  1
+                        readState ()                      must_==  Success(Some (false))
+
+                        // Script must be already finished, just make sure that we still safe
+                        Thread.sleep (100.milliseconds.asMilliseconds)
+                        service.scriptRunning             must_==  1
+                        service.scriptEnded               must_==  0
+                        service.scriptInterrupted         must_==  1
+
+                        readState ()                      must_==  Success(Some (false))
+
+                        // Get rid of problems
+                        service.updateTemp (Some(10))
+                        Thread.sleep (50.milliseconds.asMilliseconds)
+
+                        // Script is just started
+                        service.scriptRunning             must_==  2
+                        service.scriptEnded               must_==  0
+                        service.scriptInterrupted         must_==  1
+                        readState ()                      must_==  Success(Some (false))
+
+                        // in 100 milliseconds we must be in the middle of wait(100)
+                        // but state must be already true
+                        Thread.sleep (100.milliseconds.asMilliseconds)
+                        service.scriptRunning             must_==  2
+                        service.scriptEnded               must_==  0
+                        service.scriptInterrupted         must_==  1
+                        readState ()                      must_==  Success(Some (true))
+
+                        // in next 100 milliseconds we must be in the middle of next wait(100).
+                        // state must be true
+                        Thread.sleep (100.milliseconds.asMilliseconds)
+                        service.scriptRunning             must_==  2
+                        service.scriptEnded               must_==  0
+                        service.scriptInterrupted         must_==  1
+                        readState ()                      must_==  Success(Some (true))
+
+                        // Let the script finish
+                        Thread.sleep (100.milliseconds.asMilliseconds)
+                        service.scriptRunning             must_==  3
+                        service.scriptEnded               must_==  1
+                        service.scriptInterrupted         must_==  1
+                        readState ()                      must_==  Success(Some (true))
+                    }
+                }
+            )
+        }
+
+        // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
+        // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
+        // - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - --  --  -- -  - - -
         "be safe" in {
             withStartedActor [BeSafeTestStateControllingService] (
                 service => {
@@ -367,6 +450,32 @@ object StateControllingServiceTest {
             // ----------------------------------------------------------------
             // Used to test scripts with setState - - - - - -  - - -  -- -  - -
             object setStateScriptSwitch extends DS2405 ("stateStateScriptSwitch") {
+                var curStateOption : Option[Boolean] = None
+
+                override def opSetStateToFile (file : String, state : Boolean) : Operation.WithResult [Unit] = {
+                    new AbstractOperation [Result[Unit]] {
+                        override def processRequest () = {
+                            if (file == "PIO") {
+                                curStateOption = Some (state)
+                            }
+
+                            yieldResult (Success (null))
+                        }
+                    }
+                }
+
+                def opReadState () : Operation.WithResult [Option[Boolean]] = {
+                    new AbstractOperation [Result[Option[Boolean]]] {
+                        override def processRequest () = {
+                            yieldResult (Success (curStateOption))
+                        }
+                    }
+                }
+            }
+
+            // ----------------------------------------------------------------
+            // Used to test script's safety - - - - - - - - -  - - -  -- -  - -
+            object scriptSafetySwitch extends DS2405 ("ScriptSafetySwitch") {
                 var curStateOption : Option[Boolean] = None
 
                 override def opSetStateToFile (file : String, state : Boolean) : Operation.WithResult [Unit] = {
@@ -612,5 +721,56 @@ object StateControllingServiceTest {
                     scriptInterrupted += 1
                 }
             }
+    }
+
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // StateControllingService testing "script safety" property - - - - -
+
+    class ScriptSafetyTestStateControllingService
+            extends StateControllingService (
+                                actorEnv = TestModule.hiPriorityActorEnv,
+                                stateContainer = devices.stateControllingServiceMP.scriptSafetySwitch.PIO,
+                                serviceName = "ScriptSafetyTestStateControllingService",
+                                interval = 50 milliseconds,
+                                tooManyProblemsInterval = 300 milliseconds,
+                                disableOnTooManyProblemsFor = 300 milliseconds)
+    {
+        protected override val trackedTemperatureNames = "444temp123" :: Nil
+
+        protected override val problemDetectors =
+           temperature.problemIf ("444temp123").greaterThan (30, backOn=15) :: Nil
+
+        var scriptRunning = 0
+        var scriptEnded = 0
+        var scriptInterrupted = 0
+
+        override protected val safeState = false
+
+        override protected def getStateUpdate () =
+            new StateUpdateScript [Boolean] {
+                protected override def run () : Unit @suspendable = {
+                    // On start
+                    scriptRunning += 1
+
+                    wait (100 milliseconds)
+                    set (true)
+                    wait (100 milliseconds)
+                    set (true)
+                    wait (100 milliseconds)
+
+                    // On finish, this is unreachable
+                    scriptEnded += 1
+                }
+
+                protected override def defaultOnInterrupt () {
+                    scriptInterrupted += 1
+                }
+            }
+
+        def updateTemp (temp : Option[Double]) = {
+            this ! new Temperature ("444temp123", value = temp, average3 = temp)
+        }
     }
 }
