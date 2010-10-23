@@ -440,7 +440,7 @@ object StateControllingServiceTest {
                                 actorEnv = TestModule.hiPriorityActorEnv,
                                 stateContainer = devices.stateControllingServiceMP.runScriptSwitch.PIO,
                                 serviceName = "RunScriptTestStateControllingService",
-                                interval = 100 milliseconds,
+                                interval = 50 milliseconds,
                                 tooManyProblemsInterval = 300 milliseconds,
                                 disableOnTooManyProblemsFor = 300 milliseconds)
     {
