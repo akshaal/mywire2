@@ -36,10 +36,8 @@ class DS2405 (id : String) (implicit parentDevLoc : DeviceLocation, deviceEnv : 
     protected def parseState (state : String) : Boolean =
         state match {
             case "0" => false
-
             case "1" => true
-
-            case x => throw new NumberFormatException ("Unknown state" +:+ x)
+            case x   => throw new NumberFormatException ("Unknown state" +:+ x)
         }
 
     /**
