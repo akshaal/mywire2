@@ -10,6 +10,7 @@
     <!-- = = = = = = = = = = = = Default properties = = = = = = = = = = -->
     <properties>
         <custom.build.directory>${basedir}/target</custom.build.directory>
+        <mywire2.java.version>1.7</mywire2.java.version>
 
         <!-- Versions -->
         <scala.version>2.8.0</scala.version>
@@ -29,6 +30,10 @@
         <!-- Plugin versions -->
         <maven-scala-plugin.version>2.14.1</maven-scala-plugin.version>
         <maven-release-plugin.version>2.0-beta-9</maven-release-plugin.version>
+        <maven-resources-plugin.version>2.5</maven-resources-plugin.version>
+        <maven-compiler-plugin.version>2.3.2</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>2.8.1</maven-surefire-plugin.version>
+        <maven-enforcer-plugin.version>1.0</maven-enforcer-plugin.version>
     </properties>
 
     <scm>
@@ -189,6 +194,31 @@
         </testResources>
 
         <plugins>
+            <!-- Enforce -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${maven-enforcer-plugin.version}</version>
+
+                <executions>
+                    <execution>
+                        <id>enforce</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <message>!!! !!! !!! Please use a JDK version which harmonizes with build target: JDK ${jacore.java.version} !!! !!! !!!</message>
+                                    <version>[${mywire2.java.version}.0,${mywire2.java.version}.9]</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- Release -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -200,6 +230,8 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven-resources-plugin.version}</version>
+
                 <configuration>
                     <escapeString>\</escapeString>
                 </configuration>
@@ -209,12 +241,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+
                 <configuration>
                     <argLine>
-                        -Djava.library.path=${basedir}/src/main/native/${host.native.id} \
-                        -Dcglib.debugLocation=${project.build.directory}/cglib \
-                        -Djacore.module.debug.dir=${project.build.directory}/jacore \
-                        -Dmywire.test.amq.dir=${project.build.directory}/activemq
+                        -Djava.library.path=${basedir}/src/main/native/${host.native.id} -Dcglib.debugLocation=${project.build.directory}/cglib -Djacore.module.debug.dir=${project.build.directory}/jacore -Dmywire.test.amq.dir=${project.build.directory}/activemq
                     </argLine>
                 </configuration>
             </plugin>
@@ -223,9 +254,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>${mywire2.java.version}</source>
+                    <target>${mywire2.java.version}</target>
                 </configuration>
             </plugin>
 
@@ -234,6 +267,7 @@
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
                 <version>${maven-scala-plugin.version}</version>
+
                 <configuration>
                     <scalaVersion>${scala.version}</scalaVersion>
                     <args>
@@ -266,36 +300,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- Eclipse -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-eclipse-plugin</artifactId>                
-                <configuration>
-                    <downloadSources>true</downloadSources>
-                    <downloadJavadocs>true</downloadJavadocs>
-                    <buildOutputDirectory>
-                        .eclipse/build
-                    </buildOutputDirectory>
-
-                    <excludes>
-                        <exclude>org.scala-lang:scala-library</exclude>
-                    </excludes>
-                    
-                    <classpathContainers>
-                        <classpathContainer>ch.epfl.lamp.sdt.launching.SCALA_CONTAINER</classpathContainer>
-                    </classpathContainers>
-                    
-                    <projectnatures>
-                        <java.lang.String>ch.epfl.lamp.sdt.core.scalanature</java.lang.String>
-                        <java.lang.String>org.eclipse.jdt.core.javanature</java.lang.String>
-                    </projectnatures>
-                    
-                    <buildcommands>
-                        <java.lang.String>ch.epfl.lamp.sdt.core.scalabuilder</java.lang.String>
-                    </buildcommands>
-                </configuration>
-            </plugin>            
         </plugins>
     </build>
 </project>
