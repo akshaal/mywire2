@@ -21,7 +21,7 @@
         <slf4j.version>1.5.8</slf4j.version>
         <log4j.version>1.2.15</log4j.version>
         <mybatis.version>3.0.1</mybatis.version>
-        <mysql-connector.version>5.1.11</mysql-connector.version>
+        <mysql-connector.version>8.0.28</mysql-connector.version>
         <guice.version>2.0</guice.version>
         <mockito.version>1.8.4</mockito.version>
         <specs.version>1.6.5</specs.version>
